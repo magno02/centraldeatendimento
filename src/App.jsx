@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_VERTICAL_AZUL_MARINHO_RGB.png'
+import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_MARINHO_RGB.png'
 import { PORTFOLIOS, ATIVIDADES } from './catalogo'
 import {
   STATUS,
@@ -398,8 +398,8 @@ function Topo({
 }) {
   return (
     <header className="bg-axia-purple text-white">
-      <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-6 gap-y-4 px-8 py-4">
-        <img src={logo} alt="AXIA Energia" className="h-14 w-auto shrink-0" />
+      <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-6 gap-y-4 px-8 py-6">
+        <img src={logo} alt="AXIA Energia" className="h-20 w-auto shrink-0" />
 
         <div className="min-w-0">
           <h1 className="text-xl font-bold leading-tight">Como podemos ajudar?</h1>
@@ -429,13 +429,6 @@ function Topo({
         </label>
 
         <div className="ml-auto flex shrink-0 items-center gap-5">
-          <button
-            onClick={onMeusTickets}
-            className="rounded-full border border-white/40 px-5 py-2 text-sm font-medium hover:bg-white/10"
-          >
-            Meus tickets
-          </button>
-
           <Popover
             rotulo={
               <>
@@ -671,7 +664,7 @@ function Indicadores({ contagem, onIndicador }) {
 function Abas({ itens, ativa, onSelect }) {
   return (
     // linha azul colada nas abas: mesma div, borda inferior logo abaixo dos botões
-    <div className="mb-8 flex flex-wrap gap-2 border-b-2 border-axia-blue pt-6">
+    <div className="mb-8 flex flex-wrap gap-2 border-b-2 border-axia-blue pt-14">
       {itens.map((p) => (
         <button
           key={p.id}
