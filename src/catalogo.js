@@ -14,13 +14,14 @@ const CAMPOS_BASE = [
   { n: 'Urgência', t: 'select', opcoes: ['Baixa', 'Média', 'Alta'] },
 ]
 
-const montarAtividade = (a) => ({
+const montarAtividade = (a, chaveServico) => ({
   id: a.nome,
   nome: a.nome,
+  chave: `${chaveServico}/${a.nome}`,
   ofertas: a.ofertas_servico ?? [],
   campos: [
     ...(a.ofertas_servico?.length
-      ? [{ n: 'Oferta de Serviço', t: 'select', opcoes: a.ofertas_servico }]
+      ? [{ n: 'Oferta de Serviço', t: 'combo', opcoes: a.ofertas_servico }]
       : []),
     ...CAMPOS_BASE,
   ],
@@ -30,11 +31,17 @@ export const PORTFOLIOS = estrutura.areas.map((area) => ({
   id: area.nome,
   nome: area.nome,
   servicos: unicosPorNome(area.servicos)
-    .map((s) => ({
-      id: s.nome,
-      nome: s.nome,
-      atividades: unicosPorNome(s.atividades).map(montarAtividade).sort(porNome),
-    }))
+    .map((s) => {
+      const chave = `${area.nome}/${s.nome}`
+      return {
+        id: s.nome,
+        nome: s.nome,
+        chave,
+        atividades: unicosPorNome(s.atividades)
+          .map((a) => montarAtividade(a, chave))
+          .sort(porNome),
+      }
+    })
     .sort(porNome),
 }))
 
@@ -44,3 +51,13 @@ export const ATIVIDADES = PORTFOLIOS.flatMap((p) =>
     s.atividades.map((a) => ({ ...a, portfolio: p, servico: s }))
   )
 )
+
+export const SERVICOS = PORTFOLIOS.flatMap((p) =>
+  p.servicos.map((s) => ({ ...s, portfolio: p }))
+)
+
+// chave -> item, para resolver favoritos e recentes guardados no localStorage.
+export const POR_CHAVE = new Map([
+  ...SERVICOS.map((s) => [s.chave, { tipo: 'servico', item: s }]),
+  ...ATIVIDADES.map((a) => [a.chave, { tipo: 'atividade', item: a }]),
+])

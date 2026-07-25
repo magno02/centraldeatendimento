@@ -1,10 +1,14 @@
 // node src/lib.check.js
 import assert from 'node:assert/strict'
-import { ATIVIDADES, PORTFOLIOS } from './catalogo.js'
+import { ATIVIDADES, PORTFOLIOS, SERVICOS, POR_CHAVE } from './catalogo.js'
+import { USUARIOS, GESTOR_DE } from './organizacao.js'
 import {
   novoProtocolo,
   buscar,
   filtrarServicos,
+  filtrarOpcoes,
+  alternarFavorito,
+  registrarRecente,
   contarPorStatus,
   deveMostrarTopo,
   notificacoes,
@@ -30,6 +34,33 @@ assert.ok(buscar(ATIVIDADES, 'iot').length > 0)
 assert.deepEqual(buscar(ATIVIDADES, '   '), [])
 const umaOferta = ATIVIDADES.find((a) => a.ofertas.length)
 assert.ok(buscar(ATIVIDADES, umaOferta.ofertas[0]).includes(umaOferta))
+
+// todo usuário selecionável tem gestor cadastrado (o campo é somente leitura)
+for (const u of USUARIOS) assert.ok(GESTOR_DE[u], u)
+
+// combobox: sem termo devolve tudo, com termo filtra ignorando acento e caixa
+assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], ''), ['São Paulo', 'Bahia'])
+assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], 'sao'), ['São Paulo'])
+assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], 'AHI'), ['Bahia'])
+assert.deepEqual(filtrarOpcoes(['São Paulo'], 'xyz'), [])
+
+// favoritos: alterna e não duplica; recentes: entra na frente, sem repetir, com teto
+assert.deepEqual(alternarFavorito([], 'a/b'), ['a/b'])
+assert.deepEqual(alternarFavorito(['a/b'], 'a/b'), [])
+assert.deepEqual(alternarFavorito(['a/b'], 'c/d'), ['c/d', 'a/b'])
+assert.deepEqual(registrarRecente(['x', 'y'], 'y'), ['y', 'x'])
+assert.deepEqual(registrarRecente(['a', 'b', 'c'], 'd', 3), ['d', 'a', 'b'])
+
+// chaves de favoritos/recentes resolvem para itens do catálogo
+const umServico = PORTFOLIOS[0].servicos[0]
+assert.equal(POR_CHAVE.get(umServico.chave).tipo, 'servico')
+assert.equal(POR_CHAVE.get(umServico.atividades[0].chave).tipo, 'atividade')
+assert.equal(POR_CHAVE.get('Área/Serviço/Inexistente'), undefined)
+assert.equal(POR_CHAVE.size, SERVICOS.length + ATIVIDADES.length)
+// chave globalmente única: é o key do React em busca, favoritos e recentes,
+// onde itens de áreas diferentes aparecem na mesma lista.
+const chaves = [...SERVICOS, ...ATIVIDADES].map((i) => i.chave)
+assert.equal(new Set(chaves).size, chaves.length)
 
 // iniciais do avatar
 assert.equal(iniciais('João da Silva'), 'JS')
@@ -97,10 +128,11 @@ assert.equal(cancelar(t2, 'de novo'), t2) // já cancelado: nada muda
 assert.equal(podeInteragir({ status: 'Fechado' }), false)
 assert.equal(podeInteragir({ status: 'Suspenso' }), true)
 
-// todo select tem opções; toda atividade tem o dropdown de Oferta de Serviço
+// todo select/combo tem opções; toda atividade tem o campo de Oferta de Serviço
 for (const a of ATIVIDADES) {
   for (const c of a.campos)
-    if (typeof c === 'object' && c.t === 'select') assert.ok(c.opcoes?.length, a.nome)
+    if (typeof c === 'object' && ['select', 'combo'].includes(c.t))
+      assert.ok(c.opcoes?.length, a.nome)
   const oferta = a.campos.find((c) => c.n === 'Oferta de Serviço')
   assert.deepEqual(oferta.opcoes, a.ofertas, a.nome)
 }

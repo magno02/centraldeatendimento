@@ -70,6 +70,22 @@ export function iniciais(nome) {
     .join('')
 }
 
+// Combobox: lista inteira quando não há termo; senão filtra ignorando acento e caixa.
+export function filtrarOpcoes(opcoes, termo) {
+  const t = norm(termo.trim())
+  if (!t) return opcoes
+  return opcoes.filter((o) => norm(o).includes(t))
+}
+
+// Favoritos e recentes guardam chaves ("Área/Serviço" ou "Área/Serviço/Atividade").
+export const alternarFavorito = (favoritos, chave) =>
+  favoritos.includes(chave)
+    ? favoritos.filter((c) => c !== chave)
+    : [chave, ...favoritos]
+
+export const registrarRecente = (recentes, chave, max = 12) =>
+  [chave, ...recentes.filter((c) => c !== chave)].slice(0, max)
+
 export function contarPorStatus(tickets) {
   return Object.fromEntries(
     STATUS.map((s) => [s, tickets.filter((t) => t.status === s).length])
