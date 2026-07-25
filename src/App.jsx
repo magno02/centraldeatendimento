@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_MARINHO_RGB.png'
 import { PORTFOLIOS, ATIVIDADES, POR_CHAVE } from './catalogo'
-import { EMPRESAS, ESTADOS, AREAS, USUARIOS, GESTOR_DE } from './organizacao'
+import {
+  EMPRESAS,
+  ESTADOS,
+  AREAS,
+  USUARIOS,
+  GESTOR_DE,
+  ATENDENTES,
+} from './organizacao'
 import {
   STATUS,
   CANCELADO,
@@ -13,6 +20,9 @@ import {
   registrarRecente,
   contarPorStatus,
   deveMostrarTopo,
+  prazoPrevisto,
+  formatarTamanho,
+  atendenteDe,
   notificacoes,
   naoVisualizadas,
   visualizadas,
@@ -76,6 +86,12 @@ export default function App() {
     localStorage.setItem('notificacoesLidas', JSON.stringify(lidas))
   }, [lidas])
 
+  // troca de tela começa no topo: sem isso, sair de uma lista longa (ou enviar o
+  // formulário) abre a próxima já rolada para baixo.
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [view])
+
   useEffect(() => {
     localStorage.setItem('favoritos', JSON.stringify(favoritos))
   }, [favoritos])
@@ -124,6 +140,7 @@ export default function App() {
       portfolio: atividade.portfolio.nome,
       solicitante: paraOutra ? f.get('Usuário') : USUARIO.nome,
       abertoPor: USUARIO.nome,
+      responsavel: atendenteDe(novoProtocolo(tickets), ATENDENTES),
       anexos,
       status: 'Aberto',
       criadoEm: new Date().toISOString(),
@@ -134,7 +151,6 @@ export default function App() {
           ? [...camposOrigem, ...camposTerceiro].map((n) => [n, f.get(n)])
           : []),
         ...atividade.campos.map((c) => [campoNome(c), f.get(campoNome(c))]),
-        ...(anexos.length ? [['Anexos', anexos.join(', ')]] : []),
       ],
       interacoes: [
         {
@@ -345,7 +361,7 @@ export default function App() {
               novo={view.novo}
               trilha={[
                 { label: 'Portal', onClick: irAoPortal },
-                { label: 'Meus tickets', onClick: () => setView({ tela: 'tickets' }) },
+                { label: 'Meus chamados', onClick: () => setView({ tela: 'tickets' }) },
                 { label: ticketAtual.protocolo },
               ]}
               onResponder={(texto) =>
@@ -369,7 +385,7 @@ export default function App() {
               onVoltar={() => setView({ tela: 'tickets' })}
             />
           ) : (
-            <Vazio>Ticket não encontrado.</Vazio>
+            <Vazio>Chamado não encontrado.</Vazio>
           ))}
 
         {view.tela === 'tickets' && (
@@ -379,7 +395,7 @@ export default function App() {
             onAbrir={(protocolo) => setView({ tela: 'ticket', protocolo })}
             trilha={[
               { label: 'Portal', onClick: irAoPortal },
-              { label: 'Meus tickets' },
+              { label: 'Meus chamados' },
             ]}
             onVoltar={irAoPortal}
           />
@@ -408,7 +424,7 @@ export default function App() {
         onFechar={() => setSaindo(false)}
       >
         <p className="text-sm text-axia-grey">
-          Você será desconectado do portal. Seus tickets continuam registrados.
+          Você será desconectado do portal. Seus chamados continuam registrados.
         </p>
         <div className="mt-5 flex justify-end gap-3">
           <button
@@ -640,7 +656,7 @@ function MenuUsuario({ usuario, onMeusTickets, onSair }) {
         onClick={onMeusTickets}
         className="w-full rounded-chip px-3 py-2.5 text-left text-sm hover:bg-axia-blue/5 hover:text-axia-blue"
       >
-        Meus tickets
+        Meus chamados
       </button>
       <button
         onClick={onSair}
@@ -712,7 +728,7 @@ function ItemNotificacao({ n, naoVista }) {
 function Indicadores({ contagem, onIndicador }) {
   return (
     <div className="pt-8">
-      <h2 className="text-center text-xl font-bold text-axia-purple">Meus tickets</h2>
+      <h2 className="text-center text-xl font-bold text-axia-purple">Meus chamados</h2>
       <div className="mt-4 flex flex-wrap justify-center gap-3">
         {STATUS.map((s) => (
           <button
@@ -1058,7 +1074,7 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
           <p className="text-base leading-relaxed text-axia-grey">
             Use este formulário para registrar esta solicitação. Ao enviar, você
             recebe um número de protocolo para acompanhar o atendimento em "Meus
-            tickets".
+            chamados".
           </p>
 
           <div className="rounded-chip bg-axia-bg p-5">
@@ -1250,21 +1266,26 @@ function Anexos({ arquivos, onChange }) {
           type="file"
           name="anexos"
           multiple
-          onChange={(e) => onChange([...e.target.files].map((f) => f.name))}
+          onChange={(e) =>
+            onChange([...e.target.files].map((f) => ({ nome: f.name, tamanho: f.size })))
+          }
           className="hidden"
         />
       </label>
       {arquivos.length > 0 && (
         <ul className="mt-3 space-y-1">
-          {arquivos.map((nome) => (
+          {arquivos.map((a) => (
             <li
-              key={nome}
-              className="flex items-center gap-2 rounded-chip bg-axia-neutral/40 px-4 py-2 text-sm"
+              key={a.nome}
+              className="flex items-center gap-3 rounded-chip bg-axia-neutral/40 px-4 py-2 text-sm"
             >
-              <span className="truncate">{nome}</span>
+              <span className="truncate">{a.nome}</span>
+              <span className="shrink-0 text-xs text-axia-grey/70">
+                {formatarTamanho(a.tamanho)}
+              </span>
               <button
                 type="button"
-                onClick={() => onChange(arquivos.filter((a) => a !== nome))}
+                onClick={() => onChange(arquivos.filter((x) => x.nome !== a.nome))}
                 className="ml-auto shrink-0 text-xs font-bold text-axia-error"
               >
                 remover
@@ -1482,50 +1503,50 @@ function DetalheTicket({
             </span>
             <Badge status={ticket.status} />
             <span className="text-xs text-axia-grey/70">
-              aberto em {new Date(ticket.criadoEm).toLocaleString('pt-BR')}
+              Solicitado em {new Date(ticket.criadoEm).toLocaleString('pt-BR')}
             </span>
           </div>
         }
       />
 
       {novo && (
-        <div className="mb-6 rounded-card border border-axia-success/40 bg-axia-success/10 p-5">
-          <p className="font-bold text-green-800">Solicitação registrada</p>
-          <p className="mt-1 text-sm text-green-900">
-            Seu chamado foi criado e será analisado pela equipe responsável.
-          </p>
+        <div className="mb-6 flex items-start gap-3 rounded-card border border-axia-success/40 bg-axia-success/10 p-5">
+          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-axia-success text-white">
+            <IconeCheck />
+          </span>
+          <div>
+            <p className="font-bold text-green-800">Solicitação registrada</p>
+            <p className="mt-1 text-sm text-green-900">
+              Seu chamado foi enviado para triagem e será analisado pela equipe
+              responsável.
+            </p>
+          </div>
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-5">
-        <section className="rounded-card border border-axia-neutral bg-white p-6 lg:col-span-2">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-axia-grey/70">
-            O que foi solicitado
-          </h3>
-          <dl className="mt-4 space-y-2 text-sm">
-            <Linha rotulo="Solicitante" valor={ticket.solicitante} />
-            {ticket.abertoPor && ticket.abertoPor !== ticket.solicitante && (
-              <Linha rotulo="Aberto por" valor={ticket.abertoPor} />
-            )}
-            {ticket.dados.map(([k, v]) => (
-              <Linha key={k} rotulo={k} valor={v} />
-            ))}
-          </dl>
-          {aberto && (
-            <button
-              onClick={() => setConfirmando(true)}
-              className="mt-6 w-full rounded-full border border-axia-error px-5 py-2 text-sm font-bold text-axia-error hover:bg-axia-error hover:text-white"
-            >
-              Cancelar solicitação
-            </button>
-          )}
-        </section>
+      <div className="mb-6 grid gap-4 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+        <Resumo icone={<IconePessoa />} rotulo="Solicitante">
+          <p className="font-bold text-axia-purple">{ticket.solicitante}</p>
+        </Resumo>
+        <Resumo icone={<IconeEquipe />} rotulo="Responsável">
+          <p className="font-bold text-axia-purple">
+            {ticket.responsavel || atendenteDe(ticket.protocolo, ATENDENTES)}
+          </p>
+        </Resumo>
+        <Resumo icone={<IconeCalendario />} rotulo="Prazo previsto">
+          <p className="font-bold text-axia-purple">
+            {new Date(prazoPrevisto(ticket.criadoEm)).toLocaleDateString('pt-BR')}
+          </p>
+        </Resumo>
+        <Resumo icone={<IconeStatus />} rotulo="Status">
+          <Badge status={ticket.status} />
+        </Resumo>
+      </div>
 
+      <div className="grid gap-6 lg:grid-cols-5">
         <section className="rounded-card border border-axia-neutral bg-white p-6 lg:col-span-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-axia-grey/70">
-              Interações
-            </h3>
+          <div className="flex items-center justify-between gap-4">
+            <h3 className="font-bold text-axia-purple">Atividade do chamado</h3>
             {aberto && (
               // ponytail: sem backend não há atendente de verdade — troque este botão
               // por polling/websocket da fila de atendimento quando a API existir.
@@ -1538,25 +1559,29 @@ function DetalheTicket({
             )}
           </div>
 
-          <ol className="mt-4 space-y-4">
+          {/* passo final só quando o chamado encerra — em andamento ele não agrega */}
+          <ol className="mt-5">
             {ticket.interacoes.map((i, idx) => (
-              <li
+              <PassoAtividade
                 key={idx}
-                className={`rounded-chip p-4 text-sm ${
-                  i.autor === 'Atendente'
-                    ? 'bg-axia-blue/5 border-l-4 border-axia-blue'
-                    : i.autor === 'Sistema'
-                      ? 'bg-axia-neutral/50 text-axia-grey'
-                      : 'bg-axia-offwhite border-l-4 border-axia-sky'
-                }`}
-              >
-                <div className="flex justify-between gap-3 text-xs text-axia-grey/70">
-                  <span className="font-bold text-axia-purple">{i.autor}</span>
-                  <span>{new Date(i.em).toLocaleString('pt-BR')}</span>
-                </div>
-                <p className="mt-1.5 whitespace-pre-wrap">{i.texto}</p>
-              </li>
+                autor={i.autor}
+                texto={i.texto}
+                em={i.em}
+                ultimo={aberto && idx === ticket.interacoes.length - 1}
+              />
             ))}
+            {!aberto && (
+              <PassoAtividade
+                autor="Fim"
+                status={ticket.status}
+                texto={
+                  ticket.status === CANCELADO
+                    ? 'Chamado cancelado pelo solicitante.'
+                    : 'Chamado concluído.'
+                }
+                ultimo
+              />
+            )}
           </ol>
 
           {aberto ? (
@@ -1566,25 +1591,75 @@ function DetalheTicket({
                 onResponder(new FormData(e.target).get('texto').trim())
                 e.target.reset()
               }}
-              className="mt-6 space-y-3"
+              className="mt-6 flex items-end gap-3 rounded-chip border border-axia-neutral bg-axia-offwhite/60 p-2 focus-within:border-axia-blue focus-within:bg-white"
             >
               <textarea
                 name="texto"
                 required
-                rows={3}
+                rows={2}
                 placeholder="Escreva uma mensagem para o atendente..."
-                className={inputBase}
+                className="min-w-0 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none"
               />
-              <button className="rounded-full bg-axia-blue px-6 py-2 text-sm font-bold text-white hover:bg-axia-blue2">
-                Enviar mensagem
+              <button className="mb-1 shrink-0 rounded-full bg-axia-blue px-6 py-2 text-sm font-bold text-white hover:bg-axia-blue2">
+                Enviar
               </button>
             </form>
           ) : (
             <p className="mt-6 rounded-chip bg-axia-neutral/50 p-4 text-sm text-axia-grey">
-              Ticket {ticket.status.toLowerCase()} — não aceita novas interações.
+              Chamado {ticket.status.toLowerCase()} — não aceita novas interações.
             </p>
           )}
         </section>
+
+        <div className="space-y-6 lg:col-span-2">
+          <Bloco titulo="Detalhes da solicitação">
+            <dl className="space-y-2 text-sm">
+              <Linha rotulo="Área" valor={ticket.portfolio} />
+              <Linha rotulo="Serviço" valor={ticket.servico} />
+              {ticket.abertoPor && ticket.abertoPor !== ticket.solicitante && (
+                <Linha rotulo="Aberto por" valor={ticket.abertoPor} />
+              )}
+              {ticket.dados
+                .filter(([k]) => !['Descrição da necessidade', 'Anexos'].includes(k))
+                .map(([k, v]) => (
+                  <Linha key={k} rotulo={k} valor={v} />
+                ))}
+              <Linha
+                rotulo="Criado em"
+                valor={new Date(ticket.criadoEm).toLocaleString('pt-BR')}
+              />
+            </dl>
+            {aberto && (
+              <button
+                onClick={() => setConfirmando(true)}
+                className="mt-5 w-full rounded-full border border-axia-error px-5 py-2 text-sm font-bold text-axia-error hover:bg-axia-error hover:text-white"
+              >
+                Cancelar solicitação
+              </button>
+            )}
+          </Bloco>
+
+          <section className="rounded-card border border-axia-neutral bg-white p-6">
+            <h3 className="font-bold text-axia-purple">Descrição da necessidade</h3>
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-axia-grey">
+              {Object.fromEntries(ticket.dados)['Descrição da necessidade'] || '—'}
+            </p>
+          </section>
+
+          <Bloco titulo={`Anexos (${ticket.anexos?.length || 0})`}>
+            {ticket.anexos?.length ? (
+              <ul className="space-y-2">
+                {ticket.anexos.map((a) => (
+                  <ItemAnexo key={a.nome ?? a} anexo={a} />
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-axia-grey/60">
+                Nenhum arquivo foi anexado a esta solicitação.
+              </p>
+            )}
+          </Bloco>
+        </div>
       </div>
 
       <Modal
@@ -1593,7 +1668,7 @@ function DetalheTicket({
         onFechar={() => setConfirmando(false)}
       >
         <p className="text-sm text-axia-grey">
-          O ticket <strong className="font-mono">{ticket.protocolo}</strong> será
+          O chamado <strong className="font-mono">{ticket.protocolo}</strong> será
           cancelado e não poderá ser reaberto. Informe o motivo:
         </p>
         <form
@@ -1653,6 +1728,278 @@ function Modal({ aberto, titulo, onFechar, children }) {
   )
 }
 
+// Cartão de resumo do topo (Solicitante, Responsável, Prazo, Status).
+const Resumo = ({ icone, rotulo, children }) => (
+  <div className="flex items-center gap-3 rounded-card border border-axia-neutral bg-white px-5 py-4">
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-axia-blue/10 text-axia-blue">
+      {icone}
+    </span>
+    <div className="min-w-0">
+      <p className="text-xs text-axia-grey/70">{rotulo}</p>
+      <div className="mt-0.5 truncate text-sm">{children}</div>
+    </div>
+  </div>
+)
+
+// Bloco recolhível da coluna direita: <details> nativo, aberto por padrão.
+const Bloco = ({ titulo, children }) => (
+  <details open className="group rounded-card border border-axia-neutral bg-white">
+    <summary className="flex cursor-pointer list-none items-center gap-2 p-6 font-bold text-axia-purple [&::-webkit-details-marker]:hidden">
+      {titulo}
+      <span className="ml-auto text-axia-grey/60 transition group-open:rotate-180">
+        <Chevron />
+      </span>
+    </summary>
+    <div className="px-6 pb-6">{children}</div>
+  </details>
+)
+
+const ESTILO_PASSO = {
+  Sistema: { cor: 'bg-axia-success text-white', icone: <IconeCheck />, titulo: 'Solicitação criada' },
+  Atendente: { cor: 'bg-axia-blue text-white', icone: <IconeBalao />, titulo: 'Atendimento' },
+  Solicitante: { cor: 'bg-axia-sky text-white', icone: <IconePessoa />, titulo: 'Sua mensagem' },
+}
+
+function PassoAtividade({ autor, texto, em, ultimo, status }) {
+  const fim = autor === 'Fim'
+  const concluido = status === 'Fechado'
+  const cancelado = status === CANCELADO
+  const estilo = fim
+    ? {
+        cor: concluido
+          ? 'bg-axia-success text-white'
+          : cancelado
+            ? 'bg-axia-error text-white'
+            : 'border border-axia-neutral bg-white text-axia-grey/40',
+        icone: <IconeCheck />,
+        titulo: cancelado ? 'Cancelado' : 'Concluído',
+      }
+    : ESTILO_PASSO[autor] || ESTILO_PASSO.Solicitante
+
+  return (
+    <li className="flex gap-4">
+      <div className="flex flex-col items-center">
+        <span
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${estilo.cor}`}
+        >
+          {estilo.icone}
+        </span>
+        {!ultimo && <span className="w-px flex-1 bg-axia-neutral" />}
+      </div>
+      <div className={ultimo ? 'pb-1' : 'pb-6'}>
+        <p
+          className={`font-bold ${fim && !concluido && !cancelado ? 'text-axia-grey/50' : 'text-axia-purple'}`}
+        >
+          {estilo.titulo}
+        </p>
+        {em && (
+          <p className="mt-0.5 text-xs text-axia-grey/60">
+            {new Date(em).toLocaleString('pt-BR')}
+          </p>
+        )}
+        <p className="mt-1.5 whitespace-pre-wrap text-sm text-axia-grey">{texto}</p>
+      </div>
+    </li>
+  )
+}
+
+// Anexo: nome truncado com tooltip nativo (title) e ações de ver/baixar.
+// ponytail: sem backend não há arquivo para servir — os botões avisam isso.
+function ItemAnexo({ anexo }) {
+  const { nome, tamanho } = typeof anexo === 'string' ? { nome: anexo } : anexo
+  const semArquivo = () =>
+    alert(`"${nome}" ainda não pode ser aberto: o upload real depende do backend.`)
+
+  return (
+    <li className="group flex items-center gap-3 rounded-chip px-1 py-1 text-sm hover:bg-axia-blue/5">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-chip bg-axia-blue/10 text-axia-blue">
+        <IconeArquivo />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate" title={nome}>
+          {nome}
+        </span>
+        {tamanho && (
+          <span className="text-xs text-axia-grey/70">{formatarTamanho(tamanho)}</span>
+        )}
+      </span>
+      <span className="flex shrink-0 gap-1">
+        <button
+          onClick={semArquivo}
+          title={`Visualizar ${nome}`}
+          aria-label={`Visualizar ${nome}`}
+          className="rounded-full p-1.5 text-axia-grey/60 hover:bg-white hover:text-axia-blue"
+        >
+          <IconeOlho />
+        </button>
+        <button
+          onClick={semArquivo}
+          title={`Baixar ${nome}`}
+          aria-label={`Baixar ${nome}`}
+          className="rounded-full p-1.5 text-axia-grey/60 hover:bg-white hover:text-axia-blue"
+        >
+          <IconeDownload />
+        </button>
+      </span>
+    </li>
+  )
+}
+
+function IconeOlho() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function IconeDownload() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M12 4v10m0 0 4-4m-4 4-4-4" />
+      <path d="M4.5 17.5v1a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1" />
+    </svg>
+  )
+}
+
+function IconeCheck() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="m5 12.5 4.5 4.5L19 7" />
+    </svg>
+  )
+}
+
+function IconePessoa() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5" />
+    </svg>
+  )
+}
+
+function IconeEquipe() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3 19c0-3 2.7-5 6-5s6 2 6 5" />
+      <path d="M16 5.5a3.2 3.2 0 0 1 0 6.2M17.5 14.5c2 .7 3.5 2.3 3.5 4.5" />
+    </svg>
+  )
+}
+
+function IconeCalendario() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <rect x="3.5" y="5" width="17" height="15" rx="3" />
+      <path d="M8 3.5v3M16 3.5v3M3.5 10h17" />
+    </svg>
+  )
+}
+
+function IconeStatus() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M8 12h8" />
+    </svg>
+  )
+}
+
+function IconeBalao() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M20 12a7.5 7.5 0 0 1-10.9 6.7L4 20l1.3-4.1A7.5 7.5 0 1 1 20 12Z" />
+    </svg>
+  )
+}
+
+function IconeArquivo() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M14 3.5H7.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8l-4.5-4.5Z" />
+      <path d="M14 3.5V8h4.5" />
+    </svg>
+  )
+}
+
 const Linha = ({ rotulo, valor }) => (
   <div className="flex gap-3 border-b border-axia-neutral/70 pb-2 last:border-0">
     <dt className="w-36 shrink-0 text-axia-grey/70">{rotulo}</dt>
@@ -1677,7 +2024,7 @@ function Notificacoes({ lista, lidas, trilha, onAbrir, onMarcarTodas, onVoltar }
       <Cabecalho
         trilha={trilha}
         titulo="Notificações"
-        subtitulo="Atualizações do atendimento nos seus tickets."
+        subtitulo="Atualizações do atendimento nos seus chamados."
         onVoltar={onVoltar}
       />
       <div className="mb-5 flex flex-wrap items-center gap-2">
@@ -1733,7 +2080,7 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar }) {
     <>
       <Cabecalho
         trilha={trilha}
-        titulo="Meus tickets"
+        titulo="Meus chamados"
         subtitulo="Acompanhe, converse com o atendente ou cancele suas solicitações."
         onVoltar={onVoltar}
       />
@@ -1775,7 +2122,7 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar }) {
             </button>
           </li>
         ))}
-        {!visiveis.length && <Vazio>Nenhum ticket neste status.</Vazio>}
+        {!visiveis.length && <Vazio>Nenhum chamado neste status.</Vazio>}
       </ul>
     </>
   )

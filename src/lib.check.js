@@ -1,7 +1,7 @@
 // node src/lib.check.js
 import assert from 'node:assert/strict'
 import { ATIVIDADES, PORTFOLIOS, SERVICOS, POR_CHAVE } from './catalogo.js'
-import { USUARIOS, GESTOR_DE } from './organizacao.js'
+import { USUARIOS, GESTOR_DE, ATENDENTES } from './organizacao.js'
 import {
   novoProtocolo,
   buscar,
@@ -11,6 +11,9 @@ import {
   registrarRecente,
   contarPorStatus,
   deveMostrarTopo,
+  prazoPrevisto,
+  formatarTamanho,
+  atendenteDe,
   notificacoes,
   naoVisualizadas,
   visualizadas,
@@ -92,6 +95,29 @@ assert.equal(
   naoVisualizadas(ns, ns.map((n) => n.id)).length + visualizadas(ns, []).length,
   0
 )
+
+// prazo previsto: 3 dias úteis, pulando fim de semana
+assert.equal(
+  prazoPrevisto('2026-07-20T12:00:00.000Z').slice(0, 10), // segunda
+  '2026-07-23'
+)
+assert.equal(
+  prazoPrevisto('2026-07-23T12:00:00.000Z').slice(0, 10), // quinta -> terça
+  '2026-07-28'
+)
+
+// atendente: sempre da lista e estável para o mesmo protocolo
+assert.ok(ATENDENTES.includes(atendenteDe('TK-2026-00003', ATENDENTES)))
+assert.equal(
+  atendenteDe('TK-2026-00003', ATENDENTES),
+  atendenteDe('TK-2026-00003', ATENDENTES)
+)
+
+// tamanho de anexo
+assert.equal(formatarTamanho(0), '')
+assert.equal(formatarTamanho(512), '512 B')
+assert.equal(formatarTamanho(131072), '128 KB')
+assert.equal(formatarTamanho(5 * 1024 * 1024), '5.0 MB')
 
 // botão voltar ao topo: subindo mostra, descendo esconde, perto do topo nunca
 assert.equal(deveMostrarTopo(800, 900), true)

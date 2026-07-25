@@ -96,6 +96,32 @@ export function contarPorStatus(tickets) {
 export const deveMostrarTopo = (y, ultimoY, margem = 300) =>
   y < ultimoY && y > margem
 
+// ponytail: SLA fixo de 3 dias úteis — troque pelo prazo do catálogo/contrato
+// quando cada oferta de serviço tiver o seu.
+export function prazoPrevisto(criadoEm, diasUteis = 3) {
+  const d = new Date(criadoEm)
+  let faltam = diasUteis
+  while (faltam > 0) {
+    d.setDate(d.getDate() + 1)
+    if (d.getDay() !== 0 && d.getDay() !== 6) faltam--
+  }
+  return d.toISOString()
+}
+
+// Atendente do chamado: escolha determinística pelo protocolo, para o mesmo
+// chamado mostrar sempre o mesmo responsável entre sessões.
+export function atendenteDe(protocolo, atendentes) {
+  const soma = [...protocolo].reduce((n, c) => n + c.charCodeAt(0), 0)
+  return atendentes[soma % atendentes.length]
+}
+
+export function formatarTamanho(bytes) {
+  if (!bytes) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
+
 export const podeInteragir = (t) => t.status !== 'Fechado' && t.status !== CANCELADO
 
 export function comInteracao(ticket, autor, texto, em = new Date()) {

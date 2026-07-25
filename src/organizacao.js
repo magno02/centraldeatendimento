@@ -76,6 +76,16 @@ export const USUARIOS = [
   'Rafael Gomes Tavares',
 ]
 
+// ponytail: fila de atendimento fake — a atribuição real vem do backend.
+export const ATENDENTES = [
+  'Tiago Almeida — Suporte N1',
+  'Renata Coelho — Suporte N2',
+  'Vinícius Braga — Sustentação',
+  'Larissa Fontes — Acessos',
+  'Otávio Menezes — Infraestrutura',
+  'Juliana Peixoto — Aplicações',
+]
+
 // Gestor imediato não é escolhido: vem do cadastro do usuário selecionado.
 export const GESTOR_DE = {
   'Ana Beatriz Rocha': 'Fernanda Ribeiro Costa',
