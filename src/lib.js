@@ -31,6 +31,45 @@ export function filtrarServicos(servicos, termo) {
   )
 }
 
+// Notificação = interação que não partiu do solicitante (atendente ou sistema).
+// O id é derivado do protocolo + posição, então é estável entre sessões.
+export function notificacoes(tickets) {
+  return tickets
+    .flatMap((t) =>
+      t.interacoes.map((i, idx) => ({
+        id: `${t.protocolo}#${idx}`,
+        protocolo: t.protocolo,
+        atividade: t.atividade,
+        status: t.status,
+        autor: i.autor,
+        texto: i.texto,
+        em: i.em,
+      }))
+    )
+    .filter((n) => n.autor !== 'Solicitante')
+    .sort((a, b) => b.em.localeCompare(a.em))
+}
+
+export function naoVisualizadas(ns, lidas) {
+  const vistas = new Set(lidas)
+  return ns.filter((n) => !vistas.has(n.id))
+}
+
+export function visualizadas(ns, lidas) {
+  const vistas = new Set(lidas)
+  return ns.filter((n) => vistas.has(n.id))
+}
+
+// Iniciais do avatar: ignora conectivos ("da", "de") e usa no máximo duas letras.
+export function iniciais(nome) {
+  const partes = nome.trim().split(/\s+/)
+  const nomes = partes.filter((p) => p.length > 2)
+  return (nomes.length ? nomes : partes)
+    .slice(0, 2)
+    .map((p) => p[0].toUpperCase())
+    .join('')
+}
+
 export function contarPorStatus(tickets) {
   return Object.fromEntries(
     STATUS.map((s) => [s, tickets.filter((t) => t.status === s).length])

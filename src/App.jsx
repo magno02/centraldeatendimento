@@ -9,10 +9,17 @@ import {
   filtrarServicos,
   contarPorStatus,
   deveMostrarTopo,
+  notificacoes,
+  naoVisualizadas,
+  visualizadas,
+  iniciais,
   podeInteragir,
   comInteracao,
   cancelar,
 } from './lib'
+
+// ponytail: usuário fixo — troque por dados da sessão quando houver login (SSO/AD).
+const USUARIO = { nome: 'João da Silva' }
 
 const campoNome = (c) => (typeof c === 'string' ? c : c.n)
 const campoTipo = (c) => (typeof c === 'string' ? 'texto' : c.t)
@@ -39,10 +46,25 @@ export default function App() {
   const [aba, setAba] = useState(PORTFOLIOS[0].id)
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('')
+  const [lidas, setLidas] = useState(() =>
+    JSON.parse(localStorage.getItem('notificacoesLidas') || '[]')
+  )
+  const [saindo, setSaindo] = useState(false)
 
   useEffect(() => {
     localStorage.setItem('tickets', JSON.stringify(tickets))
   }, [tickets])
+
+  useEffect(() => {
+    localStorage.setItem('notificacoesLidas', JSON.stringify(lidas))
+  }, [lidas])
+
+  const listaNotificacoes = notificacoes(tickets)
+
+  function abrirNotificacao(n) {
+    setLidas((ls) => (ls.includes(n.id) ? ls : [...ls, n.id]))
+    setView({ tela: 'ticket', protocolo: n.protocolo })
+  }
 
   const atualizar = (protocolo, fn) =>
     setTickets((ts) => ts.map((t) => (t.protocolo === protocolo ? fn(t) : t)))
@@ -84,18 +106,27 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-axia-bg font-sans text-axia-grey1">
-      <Hero
+      <Topo
         busca={busca}
         setBusca={(v) => {
           setBusca(v)
           setView({ tela: 'portal' })
         }}
-        contagem={contarPorStatus(tickets)}
-        onIndicador={(status) => setView({ tela: 'tickets', status })}
+        usuario={USUARIO}
+        notificacoes={listaNotificacoes}
+        novidades={naoVisualizadas(listaNotificacoes, lidas).length}
+        onNotificacao={abrirNotificacao}
+        onVerTodas={() => setView({ tela: 'notificacoes' })}
         onMeusTickets={() => setView({ tela: 'tickets' })}
+        onSair={() => setSaindo(true)}
       />
 
       <main className="mx-auto max-w-[1440px] px-8 pb-20">
+        <Indicadores
+          contagem={contarPorStatus(tickets)}
+          onIndicador={(status) => setView({ tela: 'tickets', status })}
+        />
+
         {view.tela === 'portal' && busca.trim() && (
           <Secao titulo={`Resultados para "${busca}"`}>
             {resultados.length ? (
@@ -281,9 +312,48 @@ export default function App() {
             onVoltar={irAoPortal}
           />
         )}
+
+        {view.tela === 'notificacoes' && (
+          <Notificacoes
+            lista={listaNotificacoes}
+            lidas={lidas}
+            trilha={[
+              { label: 'Portal', onClick: irAoPortal },
+              { label: 'Notificações' },
+            ]}
+            onAbrir={abrirNotificacao}
+            onMarcarTodas={() => setLidas(listaNotificacoes.map((n) => n.id))}
+            onVoltar={irAoPortal}
+          />
+        )}
       </main>
 
       <BotaoTopo />
+
+      <Modal
+        aberto={saindo}
+        titulo="Encerrar sessão?"
+        onFechar={() => setSaindo(false)}
+      >
+        <p className="text-sm text-axia-grey">
+          Você será desconectado do portal. Seus tickets continuam registrados.
+        </p>
+        <div className="mt-5 flex justify-end gap-3">
+          <button
+            onClick={() => setSaindo(false)}
+            className="rounded-full border border-axia-neutral px-5 py-2 text-sm font-bold text-axia-grey hover:bg-axia-neutral/50"
+          >
+            Continuar no portal
+          </button>
+          <button
+            // ponytail: sem login real, sair só recarrega — troque pelo logout do SSO.
+            onClick={() => window.location.reload()}
+            className="rounded-full bg-axia-error px-5 py-2 text-sm font-bold text-white hover:brightness-90"
+          >
+            Sair
+          </button>
+        </div>
+      </Modal>
     </div>
   )
 }
@@ -314,56 +384,294 @@ function BotaoTopo() {
   )
 }
 
-function Hero({ busca, setBusca, contagem, onIndicador, onMeusTickets }) {
+// Barra única: logo à esquerda, título, busca no centro e "Meus tickets" à direita.
+function Topo({
+  busca,
+  setBusca,
+  usuario,
+  notificacoes,
+  novidades,
+  onNotificacao,
+  onVerTodas,
+  onMeusTickets,
+  onSair,
+}) {
   return (
     <header className="bg-axia-purple text-white">
-      <div className="mx-auto max-w-[1440px] px-8 py-12">
-        <img
-          src={logo}
-          alt="AXIA Energia"
-          className="mx-auto h-52 w-auto"
-        />
+      <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-6 gap-y-4 px-8 py-4">
+        <img src={logo} alt="AXIA Energia" className="h-14 w-auto shrink-0" />
 
-        <h1 className="text-center text-xl font-bold">
-          Como podemos te ajudar?
-        </h1>
-        <input
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          placeholder="Pesquisar atividade ou serviço..."
-          className="mx-auto mt-6 block w-full max-w-md rounded-full bg-white px-5 py-2.5 text-sm text-axia-grey1 outline-none placeholder:text-axia-grey/60 focus:ring-2 focus:ring-axia-blue"
-        />
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold leading-tight">Como podemos ajudar?</h1>
+          <p className="text-xs text-axia-sky">
+            Encontre o serviço ou atividade que você precisa.
+          </p>
+        </div>
 
-        {/* indicadores centralizados; botão ancorado à direita e centrado na altura deles */}
-        <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
-          {STATUS.map((s) => (
-            <button
-              key={s}
-              onClick={() => onIndicador(s)}
-              className="w-28 rounded-chip border border-white/25 bg-white/10 px-2 py-2 text-center transition hover:bg-white/20"
-            >
-              <div className="text-2xl font-bold leading-none">{contagem[s]}</div>
-              <div className="mt-1 text-[11px] uppercase tracking-wide text-axia-sky">
-                {s}
-              </div>
-            </button>
-          ))}
+        <label className="relative mx-auto w-full max-w-md">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-axia-grey/60"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+          </svg>
+          <input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Pesquisar serviço ou atividade..."
+            className="w-full rounded-full bg-white py-2.5 pl-12 pr-5 text-sm text-axia-grey1 outline-none placeholder:text-axia-grey/60 focus:ring-2 focus:ring-axia-blue"
+          />
+        </label>
+
+        <div className="ml-auto flex shrink-0 items-center gap-5">
           <button
             onClick={onMeusTickets}
-            className="rounded-full border border-white/40 px-5 py-2 text-sm font-medium hover:bg-white/10 lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2"
+            className="rounded-full border border-white/40 px-5 py-2 text-sm font-medium hover:bg-white/10"
           >
             Meus tickets
           </button>
+
+          <Popover
+            rotulo={
+              <>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  className="h-6 w-6"
+                  aria-hidden="true"
+                >
+                  <path d="M18 15V10a6 6 0 1 0-12 0v5l-1.5 2.5h15L18 15Z" />
+                  <path d="M10 20a2 2 0 0 0 4 0" />
+                </svg>
+                {novidades > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-axia-error px-1 text-[11px] font-bold text-white">
+                    {novidades}
+                  </span>
+                )}
+              </>
+            }
+            aria-label={`Notificações: ${novidades} sem visualizar`}
+            classeBotao="relative rounded-full p-2 hover:bg-white/10"
+          >
+            {(fechar) => (
+              <PainelNotificacoes
+                notificacoes={notificacoes}
+                onAbrir={(n) => {
+                  fechar()
+                  onNotificacao(n)
+                }}
+                onVerTodas={() => {
+                  fechar()
+                  onVerTodas()
+                }}
+              />
+            )}
+          </Popover>
+
+          <span className="h-8 w-px bg-white/25" aria-hidden="true" />
+
+          <Popover
+            largura="w-64"
+            classeBotao="flex items-center gap-3 rounded-full py-1 pl-1 pr-3 hover:bg-white/10"
+            rotulo={
+              <>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-axia-blue text-sm font-bold text-white">
+                  {iniciais(usuario.nome)}
+                </span>
+                <span className="text-sm font-bold">{usuario.nome}</span>
+                <Chevron />
+              </>
+            }
+          >
+            {(fechar) => (
+              <MenuUsuario
+                usuario={usuario}
+                onMeusTickets={() => {
+                  fechar()
+                  onMeusTickets()
+                }}
+                onSair={() => {
+                  fechar()
+                  onSair()
+                }}
+              />
+            )}
+          </Popover>
         </div>
       </div>
     </header>
   )
 }
 
+const Chevron = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    className="h-4 w-4"
+    aria-hidden="true"
+  >
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+)
+
+// Popover do header: fecha ao clicar fora ou com Esc. children é função que recebe fechar().
+function Popover({ rotulo, classeBotao, largura = 'w-96', children, ...props }) {
+  const [aberto, setAberto] = useState(false)
+
+  useEffect(() => {
+    if (!aberto) return
+    const onKey = (e) => e.key === 'Escape' && setAberto(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [aberto])
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setAberto((v) => !v)}
+        aria-expanded={aberto}
+        className={classeBotao}
+        {...props}
+      >
+        {rotulo}
+      </button>
+      {aberto && (
+        <>
+          <button
+            onClick={() => setAberto(false)}
+            aria-label="Fechar"
+            className="fixed inset-0 z-40 cursor-default"
+          />
+          <div
+            className={`absolute right-0 top-full z-50 mt-3 overflow-hidden rounded-card border border-axia-neutral bg-white text-axia-grey1 shadow-xl ${largura}`}
+          >
+            {children(() => setAberto(false))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function MenuUsuario({ usuario, onMeusTickets, onSair }) {
+  return (
+    <div className="p-2">
+      <div className="px-3 py-2">
+        <p className="text-sm font-bold text-axia-purple">{usuario.nome}</p>
+      </div>
+      <hr className="my-1 border-axia-neutral" />
+      <button
+        onClick={onMeusTickets}
+        className="w-full rounded-chip px-3 py-2.5 text-left text-sm hover:bg-axia-blue/5 hover:text-axia-blue"
+      >
+        Meus tickets
+      </button>
+      <button
+        onClick={onSair}
+        className="w-full rounded-chip px-3 py-2.5 text-left text-sm font-bold text-axia-error hover:bg-axia-error/10"
+      >
+        Sair
+      </button>
+    </div>
+  )
+}
+
+function PainelNotificacoes({ notificacoes, onAbrir, onVerTodas }) {
+  return (
+    <div>
+      <div className="border-b border-axia-neutral px-5 py-3">
+        <p className="text-sm font-bold text-axia-purple">Notificações</p>
+      </div>
+      {notificacoes.length ? (
+        <ul className="max-h-96 overflow-y-auto">
+          {notificacoes.slice(0, 5).map((n) => (
+            <li key={n.id}>
+              <button
+                onClick={() => onAbrir(n)}
+                className="w-full border-b border-axia-neutral/60 px-5 py-3 text-left hover:bg-axia-blue/5"
+              >
+                <ItemNotificacao n={n} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="px-5 py-8 text-center text-sm text-axia-grey/60">
+          Nenhuma notificação.
+        </p>
+      )}
+      <div className="p-3">
+        <button
+          onClick={onVerTodas}
+          className="w-full rounded-full bg-axia-blue px-5 py-2 text-sm font-bold text-white hover:bg-axia-blue2"
+        >
+          Ver todas
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function ItemNotificacao({ n, naoVista }) {
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        {naoVista && (
+          <span className="h-2 w-2 shrink-0 rounded-full bg-axia-blue" aria-hidden="true" />
+        )}
+        <span className="font-mono text-xs font-bold text-axia-blue">{n.protocolo}</span>
+        <span className="ml-auto text-[11px] text-axia-grey/60">
+          {new Date(n.em).toLocaleString('pt-BR')}
+        </span>
+      </div>
+      <p className="mt-1 text-sm font-bold text-axia-purple">{n.atividade}</p>
+      <p className="mt-0.5 text-sm text-axia-grey">
+        <span className="font-medium">{n.autor}:</span> {n.texto}
+      </p>
+    </>
+  )
+}
+
+// Cards de acompanhamento: fora do header, centralizados acima das abas.
+function Indicadores({ contagem, onIndicador }) {
+  return (
+    <div className="pt-8">
+      <h2 className="text-center text-xl font-bold text-axia-purple">Meus tickets</h2>
+      <div className="mt-4 flex flex-wrap justify-center gap-3">
+        {STATUS.map((s) => (
+          <button
+            key={s}
+            onClick={() => onIndicador(s)}
+            className="w-24 rounded-chip border border-axia-neutral bg-white px-2 py-2 text-center transition hover:border-axia-blue hover:shadow-md hover:shadow-axia-blue/5"
+          >
+            <div className="text-2xl font-bold leading-none text-axia-purple">
+              {contagem[s]}
+            </div>
+            <div className="mt-1 text-[11px] uppercase tracking-wide text-axia-grey/70">
+              {s}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function Abas({ itens, ativa, onSelect }) {
   return (
     // linha azul colada nas abas: mesma div, borda inferior logo abaixo dos botões
-    <div className="mb-8 flex flex-wrap gap-2 border-b-2 border-axia-blue pt-8">
+    <div className="mb-8 flex flex-wrap gap-2 border-b-2 border-axia-blue pt-6">
       {itens.map((p) => (
         <button
           key={p.id}
@@ -748,6 +1056,70 @@ const Linha = ({ rotulo, valor }) => (
     <dd className="font-medium text-axia-grey1">{valor}</dd>
   </div>
 )
+
+const FILTROS_NOTIF = ['Todas', 'Não visualizadas', 'Visualizadas']
+
+function Notificacoes({ lista, lidas, trilha, onAbrir, onMarcarTodas, onVoltar }) {
+  const [filtro, setFiltro] = useState('Todas')
+  const vistas = new Set(lidas)
+  const visiveis =
+    filtro === 'Todas'
+      ? lista
+      : filtro === 'Visualizadas'
+        ? visualizadas(lista, lidas)
+        : naoVisualizadas(lista, lidas)
+
+  return (
+    <>
+      <Cabecalho
+        trilha={trilha}
+        titulo="Notificações"
+        subtitulo="Atualizações do atendimento nos seus tickets."
+        onVoltar={onVoltar}
+      />
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        {FILTROS_NOTIF.map((f) => (
+          <button
+            key={f}
+            onClick={() => setFiltro(f)}
+            className={`rounded-full px-4 py-1.5 text-xs font-bold ${
+              filtro === f
+                ? 'bg-axia-blue text-white'
+                : 'border border-axia-neutral bg-white text-axia-grey'
+            }`}
+          >
+            {f}
+            {f === 'Não visualizadas' &&
+              ` (${naoVisualizadas(lista, lidas).length})`}
+          </button>
+        ))}
+        {naoVisualizadas(lista, lidas).length > 0 && (
+          <button
+            onClick={onMarcarTodas}
+            className="ml-auto text-sm font-bold text-axia-blue-soft hover:text-axia-blue"
+          >
+            marcar todas como visualizadas
+          </button>
+        )}
+      </div>
+      <ul className="space-y-3">
+        {visiveis.map((n) => (
+          <li key={n.id}>
+            <button
+              onClick={() => onAbrir(n)}
+              className={`w-full rounded-card border bg-white p-5 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5 ${
+                vistas.has(n.id) ? 'border-axia-neutral' : 'border-axia-blue/40'
+              }`}
+            >
+              <ItemNotificacao n={n} naoVista={!vistas.has(n.id)} />
+            </button>
+          </li>
+        ))}
+        {!visiveis.length && <Vazio>Nenhuma notificação neste filtro.</Vazio>}
+      </ul>
+    </>
+  )
+}
 
 function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar }) {
   const [filtro, setFiltro] = useState(statusInicial || 'Todos')

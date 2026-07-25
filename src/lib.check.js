@@ -7,6 +7,10 @@ import {
   filtrarServicos,
   contarPorStatus,
   deveMostrarTopo,
+  notificacoes,
+  naoVisualizadas,
+  visualizadas,
+  iniciais,
   comInteracao,
   cancelar,
   podeInteragir,
@@ -26,6 +30,37 @@ assert.ok(buscar(ATIVIDADES, 'iot').length > 0)
 assert.deepEqual(buscar(ATIVIDADES, '   '), [])
 const umaOferta = ATIVIDADES.find((a) => a.ofertas.length)
 assert.ok(buscar(ATIVIDADES, umaOferta.ofertas[0]).includes(umaOferta))
+
+// iniciais do avatar
+assert.equal(iniciais('João da Silva'), 'JS')
+assert.equal(iniciais('Ana'), 'A')
+assert.equal(iniciais('  maria helena de souza '), 'MH')
+
+// notificações: interações de atendente/sistema, mais novas primeiro, id estável
+const ticketNotif = {
+  protocolo: 'TK-2026-00007',
+  atividade: 'Reset de senha',
+  status: 'Andamento',
+  interacoes: [
+    { autor: 'Sistema', texto: 'Registrada.', em: '2026-07-20T10:00:00.000Z' },
+    { autor: 'Solicitante', texto: 'Urgente.', em: '2026-07-21T10:00:00.000Z' },
+    { autor: 'Atendente', texto: 'Em análise.', em: '2026-07-22T10:00:00.000Z' },
+  ],
+}
+const ns = notificacoes([ticketNotif])
+assert.equal(ns.length, 2) // a fala do solicitante não gera notificação
+assert.equal(ns[0].autor, 'Atendente') // ordem decrescente por data
+assert.deepEqual(
+  ns.map((n) => n.id),
+  ['TK-2026-00007#2', 'TK-2026-00007#0']
+)
+assert.equal(naoVisualizadas(ns, []).length, 2)
+assert.equal(naoVisualizadas(ns, ['TK-2026-00007#2']).length, 1)
+assert.equal(visualizadas(ns, ['TK-2026-00007#2'])[0].id, 'TK-2026-00007#2')
+assert.equal(
+  naoVisualizadas(ns, ns.map((n) => n.id)).length + visualizadas(ns, []).length,
+  0
+)
 
 // botão voltar ao topo: subindo mostra, descendo esconde, perto do topo nunca
 assert.equal(deveMostrarTopo(800, 900), true)
