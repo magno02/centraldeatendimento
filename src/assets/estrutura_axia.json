@@ -1,0 +1,2731 @@
+{
+  "areas": [
+    {
+      "nome": "VID > Benner",
+      "servicos": [
+        {
+          "nome": "Benner - Acessos e Permissões",
+          "atividades": [
+            {
+              "nome": "Gerenciamento de acessos ao Sistema Jurídico - Benner",
+              "ofertas_servico": [
+                "Conceder acesso",
+                "Modificar acesso",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Benner - Operação Assistida/Dúvidas",
+          "atividades": [
+            {
+              "nome": "Orientações/Operação Assistida/Dúvidas sobre o serviço do Sistema Jurídico - Benner",
+              "ofertas_servico": [
+                "Mudança de categoria de pastas",
+                "Encerramento de pasta",
+                "Dúvidas gerais do sistema Benner",
+                "Pedidos",
+                "Outros",
+                "Pagamentos",
+                "Aprovação de tarefas"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Benner - Novas funcionalidades ou Melhorias",
+          "atividades": [
+            {
+              "nome": "Novas funcionalidades, Melhorias do Sistema Jurídico, Cargas, Migrações ou Integrações com outros sistemas - Benner",
+              "ofertas_servico": [
+                "Criação de Nova funcionalidade",
+                "Elaboração/desenvolvimento de novos modelos de relatórios que terão uso contínuo",
+                "Melhoria em funcionalidade já existente no sistema",
+                "Inserir ou alterar dados do sistema",
+                "Integração Benner e outros sistemas",
+                "Migração ou carga de dados para o Benner"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "VID > Infraestrutura",
+      "servicos": [
+        {
+          "nome": "Conexão de dispositivos IoT",
+          "atividades": [
+            {
+              "nome": "Solicitação para conexão dos dispositivos IoT já homologados",
+              "ofertas_servico": [
+                "Conexão dos dispositivos IoT já instalados"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Backup",
+          "atividades": [
+            {
+              "nome": "Criação, armazenamento e gerenciamento automatizado de cópias de segurança dos dados corporativos.",
+              "ofertas_servico": [
+                "Modificar rotina",
+                "Incluir elemento na rotina",
+                "Excluir elemento na rotina",
+                "Recuperar dados",
+                "Restore database",
+                "Executar backup fora da rotina"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Item de Configuração",
+          "atividades": [
+            {
+              "nome": "Gestão de item de configuração.",
+              "ofertas_servico": [
+                "Alterar IC",
+                "Desativar IC",
+                "Manutenção de IC",
+                "Incluir IC",
+                "Outros serviços",
+                "Remover IC",
+                "Solicitar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Caixa de e-mail",
+          "atividades": [
+            {
+              "nome": "Este serviço abrange o envio, recebimento e armazenamento de e-mails.",
+              "ofertas_servico": [
+                "Excluir",
+                "Expandir o tamanho",
+                "Restaurar",
+                "Alterar",
+                "Criar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Lista de e-mail",
+          "atividades": [
+            {
+              "nome": "Este serviço abrange a gestão e distribuição de e-mails para um grupo específico de destinatários.",
+              "ofertas_servico": [
+                "Excluir",
+                "Inserir usuário",
+                "Remover usuário",
+                "Alterar",
+                "Criar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Manutenção de JOB",
+          "atividades": [
+            {
+              "nome": "Automação e administração de tarefas programadas dentro do banco de dados.",
+              "ofertas_servico": [
+                "Alterar",
+                "Criar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Licenciamento",
+          "atividades": [
+            {
+              "nome": "Gestão de licenças no ambiente Microsoft 365",
+              "ofertas_servico": [
+                "Licença Copilot 365 (Premium)",
+                "Licença Microsoft 365",
+                "Licença Microsoft Project",
+                "Licença Microsoft Visio",
+                "Licença Planner Plan 1"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Área de Trabalho Remota (RDP/SSH)",
+          "atividades": [
+            {
+              "nome": "Este serviço oferece acesso remoto, seguro e controlado, à Área de Trabalho de servidores corporativos por meio do protocolo RDP (Remote Desktop Protocol) ou SSH (Secure Shell).",
+              "ofertas_servico": [
+                "Conceder acesso",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Gerenciamento de Remetente",
+          "atividades": [
+            {
+              "nome": "Este serviço abrange a gestão dos remetentes de e-mails.",
+              "ofertas_servico": [
+                "Bloquear",
+                "Liberar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Caixa de e-mail compartilhada",
+          "atividades": [
+            {
+              "nome": "Permite o envio, recebimento e armazenamento de e-mails por apenas um grupo específico de membros, permitindo que eles visualizem e gerenciem as mensagens em conjunto.",
+              "ofertas_servico": [
+                "Excluir",
+                "Expandir o tamanho",
+                "Inserir usuário na caixa compartilhada",
+                "Remover usuário da caixa compartilhada",
+                "Restaurar",
+                "Alterar",
+                "Criar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Suporte ou Melhoria (Microsoft 365)",
+          "atividades": [
+            {
+              "nome": "Gestão e controle do ambiente colaborativo, garantindo que os usuários tenham os acessos adequados às ferramentas e serviços disponíveis.",
+              "ofertas_servico": [
+                "Ajustar recurso",
+                "Convidar usuário externo",
+                "Criar ou Excluir grupo ou equipe",
+                "Criar ou excluir sala",
+                "Criar ou alterar conteúdo",
+                "Extrair relatórios"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Rede sem fio (Wi-Fi)",
+          "atividades": [
+            {
+              "nome": "Conectividade Wi-Fi para colaboradores e visitantes.",
+              "ofertas_servico": [
+                "Conectar na rede colaborador",
+                "Conectar na rede visitante"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Hospedagem de Aplicações e Sites",
+          "atividades": [
+            {
+              "nome": "Suporte para publicação, manutenção e gestão de aplicações e sites",
+              "ofertas_servico": [
+                "Analisar LOG",
+                "Configurar",
+                "Excluir",
+                "Instalar",
+                "Migrar",
+                "Publicar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Serviços de configuração DHCP",
+          "atividades": [
+            {
+              "nome": "Ajuste de entrada em DHCP",
+              "ofertas_servico": [
+                "Criar escopo",
+                "Reservar endereço IP"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Equipamento de Rede",
+          "atividades": [
+            {
+              "nome": "Serviço responsável por ativar e configurar equipamento de rede (Switch, Roteador, Acess Point)",
+              "ofertas_servico": [
+                "Ativar",
+                "Configurar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Rede cabeada",
+          "atividades": [
+            {
+              "nome": "Manutenção da infraestrutura de rede cabeada",
+              "ofertas_servico": [
+                "Ativar",
+                "Provide cable",
+                "Relocate"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Acessos e permissões (Microsoft 365)",
+          "atividades": [
+            {
+              "nome": "Acessos e permissões (Microsoft 365)",
+              "ofertas_servico": [
+                "Resetar MFA"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Configurar SSO no Entra ID",
+          "atividades": [
+            {
+              "nome": "Configurar serviço de federação (SSO) no Entra ID",
+              "ofertas_servico": [
+                "(sem definicao)",
+                "Criar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Sharepoint",
+          "atividades": [
+            {
+              "nome": "Suporte para gerenciamento do Microsoft SharePoint, incluindo permissões de site, armazenamento, criação e exclusão de sites, HUB sites, backup/restore e relatórios.",
+              "ofertas_servico": [
+                "Criar ou Excluir Site",
+                "Backup/Restore",
+                "Gerenciamento de Permissões do Site",
+                "Armazenamento"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "OneDrive",
+          "atividades": [
+            {
+              "nome": "Suporte para instalação, configuração e gerenciamento do Microsoft OneDrive, incluindo controle do armazenamento e backup de dados.",
+              "ofertas_servico": [
+                "Configurar aplicativo",
+                "Backup/Restore",
+                "Armazenamento"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Teams",
+          "atividades": [
+            {
+              "nome": "Suporte aos serviços do Microsoft TEAMS",
+              "ofertas_servico": [
+                "Configurar",
+                "Criar ou Excluir Equipe",
+                "Instalar",
+                "Instalar aplicativo",
+                "Gerenciar acessos em equipe",
+                "Backup/Restore",
+                "Configurar aplicativo",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Administração de banco de dados",
+          "atividades": [
+            {
+              "nome": "Gestão, suporte e manutenção para bancos de dados corporativos.",
+              "ofertas_servico": [
+                "Analisar espaço em disco",
+                "Analisar LOG",
+                "Criar banco de dados",
+                "Extrair dados",
+                "Executar manutenção",
+                "Restaurar banco de dados",
+                "Executar script"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Usuário de banco de dados",
+          "atividades": [
+            {
+              "nome": "Gerenciamento de acessos em banco de dados.",
+              "ofertas_servico": [
+                "Criar conta",
+                "Conceder acesso",
+                "Conceder permissão de administrador",
+                "Redefinir senha",
+                "Desbloquear conta"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Data room (Planilhas Críticas)",
+          "atividades": [
+            {
+              "nome": "Gestão de acesso a data room SOX",
+              "ofertas_servico": [
+                "Concessão de acesso",
+                "Revogação de acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Datacenter (lista branca)",
+          "atividades": [
+            {
+              "nome": "Gestão de acesso do Datacenter",
+              "ofertas_servico": [
+                "Concessão de acesso",
+                "Revogação de acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Gerenciamento de grupos e permissões",
+          "atividades": [
+            {
+              "nome": "Este serviço trata da criação, manutenção e controle dos grupos de segurança e distribuição dentro do Active Directory e Ambiente 365",
+              "ofertas_servico": [
+                "Inserir usuário em grupo",
+                "Criação de Grupo",
+                "Exclusão de Grupo",
+                "Consulta de membros de Grupo",
+                "Revisão de Grupo",
+                "Remover usuário de grupo"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Gestão de Privilégios Administrativos de TI",
+          "atividades": [
+            {
+              "nome": "Gestão de acessos em aplicações de Infraestrutura de TI",
+              "ofertas_servico": [
+                "Alterar acesso",
+                "Conceder acesso",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Conta de serviço",
+          "atividades": [
+            {
+              "nome": "Gestão de conta de serviço",
+              "ofertas_servico": [
+                "Bloquear",
+                "Criar",
+                "Criação de conta de serviço",
+                "Excluir",
+                "Exclusão de conta de serviço",
+                "Reativar",
+                "Resetar Senha",
+                "Alterar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Conta de Trabalho",
+          "atividades": [
+            {
+              "nome": "Serviço responsável pela administração e manutenção das contas de trabalho utilizadas nas operações de TI.",
+              "ofertas_servico": [
+                "Bloquear",
+                "Criar",
+                "Excluir",
+                "Reativar",
+                "Resetar Senha",
+                "Alterar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Serviços de Configuração DNS",
+          "atividades": [
+            {
+              "nome": "Ajuste de entrada de DNS.",
+              "ofertas_servico": [
+                "Criação de entrada DNS",
+                "Exclusão de entrada DNS",
+                "Alteração de entrada DNS"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Servidor de arquivo",
+          "atividades": [
+            {
+              "nome": "Armazenamento, organização e controle de acesso a arquivos e diretórios.",
+              "ofertas_servico": [
+                "Analisar LOG",
+                "Permissão de pasta",
+                "Aumentar a cota",
+                "Recover file",
+                "Reiniciar Servidor",
+                "Review directory"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Servidor virtual",
+          "atividades": [
+            {
+              "nome": "Gestão e manutenção de máquinas virtuais para garantir a disponibilidade e o desempenho dos sistemas e aplicações corporativas.",
+              "ofertas_servico": [
+                "Ajustar configuração",
+                "Analisar LOG",
+                "Excluir",
+                "Conceder permissão de administrador",
+                "Conceder permissão especial",
+                "Reiniciar Servidor",
+                "Restaurar",
+                "Review directory",
+                "Executar snapshot",
+                "Criar",
+                "Atualizar Patch"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Redes e Internet",
+          "atividades": [
+            {
+              "nome": "Incidentes relacionados a\n erro / falha de funcionamento em \nRedes e Internet.",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            },
+            {
+              "nome": "Incidentes relacionados a erro\n / falha de funcionamento em Redes e Internet.",
+              "ofertas_servico": [
+                "Erro / Falha\nIndisponibilidade\nlentidão"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "E-mail",
+          "atividades": [
+            {
+              "nome": "Sem descrição",
+              "ofertas_servico": [
+                "Erro / Falha",
+                "Lentidão"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Microsoft 365 (Ambiente colaborativo)",
+          "atividades": [
+            {
+              "nome": "Sem descrição",
+              "ofertas_servico": [
+                "Erro no acesso",
+                "Lentidão",
+                "Indisponibilidade",
+                "Erro / Falha"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Infraestrutura de TI",
+          "atividades": [
+            {
+              "nome": "Formulário para registro de incidentes de equipamentos de TI,\n como falhas, mau funcionamento ou necessidade de manutenção em notebook,\n desktop e demais ativos tecnológicos",
+              "ofertas_servico": [
+                "Lentidão"
+              ]
+            },
+            {
+              "nome": "Formulário para registro \nde incidentes em\n Infraestrutura de TI",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            },
+            {
+              "nome": "Formulário para registro \nde incidentes em \nInfraestrutura de TI",
+              "ofertas_servico": [
+                "Indisponibilidade"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "CSC > Atendimento ao Usuário Final",
+      "servicos": [
+        {
+          "nome": "Equipamentos de TI para Terceiros",
+          "atividades": [
+            {
+              "nome": "Serviço de disponibilização de notebooks para terceiros",
+              "ofertas_servico": [
+                "Configurar",
+                "Solicitar",
+                "Devolver"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Sigga Empower",
+          "atividades": [
+            {
+              "nome": "Serviço responsável pelo suporte ao Sigga Empower em estações de trabalho",
+              "ofertas_servico": [
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Atualização de Equipamentos de TI na Lista de Hardware > Notebook",
+          "atividades": [
+            {
+              "nome": "Atualização de Equipamentos de TI na Lista de Hardware > Notebook",
+              "ofertas_servico": [
+                "Trocar",
+                "Configurar",
+                "Empréstimo",
+                "Renovar",
+                "Devolver"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Atualização de Equipamentos de TI na Lista de Hardware > Tablet",
+          "atividades": [
+            {
+              "nome": "Atualização de Equipamentos de TI na Lista de Hardware > Notebook",
+              "ofertas_servico": [
+                "Configurar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Atualização de Equipamentos de TI na Lista de Hardware > Monitor",
+          "atividades": [
+            {
+              "nome": "Atualização de Equipamentos de TI na Lista de Hardware > Notebook",
+              "ofertas_servico": [
+                "Solicitar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Atualização de Equipamentos de TI na Lista de Hardware > Celular corporativo",
+          "atividades": [
+            {
+              "nome": "Atualização de Equipamentos de TI na Lista de Hardware > Notebook",
+              "ofertas_servico": [
+                "Extravio (Roubo, Perda ou Furto)",
+                "Renovar",
+                "Solicitar",
+                "Substituir"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Manutenção da Base de Conhecimento (FAQS ou KBAS)",
+          "atividades": [
+            {
+              "nome": "Criação, atualização ou desativação de conteúdos FAQ ou KBA.",
+              "ofertas_servico": [
+                "Criar FAQ/KBA",
+                "Desativar FAQ/KBA",
+                "Atualizar FAQ/KBA"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Requisição universal de atendimento",
+          "atividades": [
+            {
+              "nome": "Registro de atendimento genérico. Formulário exclusivo da central para registrar os atendimentos realizados aos clientes, independentemente do canal de contato.",
+              "ofertas_servico": [
+                "Não especificado"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Finereader",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Acrobat Reader",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Revogar licença",
+                "Transferir licença",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Adobe Acrobat Professional",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Solicitar licença",
+                "Revogar licença",
+                "Transferir licença",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Adobe Indesign",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Solicitar licença",
+                "Revogar licença"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Adobe Photoshop",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Transferir licença",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Anarede",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "ArcGis",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Revogar licença",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Autocad",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Solicitar licença",
+                "Revogar licença",
+                "Transferir licença",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Bizagi",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Desktop",
+          "atividades": [
+            {
+              "nome": "Serviço de disponibilização e configuração para desktop/computadores de mesa.",
+              "ofertas_servico": [
+                "Trocar",
+                "Configurar",
+                "Solicitar",
+                "Free up USB port",
+                "Instalar / Configurar",
+                "Empréstimo",
+                "Devolver"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Certificados digitais",
+          "atividades": [
+            {
+              "nome": "Gestão de certificados digitais para segurança em transações eletrônicas.",
+              "ofertas_servico": [
+                "Dúvida",
+                "Instalar",
+                "Renovar",
+                "Solicitar",
+                "Solicitar certificado"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "DocuSign",
+          "atividades": [
+            {
+              "nome": "Solução que permite acesso a plataforma de assinatura de documentos de forma eletrônica e segura.",
+              "ofertas_servico": [
+                "Conceder acesso",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "DWG TrueViewer",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Google Chrome",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Transferir licença",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Google Earth",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Transferir licença",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Headset",
+          "atividades": [
+            {
+              "nome": "Fones de ouvido com microfone utilizado em chamadas, video conferências e atendimento ao cliente.",
+              "ofertas_servico": [
+                "Trocar",
+                "Solicitar",
+                "Instalar / Configurar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Illustrator",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Transferir licença",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Java",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Jaws",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Kit Teclado e Mouse",
+          "atividades": [
+            {
+              "nome": "Serviço de periférico que garante a usabilidade e produtividade dos usuários.",
+              "ofertas_servico": [
+                "Trocar",
+                "Solicitar",
+                "Devolver"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Mathcad",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Microsoft Project",
+          "atividades": [
+            {
+              "nome": "Microsoft Project - Suporte à instalação, configuração, atualização e remoção dos aplicativos da suíte Microsoft Office.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Microsoft Visio",
+          "atividades": [
+            {
+              "nome": "Microsoft Visio - Suporte à instalação, configuração, atualização e remoção dos aplicativos da suíte Microsoft Office.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Word",
+          "atividades": [
+            {
+              "nome": "Microsoft Visio - Suporte à instalação, configuração, atualização e remoção dos aplicativos da suíte Microsoft Office.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Monitor",
+          "atividades": [
+            {
+              "nome": "Serviço que permite solicitar, emprestar temporariamente, trocar ou devolver monitor corporativo, conforme necessidade operacional e padrão da TI.",
+              "ofertas_servico": [
+                "Trocar",
+                "Solicitar",
+                "Instalar / Configurar",
+                "Empréstimo",
+                "Devolver"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "MS Windows",
+          "atividades": [
+            {
+              "nome": "Serviço responsável pelo suporte ao sistema operacional Windows em estações de trabalho",
+              "ofertas_servico": [
+                "Configuração",
+                "Instalação",
+                "Reinstalação",
+                "Atualização",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "MySQL",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Notebook",
+          "atividades": [
+            {
+              "nome": "Serviço de disponibilização e configuração para notebooks.",
+              "ofertas_servico": [
+                "Trocar",
+                "Configurar",
+                "Solicitar",
+                "Free up USB port",
+                "Instalar / Configurar",
+                "Empréstimo",
+                "Extravio (Roubo, Perda ou Furto)",
+                "Recuperar dados",
+                "Renovar",
+                "Devolver"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "OneNote",
+          "atividades": [
+            {
+              "nome": "Microsoft Visio - Suporte à instalação, configuração, atualização e remoção dos aplicativos da suíte Microsoft Office.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Outlook",
+          "atividades": [
+            {
+              "nome": "Microsoft Visio - Suporte à instalação, configuração, atualização e remoção dos aplicativos da suíte Microsoft Office.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "pgAdmin SQL",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "PLS CADD",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Transferir licença",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Power Point",
+          "atividades": [
+            {
+              "nome": "Microsoft Visio - Suporte à instalação, configuração, atualização e remoção dos aplicativos da suíte Microsoft Office.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Impressora",
+          "atividades": [
+            {
+              "nome": "Permite a utilização de um dispositivo para imprimir documentos, troca de suprimentos e outros serviços.",
+              "ofertas_servico": [
+                "Trocar Tonner",
+                "Solicitar",
+                "Instalar nova impressora física",
+                "Instalar / Configurar",
+                "Mapeamento de impressora",
+                "Remanejar impressora",
+                "Configurar impressora"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Pvsyst",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Python",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Qualys",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Tablet",
+          "atividades": [
+            {
+              "nome": "Serviço de disponibilização e configuração para tablet.",
+              "ofertas_servico": [
+                "Trocar",
+                "Configurar",
+                "Solicitar",
+                "Instalar / Configurar",
+                "Empréstimo",
+                "Devolver"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Tower",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Solicitar licença",
+                "Transferir licença",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Videoconferência",
+          "atividades": [
+            {
+              "nome": "Este serviço abrange a comunicação remota por meio de áudio e vídeo, permitindo reuniões virtuais, treinamentos e apresentações corporativas.",
+              "ofertas_servico": [
+                "Configurar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "WasP",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Windpro",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Suporte a Áudio e Vídeo (Sala de Reunião)",
+          "atividades": [
+            {
+              "nome": "Suporte a equipamentos de áudio e vídeo em salas de reunião, videoconferência e eventos.",
+              "ofertas_servico": [
+                "Outros",
+                "Teste prévio de equipamentos / ambiente",
+                "Apoio técnico para reunião"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Usuário de rede",
+          "atividades": [
+            {
+              "nome": "Utilize este serviço quando houver impedimento de acesso à conta de rede corporativa.",
+              "ofertas_servico": [
+                "Bloquear",
+                "Bloquear usuário",
+                "Reativar usuário",
+                "Redefinir senha",
+                "Desbloquear senha"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Concessão/Revogação acesso VPN para Prestadores",
+          "atividades": [
+            {
+              "nome": "Acesso remoto seguro à rede corporativa para Terceiros com equipamento fora do domínio Axia.",
+              "ofertas_servico": [
+                "Concessão",
+                "Orientar",
+                "Revogação"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "7 Zip",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "anafas",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "anafim",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "anatem",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "DianE",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Desinstalar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Flameshot",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Hidroweb",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Inkscape",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Node JS.",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Notepad ++",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Plugins",
+          "atividades": [
+            {
+              "nome": "Instalação ou Remoção de Plugin de Software",
+              "ofertas_servico": [
+                "Instalar",
+                "Novas funcionalidades",
+                "Desinstalar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Power BI Desktop",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Proofpoint",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "QGIS",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Software Análise",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Think-Cell",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Solicitar licença",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Trend Micro",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Revogar licença",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Visual Studio Code",
+          "atividades": [
+            {
+              "nome": "Gestão de softwares e aplicativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Excel",
+          "atividades": [
+            {
+              "nome": "Microsoft Visio - Suporte à instalação, configuração, atualização e remoção dos aplicativos da suíte Microsoft Office.",
+              "ofertas_servico": [
+                "Configurar",
+                "Instalar",
+                "Desinstalar",
+                "Atualizar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Celular corporativo",
+          "atividades": [
+            {
+              "nome": "Gestão de celulares corporativos.",
+              "ofertas_servico": [
+                "Configurar",
+                "Empréstimo",
+                "Extravio (Roubo, Perda ou Furto)",
+                "Renovar",
+                "Solicitar",
+                "Devolver",
+                "Disponibilizar",
+                "Substituir"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Linha corporativa",
+          "atividades": [
+            {
+              "nome": "Gestão de linha para telefonia móvel corporativa.",
+              "ofertas_servico": [
+                "Roaming Internacional",
+                "Bloquear linha",
+                "Extravio (Roubo, Perda ou Furto)",
+                "Resgatar chip",
+                "Solicitar",
+                "Devolver",
+                "Disponibilizar",
+                "Substituir"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Nova senha/Desbloqueio usuário SAP",
+          "atividades": [
+            {
+              "nome": "Gestão de senha de usuário SAP Instância Única (SAP IU)",
+              "ofertas_servico": [
+                "(sem definicao)",
+                "Desbloquear senha atual",
+                "Esqueci a senha",
+                "Executar backup fora da rotina"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Aplicativos / Software diversos",
+          "atividades": [
+            {
+              "nome": "Formulário para registro de incidentes \nem aplicativos ou softwares, como mau \nfuncionamento ou travamentos.",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Assinatura Digital",
+          "atividades": [
+            {
+              "nome": "Formulário para registro \nde incidentes em Assinatura Digital, \ncomo erros de funcionamento \nou falhas",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Falha em equipamentos de Áudio e Vídeo",
+          "atividades": [
+            {
+              "nome": "Serviço para registro\n de falha em equipamentos \nde Áudio e Vídeo",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Equipamentos de TI",
+          "atividades": [
+            {
+              "nome": "Formulário para registro de\n incidentes de equipamentos de TI,\n como falhas, mau funcionamento ou \nnecessidade de manutenção em notebook,\n desktop e demais ativos tecnológicos",
+              "ofertas_servico": [
+                "Não inicializa\nErro / Falha\nLentidão"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Telefonia",
+          "atividades": [
+            {
+              "nome": "Formulário para registro \nde incidentes em Telefonia",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            },
+            {
+              "nome": "Formulário para registro\n de incidentes em \nTelefonia",
+              "ofertas_servico": [
+                "Não liga"
+              ]
+            },
+            {
+              "nome": "Formulário para registro \nde incidentes em\n Telefonia",
+              "ofertas_servico": [
+                "Indisponibilidade"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Segurança da Informação",
+      "servicos": [
+        {
+          "nome": "Proteção de Informações (DLP)",
+          "atividades": [
+            {
+              "nome": "Formalização das requisições de proteção de informações/documentos para a área de Segurança da Informação.",
+              "ofertas_servico": [
+                "Proteger informações"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Reportar Riscos de Terceiros de Tecnologia",
+          "atividades": [
+            {
+              "nome": "Registro de riscos de Segurança da Informação em fornecedores de tecnologia da Eletrobras",
+              "ofertas_servico": [
+                "Reportar riscos"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Controle de Acesso à Internet",
+          "atividades": [
+            {
+              "nome": "Gestão dos acessos dos usuários à web.",
+              "ofertas_servico": [
+                "Allow access to social networks",
+                "Liberar acesso a site específico",
+                "Bloquear acesso a site específico"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Registro de Ocorrência de Segurança da Informação Envolvendo Dados",
+          "atividades": [
+            {
+              "nome": "Formulário para registrar ocorrências de Segurança da Informação, envolvendo dados da empresa.",
+              "ofertas_servico": [
+                "Registrar extração ou compartilhamento indevido de dados"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Solicitação de Preenchimento de RTD - Registro de Tratamento de Dados Pessoais",
+          "atividades": [
+            {
+              "nome": "Solicitação de preenchimento ou consulta de Registro de Tratamento de Dados Pessoais (RTD)",
+              "ofertas_servico": [
+                "Solicitação de atualização de RTD"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Solicitação ou Consulta à Proteção de Dados",
+          "atividades": [
+            {
+              "nome": "Consultas e solicitações relacionadas à Proteção de Dados Pessoais ou Corporativos",
+              "ofertas_servico": [
+                "Análise/Consulta sobre Dados Corporativos",
+                "Análise/Consulta sobre Dados Pessoais"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Administrador local",
+          "atividades": [
+            {
+              "nome": "Permite a concessão ou revogação de privilégios administrativos em equipamentos de TI ou TO",
+              "ofertas_servico": [
+                "Conceder acesso",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Liberar porta USB",
+          "atividades": [
+            {
+              "nome": "Solicitação de liberação de acesso para uso de porta USB no computador.",
+              "ofertas_servico": [
+                "Liberar porta USB"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Acesso a sites de mensagens instantâneas",
+          "atividades": [
+            {
+              "nome": "Gestão dos acessos dos usuários aos sites de mensagens instantâneas",
+              "ofertas_servico": [
+                "Bloquear acesso",
+                "Liberar acesso"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Manutenção Geração e Transmissão",
+      "servicos": [
+        {
+          "nome": "Cadastro de Ativos",
+          "atividades": [
+            {
+              "nome": "Solicitação da cadastro ou ajuste em equipamentos e local de instalação do SAP PM",
+              "ofertas_servico": [
+                "Alterar equipamento",
+                "Alterar locais de instalação",
+                "Criar equipamento",
+                "Criar locais de instalação",
+                "Desativar equipamento",
+                "Desativar locais de instalação"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Cancelamento de Ordens de Manutenção",
+          "atividades": [
+            {
+              "nome": "Cancelamento de Ordens de Manutenção",
+              "ofertas_servico": [
+                "Cancelamento de Ordens de Manutenção"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Criação de Empreendimento SGBDIT",
+          "atividades": [
+            {
+              "nome": "Solicitação de abertura de Empreendimento no SGBDIT (ONS)",
+              "ofertas_servico": [
+                "Criação de Empreendimento"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Plano de Manutenção",
+          "atividades": [
+            {
+              "nome": "Solicitação de cadastro ou ajuste em Plano de Manunteção do SAP PM",
+              "ofertas_servico": [
+                "Criar/Alterar Plano de manutenção",
+                "Desativar Plano de Manutenção",
+                "Reprogramar Plano de manutenção"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Outras demandas para área de planejamento da manutenção",
+          "atividades": [
+            {
+              "nome": "Demandas atípicas para área de planejamento da manutenção",
+              "ofertas_servico": [
+                "Outras demandas"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Cadastro de manutenção decorrente",
+          "atividades": [
+            {
+              "nome": "Solicitação da cadastro de manutenção decorrente no SAM/ONS",
+              "ofertas_servico": [
+                "Cadastro de manutenção decorrente"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "ServiceNow",
+      "servicos": [
+        {
+          "nome": "Acesso Administrativo (ServiceNow)",
+          "atividades": [
+            {
+              "nome": "Solicitação de concessão ou remoção de acesso administrativo no ServiceNow.",
+              "ofertas_servico": [
+                "(sem definicao)"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Regras de negocio",
+          "atividades": [
+            {
+              "nome": "Serviço de solicitar nova regra, editar e desativar",
+              "ofertas_servico": [
+                "Editar",
+                "Solicitar novo"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Formulário",
+          "atividades": [
+            {
+              "nome": "Serviço para solicitar, editar ou desativar formulários",
+              "ofertas_servico": [
+                "Desativar",
+                "Editar",
+                "Solicitar novo"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Relatórios e Dashboard",
+          "atividades": [
+            {
+              "nome": "Serviço de edição, desativação de relatorios e dashboads",
+              "ofertas_servico": [
+                "Editar",
+                "Solicitar novo"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Grupo de atendimento e membros",
+          "atividades": [
+            {
+              "nome": "Serviço para solicitar, editar desativar grupos e membros",
+              "ofertas_servico": [
+                "Desativar",
+                "Editar",
+                "Solicitar novo"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Portal de serviço",
+          "atividades": [
+            {
+              "nome": "Serviço de edição e adição de conteúdo",
+              "ofertas_servico": [
+                "Adicionar conteúdo",
+                "Editar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "SLA / OLA",
+          "atividades": [
+            {
+              "nome": "-",
+              "ofertas_servico": [
+                "Editar",
+                "Solicitar novo"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Fluxo de trabalho",
+          "atividades": [
+            {
+              "nome": "Solicitar novo, editar e desativar fluxo de trabalho",
+              "ofertas_servico": [
+                "Desativar",
+                "Editar",
+                "Solicitar novo"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Acessos e permissões (ServiceNow)",
+          "atividades": [
+            {
+              "nome": "Solicitar ou revogar acesso",
+              "ofertas_servico": [
+                "Solicitar acesso",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "ServiceNow",
+          "atividades": [
+            {
+              "nome": "Incidentes ao sistema \nServiceNow",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "SAP",
+      "servicos": [
+        {
+          "nome": "Perfis de acesso SAP",
+          "atividades": [
+            {
+              "nome": "Criação, alteração ou exclusão de perfis SAP",
+              "ofertas_servico": [
+                "(sem definicao)",
+                "Alterar função SAP",
+                "Criar função SAP",
+                "Criar/alterar transação Z (Customizada)",
+                "Exclusão função SAP"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Agendamento/monitoração/exclusão de JOB´s",
+          "atividades": [
+            {
+              "nome": "Agendamento/monitoração/exclusão de JOB´s",
+              "ofertas_servico": [
+                "Monitorar/Analisar falhas",
+                "Alterar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Mandante SAP",
+          "atividades": [
+            {
+              "nome": "Abertura, fechamento ou manutenção de Mandante SAP",
+              "ofertas_servico": [
+                "Criar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Documentos de Mudanças SAP",
+          "atividades": [
+            {
+              "nome": "Criação, acompanhamento ou descarte de documentos de mudanças SAP",
+              "ofertas_servico": [
+                "Criar documento de mudança SAP"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Workflow de sistemas SAP",
+          "atividades": [
+            {
+              "nome": "Ações no workflow de sistemas SAP",
+              "ofertas_servico": [
+                "Cadastrar aprovadores adicionais mediante autorização",
+                "Reiniciar fluxo WF ou regra de seleção de aprovadores",
+                "Repor workitens de aprovação/liberação"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Inclusão de CNPJ/CPF na tabela de exceção",
+          "atividades": [
+            {
+              "nome": "Gestão de cadastro de CNPJ ou CPF de fornecedor em tabela de exceção.",
+              "ofertas_servico": [
+                "Excluir",
+                "Incluir"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Requisição de Serviços SAP",
+          "atividades": [
+            {
+              "nome": "Serviço destinado ao registro de requisições diversas do sistema SAP.",
+              "ofertas_servico": [
+                "(sem definicao)"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "SAP",
+          "atividades": [
+            {
+              "nome": "Incidente - SAP",
+              "ofertas_servico": [
+                "Erro / Falha\nDúvida"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Erro ou falha no Sap Concur",
+          "atividades": [
+            {
+              "nome": "Reportar erro ou falhas\n identificadas no Sap Concur",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "VID > Governança",
+      "servicos": [
+        {
+          "nome": "Rebranding",
+          "atividades": [
+            {
+              "nome": "Solicitação de melhorias/ajustes referente ao Rebranding",
+              "ofertas_servico": [
+                "Melhoria/ajustes"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Necessidade / Oportunidade para VID",
+          "atividades": [
+            {
+              "nome": "Registro de Oportunidades: abrir uma necessidade e/ou oportunidade para avaliação do seu Parceiro de Negócios na VID",
+              "ofertas_servico": [
+                "Opportunity"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Mudança da marca - rebranding",
+          "atividades": [
+            {
+              "nome": "Erro ou falha em sistemas\n internos pós mudança \nde marca - rebranding",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "CSC > Operação Analytics",
+      "servicos": [
+        {
+          "nome": "Dashboards",
+          "atividades": [
+            {
+              "nome": "Serviço destinado à criação/suporte de Dashboards",
+              "ofertas_servico": [
+                "Gestão de acesso",
+                "Criação",
+                "Alteração de fonte de dados em dashboard",
+                "Atualização (Refresh) de dashboard",
+                "Inserção de elementos em dashboard",
+                "Modificação de elementos em dashboard",
+                "Gestão de Owner",
+                "Publicar",
+                "Publicação de dashboard",
+                "Liberar acesso",
+                "Revogar acesso",
+                "Criar",
+                "Atualizar / Refresh"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Dados",
+          "atividades": [
+            {
+              "nome": "Serviço destinado a coleta, tratamento e estruturação de dados.",
+              "ofertas_servico": [
+                "Criar ETL Simples",
+                "Criação de conexão no Fabric",
+                "Extração",
+                "Realizar análise exploratória"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Dashboards e dados",
+          "atividades": [
+            {
+              "nome": "Sem descrição",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Cibersegurança de TI",
+      "servicos": [
+        {
+          "nome": "Automações - Cibersegurança",
+          "atividades": [
+            {
+              "nome": "Atividades de automação no ambiente de Cibersegurança",
+              "ofertas_servico": [
+                "Ajustar",
+                "Criar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "CSIRT - Equipe de Resposta a Incidentes de Segurança da Informação",
+          "atividades": [
+            {
+              "nome": "Atividades de CSIRT (Equipe de Resposta a Incidentes de Segurança da Informação) no ambiente Axia",
+              "ofertas_servico": [
+                "Suporte a incidentes",
+                "Investigação de apuração de denuncias",
+                "Análise de Malware/Artefatos",
+                "Criação de playbook/procedimento",
+                "Atualização de playbook/procedimento",
+                "Análise de segurança (sistemas/sites/ambientes)"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "CyberArk PAM - Criação e manutenção de cofre de senhas",
+          "atividades": [
+            {
+              "nome": "Gestão dos acesso e permissões no cofre de senhas",
+              "ofertas_servico": [
+                "Identificar acessos a uma conta privilegiada"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Operação SIEM",
+          "atividades": [
+            {
+              "nome": "Operação do ambiente do SIEM",
+              "ofertas_servico": [
+                "Auditoria de logs",
+                "Manutenção de casos de uso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Caça a Ameaças",
+          "atividades": [
+            {
+              "nome": "Atividades de caça a ameaças no ambiente Axia",
+              "ofertas_servico": [
+                "Threat Hunting"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "CyberArk Identity - Integrações",
+          "atividades": [
+            {
+              "nome": "Integrar autenticações de aplicações com o CyberArk Identity",
+              "ofertas_servico": [
+                "Integrar autenticações de aplicações com o CyberArk Identity"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Gestão de Segurança Trend Micro",
+          "atividades": [
+            {
+              "nome": "Serviço responsável pela administração e operação das políticas de segurança da plataforma Trend Micro.",
+              "ofertas_servico": [
+                "Análise de Desempenho",
+                "Avaliação de arquivos bloqueados",
+                "Avaliação de programas bloqueados",
+                "Full-Scan em Servidores"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Remoção de Agente de Segurança",
+          "atividades": [
+            {
+              "nome": "Remoção dos agentes de cybersegurança de maquinas fora de uso",
+              "ofertas_servico": [
+                "Remoção de maquinas nas ferramentas Cyber"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Gestão de vulnerabilidades",
+          "atividades": [
+            {
+              "nome": "Permite a solicitação da correção de vulnerabilidade pelo CSC",
+              "ofertas_servico": [
+                "Software aprovado",
+                "Correção"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Vazamento de Senha",
+          "atividades": [
+            {
+              "nome": "Reset de credenciais de usuário onde há suspeita de vazamento de credenciais na internet/deep web.",
+              "ofertas_servico": [
+                "Redefinir senha"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Firewall",
+          "atividades": [
+            {
+              "nome": "Gestão de serviços em firewall para a segurança, controle e gerenciamento do tráfego de rede.",
+              "ofertas_servico": [
+                "Bloquear acesso",
+                "Criar ou alterar regra de NAT",
+                "Criar regra",
+                "Deletar regra",
+                "Conceder acesso",
+                "Liberar acesso",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Criação/Exclusão de VPN Para Prestadores",
+          "atividades": [
+            {
+              "nome": "Criação de acesso para rede interna da Axia para prestadores.",
+              "ofertas_servico": [
+                "Criação",
+                "Renovação",
+                "Exclusão"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "VPN site-to-site",
+          "atividades": [
+            {
+              "nome": "Acesso remoto seguro de empresas prestadoras de serviço à rede corporativa da Eletrobras.",
+              "ofertas_servico": [
+                "Liberar acesso a recurso",
+                "Criar VPN",
+                "Conceder acesso",
+                "Criar"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Acesso remoto",
+          "atividades": [
+            {
+              "nome": "Formulário para registro de incidentes\n relacionados a vpn e zscaler como \ndificuldades de conexão, lentidão \nou falhas na autenticação.",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            },
+            {
+              "nome": "Formulário para registro de incidentes\n relacionados a vpn e zscaler como\n dificuldades de conexão, lentidão\nou falhas na autenticação.",
+              "ofertas_servico": [
+                "Lentidão"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "CyberArk - Problemas de acesso",
+          "atividades": [
+            {
+              "nome": "Erros de acesso a sistemas ou \ntelefone incorreto em serviços\n autenticados pelo CyberArk Identity",
+              "ofertas_servico": [
+                "Erro de autenticação"
+              ]
+            },
+            {
+              "nome": "Erros de acesso a sistemas \nou telefone incorreto em serviços \nautenticados pelo CyberArk Identity",
+              "ofertas_servico": [
+                "Telefone errado"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "CyberArk PAM (Cofre de senhas) - Erro de Acessos",
+          "atividades": [
+            {
+              "nome": "Problemas de acesso \nao cofre de senhas",
+              "ofertas_servico": [
+                "Acesso",
+                "Impossibilidade de acessar conta privilegiada"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "COE de Hiperautomação",
+      "servicos": [
+        {
+          "nome": "Acessos e Permissões - RPA",
+          "atividades": [
+            {
+              "nome": "Este serviço abrange gerenciamento de acesso no Ambiente RPA",
+              "ofertas_servico": [
+                "Acesso ao cofre de senha",
+                "Desbloqueio de conta",
+                "Conceder acesso em ambiente",
+                "Liberar pasta na rede",
+                "Publicar robô em ambiente de produção"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Suporte Automation Anywhere - RPA",
+          "atividades": [
+            {
+              "nome": "Este serviço abrange o suporte Automation Anywhere - RPA",
+              "ofertas_servico": [
+                "Ajuste pontual no RPA",
+                "Apoio a Infraestrutura",
+                "Citizen",
+                "Ambiente de desenvolvimento"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Gestão de robôs",
+          "atividades": [
+            {
+              "nome": "Este serviço abrange gerenciamento de robôs",
+              "ofertas_servico": [
+                "Reativação de robô",
+                "Desativação de robô",
+                "Reprocessar robô",
+                "Executar robô sob demanda"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Usuário para atutomação (Robô)",
+          "atividades": [
+            {
+              "nome": "Governança de Usuário para automação (Robô)",
+              "ofertas_servico": [
+                "Alterar responsável",
+                "Criar usuário de Automação",
+                "Conceder Acessos",
+                "Bloqueio de usuário*",
+                "Revogar Acessos",
+                "Apoio Técnico",
+                "Desbloqueio de usuário*"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Aplicativos do Google AppSheet",
+          "atividades": [
+            {
+              "nome": "Serviço de suporte para soluções desenvolvidas na ferramenta Google AppSheet.",
+              "ofertas_servico": [
+                "Implantar aplicação no ambiente de produção (deploy)",
+                "Compartilhar aplicação com usuários externos"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Aplicações Power Platform",
+          "atividades": [
+            {
+              "nome": "Serviços de apoio e governança para o uso da Microsoft Power Platform no contexto de hiperautomação, abrangendo as ferramentas Microsoft Power Apps, Microsoft Power Automate, Microsoft Copilot Studio.",
+              "ofertas_servico": [
+                "Acesso ao ambiente de treinamento",
+                "Criar ambiente",
+                "Liberar Conexão Premium (Dataverse, Conectores, https, etc)",
+                "Liberar conector",
+                "Liberar licença para Dataverse",
+                "Liberar componentes PCF",
+                "Apoio Técnico"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Solicitar Uso de IA para Fins de Negócio",
+          "atividades": [
+            {
+              "nome": "Serviço destinado ao registro e avaliação de solicitações de uso de soluções de IA para fins de negócio",
+              "ofertas_servico": [
+                "Solicitar Uso de IA"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "RPA - Incidente",
+          "atividades": [
+            {
+              "nome": "Formulário para registro de \nincidentes em automação de processos RPA",
+              "ofertas_servico": [
+                "Não inicializa"
+              ]
+            },
+            {
+              "nome": "Formulário para registro \nde incidentes em automação de\n processos RPA",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "VID > Salesforce",
+      "servicos": [
+        {
+          "nome": "Acessos e permissões (Salesforce)",
+          "atividades": [
+            {
+              "nome": "Gerenciamento de acessos no Sistema de Comercialização de Energia - Salesforce.",
+              "ofertas_servico": [
+                "Usuário Administrador",
+                "Alterar acesso",
+                "Conceder acesso",
+                "Usuário de Integração",
+                "Solicitar acesso",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Orientação - Salesforce",
+          "atividades": [
+            {
+              "nome": "Dúvidas sobre o serviço do Sistema de Comercialização de Energia - Salesforce.",
+              "ofertas_servico": [
+                "Orientação - Salesforce"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "CSC > Sustentação de Aplicações",
+      "servicos": [
+        {
+          "nome": "Acessos e Permissões INTRANET",
+          "atividades": [
+            {
+              "nome": "Este serviço consiste na concessão de acesso a áreas específicas do portal da Intranet, conforme a necessidade do colaborador ou da área solicitante",
+              "ofertas_servico": [
+                "Conceder acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Acessos e permissões (Sistemas Corporativos)",
+          "atividades": [
+            {
+              "nome": "Gestão de acessos e permissões",
+              "ofertas_servico": [
+                "Alterar acesso",
+                "Conceder acesso",
+                "Cadastrar usuário",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Gestão de Pipeline (Sistemas Corporativos)",
+          "atividades": [
+            {
+              "nome": "Este serviço contempla ações voltadas aos sistemas corporativos em desenvolvimento, executadas dentro de uma esteira segura.",
+              "ofertas_servico": [
+                "Alteração",
+                "Inclusão"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Suporte ou Melhoria (Sistemas Corporativos)",
+          "atividades": [
+            {
+              "nome": "Otimizar a performance e a eficiência dos sistemas",
+              "ofertas_servico": [
+                "Ajustar recurso",
+                "Configurar",
+                "Extrair relatórios",
+                "Inserir ou alterar dados",
+                "Instalar",
+                "Novas funcionalidades",
+                "Desinstalar",
+                "Atualizar",
+                "Melhorias visuais"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "V360 - Acessos e permissões",
+          "atividades": [
+            {
+              "nome": "Gerenciamento de acessos ao V360",
+              "ofertas_servico": [
+                "Alterar acesso",
+                "Conceder acesso",
+                "Revogar acesso"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Sistemas Corporativos",
+          "atividades": [
+            {
+              "nome": "Incidentes relacionados a erro / falha de funcionamento nos sistemas corporativos.",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Benner",
+          "atividades": [
+            {
+              "nome": "Incidente no Sistema \nJurídico - Benner",
+              "ofertas_servico": [
+                "Erro / Falha",
+                "Lentidão",
+                "Indisponibilidade"
+              ]
+            }
+          ]
+        },
+        {
+          "nome": "Intranet",
+          "atividades": [
+            {
+              "nome": "Erro ou falha de elementos \nna página da Intranet",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "VID > SIP",
+      "servicos": [
+        {
+          "nome": "SIP - Acessos e permissões",
+          "atividades": [
+            {
+              "nome": "Gerenciamento de acessos ao SIP - SISTEMA INTEGRADO DE PARTICIPAÇÕES",
+              "ofertas_servico": [
+                "Alteração de acesso",
+                "Concessão de acesso",
+                "Revogação de acesso"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Salesforce",
+      "servicos": [
+        {
+          "nome": "Salesforce",
+          "atividades": [
+            {
+              "nome": "Falhas no Sistema de \nComercialização de \nEnergia - Salesforce",
+              "ofertas_servico": [
+                "Falha"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "COE de IA",
+      "servicos": [
+        {
+          "nome": "Aplicações de IA (inteligência Artificial)",
+          "atividades": [
+            {
+              "nome": "Formulário para registro \nde incidentes em \naplicações de IA \n(Inteligência Artificial)",
+              "ofertas_servico": [
+                "Erro / Falha"
+              ]
+            },
+            {
+              "nome": "Formulário para registro de incidentes \nem aplicações de IA \n(Inteligência Artificial)",
+              "ofertas_servico": [
+                "Lentidão"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

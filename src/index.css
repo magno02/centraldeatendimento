@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap');
+@import "tailwindcss";
+
+/* Tokens extraídos de axia.com.br: CSS vars do tema + escala --radius-* (cards = 24px). */
+@theme {
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+
+  --color-axia-blue: #0015f8;
+  --color-axia-blue-soft: #4d5cfa; /* primária clareada: links de navegação */
+  --color-axia-blue1: #1726c8;
+  --color-axia-blue2: #0f1a8d;
+  --color-axia-purple: #0a003c;
+  --color-axia-grey: #3a3f46;
+  --color-axia-grey1: #1a1f25;
+  --color-axia-sky: #a0b4d2;
+  --color-axia-sky2: #273850;
+  --color-axia-neutral: #e8e5e3;
+  --color-axia-offwhite: #faf5f0;
+  --color-axia-bg: #f4f7ff; /* fundo da página: azul quase branco */
+  --color-axia-error: #ee443f;
+  --color-axia-success: #43b75d;
+  --color-axia-warning: #ffaa00;
+
+  --radius-chip: 16px;
+  --radius-card: 24px;
+  --radius-hero: 32px;
+}
