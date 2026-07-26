@@ -663,16 +663,18 @@ function Topo({
 }) {
   return (
     <header className="bg-axia-blue text-white">
-      <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-6 gap-y-4 px-4 py-4 sm:px-8 sm:py-6">
+      {/* no celular vira uma coluna centrada: logo, título, busca e conta, nessa ordem.
+          De sm para cima volta a ser a barra única com tudo lado a lado. */}
+      <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-4 px-4 py-4 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-4 sm:px-8 sm:py-6">
         {/* logo + título levam ao portal */}
         <button
           onClick={onInicio}
-          className="flex min-w-0 cursor-pointer items-center gap-6 text-left"
+          className="flex min-w-0 cursor-pointer flex-col items-center gap-2 text-center sm:flex-row sm:gap-6 sm:text-left"
         >
           <img
             src={logo}
             alt="AXIA Energia"
-            className="h-14 w-auto shrink-0 object-contain sm:h-20"
+            className="h-24 w-auto shrink-0 object-contain sm:h-20"
           />
           <span className="min-w-0">
             <span className="block text-lg font-bold leading-tight sm:text-xl">
@@ -704,7 +706,8 @@ function Topo({
           />
         </label>
 
-        <div className="ml-auto flex shrink-0 items-center gap-5">
+        {/* sem ml-auto no celular: na coluna ele empurraria o bloco para a direita */}
+        <div className="flex shrink-0 items-center gap-5 sm:ml-auto">
           <Popover
             rotulo={
               <>
@@ -926,8 +929,11 @@ function Indicadores({ usuario, contagem, onIndicador, onVerTodos }) {
         </p>
       </div>
 
-      {/* w-fit: o bloco tem a largura dos cards, então título e "Ver todos" alinham com eles */}
-      <div className="ml-auto w-fit max-w-full">
+      {/* w-fit a partir de 420px: o bloco tem a largura dos cards, então título e
+          "Ver todos" alinham com eles. No modo de 2 colunas ele ocupa a largura toda,
+          para o título ir a uma ponta e o "Ver todos" à outra — os cards seguem
+          centrados pelo justify-center do grid. */}
+      <div className="w-full max-w-full min-[420px]:mx-auto min-[420px]:w-fit sm:ml-auto sm:mr-0">
         <div className="mb-3 flex items-center justify-between gap-4">
           <h3 className="text-sm font-bold text-axia-purple">Meus chamados</h3>
           <button
@@ -938,7 +944,9 @@ function Indicadores({ usuario, contagem, onIndicador, onVerTodos }) {
           </button>
         </div>
 
-        <div className="flex flex-wrap justify-end gap-3">
+        {/* trilhas fixas de 6rem (a largura do card) em vez de flex-wrap: assim nunca
+            sobra uma linha de 3 + 1. São 4 por linha quando cabem os ~420px, 2 abaixo disso. */}
+        <div className="grid justify-center gap-3 grid-cols-[repeat(2,6rem)] min-[420px]:grid-cols-[repeat(4,6rem)] sm:justify-end">
           {STATUS_PAINEL.map((s) => (
             <button
               key={s}
@@ -1050,13 +1058,13 @@ function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
         {extra}
       </div>
       <div className="flex shrink-0 items-center gap-3">
-        {acao}
         <button
           onClick={onVoltar}
           className="rounded-full border border-axia-blue px-6 py-1.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white"
         >
           Voltar
         </button>
+        {acao}
       </div>
     </div>
   )
@@ -2365,6 +2373,16 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
   const primeiro = visiveis.length ? (paginaAtual - 1) * porPagina + 1 : 0
   const ultimo = (paginaAtual - 1) * porPagina + daPagina.length
 
+  // definido uma vez e posicionado em dois lugares por breakpoint
+  const botaoNova = (
+    <button
+      onClick={onNova}
+      className="flex items-center gap-2 rounded-full bg-axia-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2"
+    >
+      <span className="text-lg leading-none">+</span> Nova solicitação
+    </button>
+  )
+
   return (
     <>
       <Cabecalho
@@ -2372,16 +2390,12 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
         titulo="Meus chamados"
         subtitulo="Acompanhe o andamento das suas solicitações e interaja com a equipe responsável."
         onVoltar={onVoltar}
+        // no celular o botão sobe para a linha do Voltar; no desktop segue na
+        // própria faixa abaixo, como já era
+        acao={<span className="sm:hidden">{botaoNova}</span>}
       />
 
-      <div className="mb-4 flex justify-end">
-        <button
-          onClick={onNova}
-          className="flex items-center gap-2 rounded-full bg-axia-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2"
-        >
-          <span className="text-lg leading-none">+</span> Nova solicitação
-        </button>
-      </div>
+      <div className="mb-4 hidden justify-end sm:flex">{botaoNova}</div>
 
       {/* 190px é o menor card que ainda cabe "Aguardando aprovação" em duas linhas:
           os seis entram numa fileira a partir de ~1200px e quebram sozinhos abaixo disso */}
