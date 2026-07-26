@@ -217,7 +217,7 @@ export default function App() {
         onSair={() => setSaindo(true)}
       />
 
-      <main className="mx-auto max-w-[1440px] px-8 pb-20">
+      <main className="mx-auto max-w-[1440px] px-4 pb-20 sm:px-8">
         {view.tela === 'portal' && (
           <Indicadores
             contagem={contarPorStatus(tickets)}
@@ -523,7 +523,7 @@ function ChatIA({ usuario, onAtividade }) {
 
       {aberto && (
         // altura fixa (limitada pela viewport) para o histórico ter espaço próprio
-        <section className="fixed bottom-28 right-8 z-40 flex h-[min(38rem,calc(100vh-10rem))] w-[24rem] flex-col overflow-hidden rounded-card border border-axia-neutral bg-white shadow-2xl">
+        <section className="fixed bottom-28 right-4 z-40 flex h-[min(38rem,calc(100vh-10rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-card border border-axia-neutral bg-white shadow-2xl sm:right-8">
           <header className="flex items-center gap-3 border-b border-axia-neutral bg-axia-purple px-5 py-4 text-white">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
               <IconeBrilho />
@@ -650,18 +650,22 @@ function Topo({
 }) {
   return (
     <header className="bg-axia-purple text-white">
-      <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-6 gap-y-4 px-8 py-6">
+      <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-6 gap-y-4 px-4 py-4 sm:px-8 sm:py-6">
         {/* logo + título levam ao portal */}
         <button
           onClick={onInicio}
           className="flex min-w-0 cursor-pointer items-center gap-6 text-left"
         >
-          <img src={logo} alt="AXIA Energia" className="h-20 w-auto shrink-0" />
+          <img
+            src={logo}
+            alt="AXIA Energia"
+            className="h-14 w-auto shrink-0 object-contain sm:h-20"
+          />
           <span className="min-w-0">
-            <span className="block text-xl font-bold leading-tight">
+            <span className="block text-lg font-bold leading-tight sm:text-xl">
               Como podemos ajudar?
             </span>
-            <span className="block text-xs text-axia-sky">
+            <span className="hidden text-xs text-axia-sky sm:block">
               Encontre o serviço ou atividade que você precisa.
             </span>
           </span>
@@ -1022,7 +1026,8 @@ function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
 // auto-fit com teto de 440px: é a largura que o card tem quando cabem 3 por linha,
 // então 1 ou 2 cards ficam desse mesmo tamanho em vez de esticar pela linha toda.
 const Grade = ({ children }) => (
-  <div className="grid items-stretch gap-6 grid-cols-[repeat(auto-fit,minmax(360px,440px))]">
+  // min(100%,360px): sem isso a coluna nunca desce de 360px e estoura a tela do celular
+  <div className="grid items-stretch gap-6 grid-cols-[repeat(auto-fit,minmax(min(100%,360px),440px))]">
     {children}
   </div>
 )
@@ -1235,7 +1240,7 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
         onSubmit={(e) => onSubmit(e, atividade, { para, anexos })}
         // campo inválido dentro do bloco recolhido: abre para o usuário poder corrigir
         onInvalid={() => seusDados.current && (seusDados.current.open = true)}
-        className="space-y-6 rounded-card border border-axia-neutral bg-white p-8"
+        className="space-y-6 rounded-card border border-axia-neutral bg-white p-5 sm:p-8"
       >
         <div className="space-y-4 border-b border-axia-neutral pb-6">
           <div>
@@ -1908,7 +1913,7 @@ function Modal({ aberto, titulo, onFechar, children }) {
       ref={ref}
       onClose={onFechar}
       onClick={(e) => e.target === ref.current && onFechar()}
-      className="w-full max-w-lg rounded-card p-0 backdrop:bg-axia-purple/60 open:m-auto"
+      className="w-[calc(100%-2rem)] max-w-lg rounded-card p-0 backdrop:bg-axia-purple/60 open:m-auto"
     >
       <div className="p-7">
         <h3 className="text-lg font-bold text-axia-purple">{titulo}</h3>
