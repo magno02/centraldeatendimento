@@ -28,8 +28,11 @@ import {
   ultimaAtualizacao,
   filtrarChamados,
   ordenarChamados,
+  paginar,
+  totalPaginas,
   PERIODOS,
   ORDENS,
+  ITENS_POR_PAGINA,
   notificacoes,
   naoVisualizadas,
   visualizadas,
@@ -555,7 +558,7 @@ function ChatIA({ usuario, onAtividade }) {
               name="pergunta"
               autoComplete="off"
               placeholder="Pergunte sobre os serviços..."
-              className="min-w-0 flex-1 rounded-full border border-axia-neutral bg-axia-offwhite/60 px-4 py-2.5 text-sm outline-none focus:border-axia-blue focus:bg-white"
+              className="min-w-0 flex-1 rounded-full border border-axia-neutral bg-slate-100/70 px-4 py-2.5 text-sm outline-none focus:border-axia-blue focus:bg-white"
             />
             <button
               aria-label="Enviar"
@@ -1448,7 +1451,12 @@ function Anexos({ arquivos, onChange }) {
 }
 
 const inputBase =
-  'w-full rounded-chip border border-axia-neutral bg-axia-offwhite/60 px-4 py-2.5 text-sm outline-none focus:border-axia-blue focus:bg-white'
+  'w-full rounded-chip border border-axia-neutral bg-slate-100/70 px-4 py-2.5 text-sm outline-none focus:border-axia-blue focus:bg-white'
+
+// mesma base, mas em pílula e com borda um tom mais escura — só na faixa de
+// filtros de "Meus chamados", onde os campos ficam soltos sobre o fundo da página
+const inputFiltro =
+  'w-full rounded-full border border-slate-300 bg-slate-100/70 px-4 py-2.5 text-sm outline-none focus:border-axia-blue focus:bg-white'
 
 const idLista = (nome) => `lista-${nome.replace(/\W+/g, '-')}`
 
@@ -1461,6 +1469,7 @@ function Combobox({
   inicial = '',
   onChange,
   obrigatorio = true,
+  classeInput = inputBase,
 }) {
   // opção única: já vem escolhida, não há o que decidir
   const [valor, setValor] = useState(inicial || (opcoes.length === 1 ? opcoes[0] : ''))
@@ -1521,11 +1530,9 @@ function Combobox({
         }}
         onFocus={() => setAberto(true)}
         onKeyDown={aoTeclar}
-        className={`${inputBase} pr-10`}
+        className={`${classeInput} pr-10`}
       />
-      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-axia-grey/60">
-        <Chevron />
-      </span>
+      <SetaCampo />
 
       {aberto && (
         <>
@@ -1605,22 +1612,25 @@ function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
           className={inputBase}
         />
       ) : tipo === 'select' ? (
-        // opção única: já vem escolhida, não há o que decidir
-        <select
-          name={nome}
-          required
-          defaultValue={opcoes.length === 1 ? opcoes[0] : ''}
-          className={inputBase}
-        >
-          {opcoes.length > 1 && (
-            <option value="" disabled>
-              {placeholder || 'Selecione...'}
-            </option>
-          )}
-          {opcoes.map((o) => (
-            <option key={o}>{o}</option>
-          ))}
-        </select>
+        <span className="relative block">
+          {/* opção única já vem escolhida; seta igual à do combobox */}
+          <select
+            name={nome}
+            required
+            defaultValue={opcoes.length === 1 ? opcoes[0] : ''}
+            className={`${inputBase} cursor-pointer appearance-none pr-10`}
+          >
+            {opcoes.length > 1 && (
+              <option value="" disabled>
+                {placeholder || 'Selecione...'}
+              </option>
+            )}
+            {opcoes.map((o) => (
+              <option key={o}>{o}</option>
+            ))}
+          </select>
+          <SetaCampo />
+        </span>
       ) : (
         <input
           name={nome}
@@ -1747,7 +1757,7 @@ function DetalheTicket({
                 onResponder(new FormData(e.target).get('texto').trim())
                 e.target.reset()
               }}
-              className="mt-6 flex items-end gap-3 rounded-chip border border-axia-neutral bg-axia-offwhite/60 p-2 focus-within:border-axia-blue focus-within:bg-white"
+              className="mt-6 flex items-end gap-3 rounded-chip border border-axia-neutral bg-slate-100/70 p-2 focus-within:border-axia-blue focus-within:bg-white"
             >
               <textarea
                 name="texto"
@@ -2227,6 +2237,15 @@ function Notificacoes({ lista, lidas, trilha, onAbrir, onMarcarTodas, onVoltar }
   )
 }
 
+// tarja lateral do card: mesma leitura de cor do badge de status
+const BORDAS_STATUS = {
+  Aberto: 'border-l-axia-blue hover:border-l-axia-blue',
+  Andamento: 'border-l-axia-warning hover:border-l-axia-warning',
+  Suspenso: 'border-l-axia-sky hover:border-l-axia-sky',
+  Fechado: 'border-l-axia-success hover:border-l-axia-success',
+  [CANCELADO]: 'border-l-axia-error hover:border-l-axia-error',
+}
+
 const ESTATISTICAS = [
   { status: 'Aberto', titulo: 'Em aberto', nota: 'Requerem atenção', cor: 'bg-axia-blue/10 text-axia-blue' },
   { status: 'Andamento', titulo: 'Em andamento', nota: 'Em acompanhamento', cor: 'bg-axia-success/15 text-green-700' },
@@ -2244,6 +2263,8 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
   const [periodo, setPeriodo] = useState('Todo o período')
   const [ordem, setOrdem] = useState(ORDENS[0])
   const [reset, setReset] = useState(0) // remonta o combobox ao limpar
+  const [porPagina, setPorPagina] = useState(ITENS_POR_PAGINA[0])
+  const [pagina, setPagina] = useState(1)
 
   function limpar() {
     setTermo('')
@@ -2253,6 +2274,7 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
     setPeriodo('Todo o período')
     setOrdem(ORDENS[0])
     setReset((n) => n + 1)
+    setPagina(1)
   }
 
   const servicos = [...new Set(tickets.map((t) => t.servico))].sort()
@@ -2265,6 +2287,13 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
     }),
     ordem
   )
+
+  // página derivada (e não corrigida por efeito): filtrar pode encurtar a lista
+  const paginas = totalPaginas(visiveis.length, porPagina)
+  const paginaAtual = Math.min(pagina, paginas)
+  const daPagina = paginar(visiveis, paginaAtual, porPagina)
+  const primeiro = visiveis.length ? (paginaAtual - 1) * porPagina + 1 : 0
+  const ultimo = (paginaAtual - 1) * porPagina + daPagina.length
   // Suspenso só entra nos cartões quando existe — o modelo previa quatro
   const estatisticas = ESTATISTICAS.filter(
     (e) => e.status !== 'Suspenso' || tickets.some((t) => t.status === 'Suspenso')
@@ -2278,6 +2307,15 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
         subtitulo="Acompanhe o andamento das suas solicitações e interaja com a equipe responsável."
         onVoltar={onVoltar}
       />
+
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={onNova}
+          className="flex items-center gap-2 rounded-full bg-axia-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2"
+        >
+          <span className="text-lg leading-none">+</span> Nova solicitação
+        </button>
+      </div>
 
       <div className="mb-6 grid gap-4 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
         {estatisticas.map((e) => (
@@ -2304,85 +2342,76 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
         ))}
       </div>
 
-      <div className="mb-4 flex justify-end">
-        <button
-          onClick={onNova}
-          className="flex items-center gap-2 rounded-full bg-axia-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2"
-        >
-          <span className="text-lg leading-none">+</span> Nova solicitação
-        </button>
-      </div>
-
+      {/* busca e filtros separados: a busca é uma ação (Enter/botão), os filtros valem na hora */}
       <form
         onSubmit={(e) => {
           e.preventDefault()
           setTermoAplicado(termo)
         }}
-        className="mb-5 rounded-card border border-axia-neutral bg-white p-5"
+        className="mb-5 flex flex-wrap items-end gap-3 rounded-card border border-axia-neutral bg-white p-4"
       >
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1.2fr)_minmax(0,1.2fr)]">
-          <CampoFiltro rotulo="Buscar">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
-              <IconeLupa />
-            </span>
-            <input
-              value={termo}
-              onChange={(e) => setTermo(e.target.value)}
-              placeholder="Número ou descrição..."
-              className="w-full rounded-full border border-axia-neutral bg-axia-offwhite/60 py-2.5 pl-11 pr-4 text-sm outline-none focus:border-axia-blue focus:bg-white"
-            />
-          </CampoFiltro>
-
-          <CampoFiltro rotulo="Status">
-            <Seletor
-              valor={status}
-              onChange={setStatus}
-              opcoes={['Todos', ...STATUS, CANCELADO]}
-            />
-          </CampoFiltro>
-
-          {/* serviço é a lista mais longa: combobox com busca, como no formulário */}
-          <CampoFiltro rotulo="Serviço">
-            <Combobox
-              key={reset}
-              nome="filtro-servico"
-              opcoes={['Todos', ...servicos]}
-              inicial="Todos"
-              obrigatorio={false}
-              placeholder="Todos"
-              onChange={(v) => setServico(v || 'Todos')}
-            />
-          </CampoFiltro>
-
-          <CampoFiltro rotulo="Período">
-            <Seletor
-              valor={periodo}
-              onChange={setPeriodo}
-              opcoes={Object.keys(PERIODOS)}
-            />
-          </CampoFiltro>
-
-          <CampoFiltro rotulo="Ordenar por">
-            <Seletor valor={ordem} onChange={setOrdem} opcoes={ORDENS} />
-          </CampoFiltro>
-        </div>
-
-        <div className="mt-4 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={limpar}
-            className="rounded-full border border-axia-neutral px-6 py-2.5 text-sm font-bold text-axia-grey hover:bg-slate-100"
-          >
-            Limpar filtros
-          </button>
-          <button className="rounded-full bg-axia-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2">
-            Pesquisar
-          </button>
-        </div>
+        <CampoFiltro rotulo="Buscar chamado" largura="min-w-64 flex-1">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
+            <IconeLupa />
+          </span>
+          <input
+            value={termo}
+            onChange={(e) => setTermo(e.target.value)}
+            placeholder="Pesquise pelo nº do chamado"
+            className="w-full rounded-full border border-axia-neutral bg-slate-100/70 py-2.5 pl-11 pr-4 text-sm outline-none focus:border-axia-blue focus:bg-white"
+          />
+        </CampoFiltro>
+        <button className="shrink-0 rounded-full bg-axia-blue px-8 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2">
+          Pesquisar
+        </button>
       </form>
 
+      <div className="mb-5 flex flex-wrap items-end gap-4">
+        <CampoFiltro rotulo="Status">
+          <Seletor
+            valor={status}
+            onChange={setStatus}
+            opcoes={['Todos', ...STATUS, CANCELADO]}
+          />
+        </CampoFiltro>
+
+        {/* serviço é a lista mais longa: combobox com busca, como no formulário */}
+        <CampoFiltro rotulo="Serviço" largura="w-72">
+          <Combobox
+            key={reset}
+            nome="filtro-servico"
+            opcoes={['Todos', ...servicos]}
+            inicial="Todos"
+            obrigatorio={false}
+            placeholder="Todos"
+            classeInput={`${inputFiltro} font-bold text-axia-purple`}
+            onChange={(v) => setServico(v || 'Todos')}
+          />
+        </CampoFiltro>
+
+        <CampoFiltro rotulo="Período">
+          <Seletor
+            valor={periodo}
+            onChange={setPeriodo}
+            opcoes={Object.keys(PERIODOS)}
+          />
+        </CampoFiltro>
+
+        <CampoFiltro rotulo="Ordenar por">
+          <Seletor valor={ordem} onChange={setOrdem} opcoes={ORDENS} />
+        </CampoFiltro>
+
+        <button
+          type="button"
+          onClick={limpar}
+          className="ml-auto rounded-full border border-axia-neutral bg-white px-6 py-2.5 text-sm font-bold text-axia-grey hover:bg-slate-100"
+        >
+          Limpar filtros
+        </button>
+      </div>
+
       <ul className="space-y-3">
-        {visiveis.map((t) => (
+        {daPagina.map((t) => (
           <li key={t.protocolo}>
             <LinhaChamado chamado={t} onAbrir={() => onAbrir(t.protocolo)} />
           </li>
@@ -2391,16 +2420,62 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
       </ul>
 
       {visiveis.length > 0 && (
-        <p className="mt-6 text-center text-sm text-axia-grey/60">
-          Mostrando {visiveis.length} de {tickets.length} chamado(s)
-        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <p className="text-sm text-axia-grey/70">
+            Mostrando {primeiro}–{ultimo} de {visiveis.length} chamado(s)
+            {visiveis.length !== tickets.length && ` (${tickets.length} no total)`}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-axia-grey/70">
+              Itens por página
+              <span className="relative">
+                <select
+                  value={porPagina}
+                  onChange={(e) => {
+                    setPorPagina(Number(e.target.value))
+                    setPagina(1)
+                  }}
+                  className="cursor-pointer appearance-none rounded-full border border-axia-neutral bg-white py-2 pl-4 pr-10 text-sm font-bold text-axia-purple outline-none focus:border-axia-blue"
+                >
+                  {ITENS_POR_PAGINA.map((n) => (
+                    <option key={n}>{n}</option>
+                  ))}
+                </select>
+                <SetaCampo />
+              </span>
+            </label>
+
+            <div className="flex items-center gap-2">
+              <BotaoPagina
+                rotulo="Página anterior"
+                desabilitado={paginaAtual === 1}
+                onClick={() => setPagina(paginaAtual - 1)}
+              >
+                <span className="rotate-180">
+                  <ChevronDireita />
+                </span>
+              </BotaoPagina>
+              <span className="min-w-24 text-center text-sm font-bold text-axia-purple">
+                {paginaAtual} de {paginas}
+              </span>
+              <BotaoPagina
+                rotulo="Próxima página"
+                desabilitado={paginaAtual === paginas}
+                onClick={() => setPagina(paginaAtual + 1)}
+              >
+                <ChevronDireita />
+              </BotaoPagina>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )
 }
 
-const CampoFiltro = ({ rotulo, children }) => (
-  <label className="block">
+const CampoFiltro = ({ rotulo, largura = 'w-52', children }) => (
+  <label className={`block ${largura}`}>
     <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-axia-grey/70">
       {rotulo}
     </span>
@@ -2408,16 +2483,26 @@ const CampoFiltro = ({ rotulo, children }) => (
   </label>
 )
 
+// appearance-none + nosso Chevron: a seta nativa do SO destoava do combobox
 const Seletor = ({ valor, onChange, opcoes }) => (
-  <select
-    value={valor}
-    onChange={(e) => onChange(e.target.value)}
-    className="w-full cursor-pointer truncate rounded-full border border-axia-neutral bg-axia-offwhite/60 px-4 py-2.5 text-sm font-bold text-axia-purple outline-none focus:border-axia-blue focus:bg-white"
-  >
-    {opcoes.map((o) => (
-      <option key={o}>{o}</option>
-    ))}
-  </select>
+  <>
+    <select
+      value={valor}
+      onChange={(e) => onChange(e.target.value)}
+      className={`${inputFiltro} cursor-pointer appearance-none truncate pr-10 font-bold text-axia-purple`}
+    >
+      {opcoes.map((o) => (
+        <option key={o}>{o}</option>
+      ))}
+    </select>
+    <SetaCampo />
+  </>
+)
+
+const SetaCampo = () => (
+  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-axia-grey/60">
+    <Chevron />
+  </span>
 )
 
 function LinhaChamado({ chamado, onAbrir }) {
@@ -2430,9 +2515,7 @@ function LinhaChamado({ chamado, onAbrir }) {
     // colunas fixas no desktop para tudo alinhar entre as linhas; empilha no mobile
     <button
       onClick={onAbrir}
-      className={`flex w-full flex-wrap items-center gap-6 rounded-card border border-l-4 border-axia-neutral bg-white p-6 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5 lg:grid lg:grid-cols-[minmax(0,1fr)_130px_220px_130px_120px_20px] lg:gap-10 ${
-        encerrado ? 'border-l-axia-neutral' : 'border-l-axia-blue'
-      }`}
+      className={`flex w-full flex-wrap items-center gap-6 rounded-card border border-l-4 border-axia-neutral bg-white p-6 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5 lg:grid lg:grid-cols-[minmax(0,1fr)_130px_220px_130px_120px_20px] lg:gap-10 ${BORDAS_STATUS[chamado.status]}`}
     >
       <div className="min-w-0">
         <p className="font-mono text-sm font-bold tracking-wide text-axia-blue">
@@ -2472,6 +2555,18 @@ const Coluna = ({ rotulo, children }) => (
     <p className="text-xs text-axia-grey/60">{rotulo}</p>
     <p className="mt-0.5 truncate text-sm text-axia-grey1">{children}</p>
   </div>
+)
+
+const BotaoPagina = ({ rotulo, desabilitado, onClick, children }) => (
+  <button
+    onClick={onClick}
+    disabled={desabilitado}
+    aria-label={rotulo}
+    title={rotulo}
+    className="flex h-9 w-9 items-center justify-center rounded-full border border-axia-neutral bg-white text-axia-purple transition hover:border-axia-blue hover:text-axia-blue disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-axia-neutral disabled:hover:text-axia-purple"
+  >
+    {children}
+  </button>
 )
 
 function ChevronDireita() {

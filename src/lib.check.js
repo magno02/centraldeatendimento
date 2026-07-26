@@ -19,6 +19,8 @@ import {
   ultimaAtualizacao,
   filtrarChamados,
   ordenarChamados,
+  paginar,
+  totalPaginas,
   notificacoes,
   naoVisualizadas,
   visualizadas,
@@ -157,6 +159,16 @@ assert.deepEqual(chamados.map((c) => c.protocolo), [
   'TK-2026-00001',
   'TK-2026-00002',
 ]) // ordenar não muta
+
+// paginação
+const dez = Array.from({ length: 23 }, (_, i) => i + 1)
+assert.equal(totalPaginas(23, 10), 3)
+assert.equal(totalPaginas(0, 10), 1) // lista vazia ainda é "página 1 de 1"
+assert.deepEqual(paginar(dez, 1, 10)[0], 1)
+assert.equal(paginar(dez, 3, 10).length, 3) // última página parcial
+assert.deepEqual(paginar(dez, 99, 10), paginar(dez, 3, 10)) // página além do fim
+assert.deepEqual(paginar(dez, 0, 10), paginar(dez, 1, 10)) // e antes do início
+assert.deepEqual(paginar([], 1, 10), [])
 
 assert.equal(ultimaAtualizacao(chamados[0]), '2026-07-01T10:00:00.000Z')
 assert.equal(ultimaAtualizacao(chamados[1]), '2026-07-20T10:00:00.000Z') // sem interação, cai na criação

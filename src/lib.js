@@ -194,6 +194,19 @@ export function ordenarChamados(lista, ordem) {
   return copia.sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
 }
 
+export const ITENS_POR_PAGINA = [10, 25, 50, 100]
+
+export const totalPaginas = (total, porPagina) =>
+  Math.max(1, Math.ceil(total / porPagina))
+
+// Página fora do intervalo é presa nos limites: filtrar pode encurtar a lista
+// enquanto o usuário está numa página que deixou de existir.
+export function paginar(lista, pagina, porPagina) {
+  const p = Math.min(Math.max(1, pagina), totalPaginas(lista.length, porPagina))
+  const inicio = (p - 1) * porPagina
+  return lista.slice(inicio, inicio + porPagina)
+}
+
 export const podeInteragir = (t) => t.status !== 'Fechado' && t.status !== CANCELADO
 
 export function comInteracao(ticket, autor, texto, em = new Date()) {
