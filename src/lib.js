@@ -194,6 +194,69 @@ export function ordenarChamados(lista, ordem) {
   return copia.sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
 }
 
+// Ícone do serviço por palavra-chave do nome: 196 serviços não comportam escolha
+// manual. A ordem importa — a primeira regra que casar vence.
+const REGRAS_ICONE = [
+  [/senha|acesso|permiss|perfil|credencial|login|autentic/, 'chave'],
+  [/ciberseguran|seguranca da informacao|vulnerab|antiv|firewall|phishing/, 'escudo'],
+  [/rede|wi-?fi|internet|vpn|conectividade|conexao|link de dados/, 'rede'],
+  [/e-?mail|correio|caixa postal|outlook|exchange|distribuicao/, 'email'],
+  [/impress|scanner|digitaliza/, 'impressora'],
+  [/monitora|alarme|telemetr|observab|disponibilidade/, 'pulso'],
+  [/backup|restaur|recuperacao|retencao/, 'backup'],
+  [/servidor|datacenter|infraestrutura|hospedagem|nuvem|cloud|storage/, 'servidor'],
+  [/dashboard|analytics|indicador|relatorio|bi\b|dados|extracao/, 'grafico'],
+  [/\bsap\b/, 'cubo'],
+  [/salesforce|\bcrm\b|cliente/, 'pessoas'],
+  [/rpa|automacao|hiperautomacao|robo|bot\b/, 'robo'],
+  [/\bia\b|inteligencia artificial|copilot|assistente/, 'brilho'],
+  [/software|aplicativo|licenc|instalacao de programa|pacote office/, 'janela'],
+  [/notebook|computador|desktop|equipamento|hardware|periferico|maquina/, 'notebook'],
+  [/telefon|ramal|celular|voz|telefonia/, 'telefone'],
+  [/videoconferencia|teams|reuniao|conferencia/, 'video'],
+  [/documento|contrato|nota fiscal|assinatura|arquivo|certificado/, 'documento'],
+  [/processo|fluxo|workflow|esteira|integracao|\bapi\b|interface/, 'fluxo'],
+  [/governanca|politica|norma|comite|auditoria|conformidade|regulariza/, 'prancheta'],
+  [/portfolio|projeto|demanda|melhoria|desenvolvimento|evolutivo|sustentacao/, 'camadas'],
+  [/treinamento|capacitacao|aprendizagem|educacao|onboarding/, 'formatura'],
+  [/viagem|transporte|frota|veiculo|deslocamento/, 'veiculo'],
+  [/financeiro|pagamento|fatura|custo|orcamento|cobranca|tesouraria/, 'carteira'],
+  [/usuario|colaborador|cadastro|pessoa|\brh\b|recursos humanos/, 'pessoa'],
+  [/suporte|atendimento|duvida|incidente|chamado|help ?desk/, 'suporte'],
+  [/manutencao|reparo|conserto|obra|facilities|predial/, 'engrenagem'],
+  [/plantao|escala|agenda|calendario|prazo/, 'calendario'],
+  // termos que aparecem no catálogo da AXIA e não caem nas regras genéricas acima
+  [/sso|entra id|conta de|privilegio|administrador local|cyberark|identity/, 'chave'],
+  [/siem|ameaca|\bdlp\b|trend micro|qualys|proofpoint|agente de seguranca|risco/, 'escudo'],
+  [/dns|dhcp|proxy|porta usb|\brdp\b|\bssh\b|remota/, 'rede'],
+  [/sql|banco de dados|pgadmin|mysql|oracle/, 'backup'],
+  [/remetente/, 'email'],
+  [/planilha|excel|\bword\b|power ?point|formulario|data room|cnpj|cpf/, 'documento'],
+  [/servicenow|portal de servico|\bsla\b|\bola\b|item de configuracao|regras de negocio/, 'prancheta'],
+  [/headset|monitor|tablet|teclado|mouse|tower/, 'notebook'],
+  [/linha corporativa/, 'telefone'],
+  [/marca|rebranding/, 'brilho'],
+  [/sistema|aplicacao|plataforma|plugin|benner|pipeline|empreendimento|oportunidade|necessidade/, 'camadas'],
+  [/microsoft 365|onedrive|sharepoint|onenote|intranet|teams|colaborativo/, 'janela'],
+]
+
+export const CHAVES_ICONE = [...new Set(REGRAS_ICONE.map(([, c]) => c)), 'grade']
+
+// Padrão é "janela" (aplicativo): a maior parte do catálogo sem palavra-chave são
+// nomes de software — 7 Zip, Autocad, Python, Photoshop.
+export function chaveIcone(nome) {
+  const n = norm(nome)
+  for (const [regra, chave] of REGRAS_ICONE) if (regra.test(n)) return chave
+  return 'janela'
+}
+
+// ponytail: login simulado com credencial fixa — trocar por SSO/AD (Entra ID).
+// Não é segurança: qualquer um lê isto no bundle. Serve só para demonstrar o fluxo.
+export const CREDENCIAL = { usuario: 'joao.silva@axia.com.br', senha: 'axia@2026' }
+
+export const validarLogin = (usuario, senha) =>
+  usuario.trim().toLowerCase() === CREDENCIAL.usuario && senha === CREDENCIAL.senha
+
 export const ITENS_POR_PAGINA = [10, 25, 50, 100]
 
 export const totalPaginas = (total, porPagina) =>

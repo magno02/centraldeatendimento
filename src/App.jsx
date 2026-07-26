@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_MARINHO_RGB.png'
 import { PORTFOLIOS, ATIVIDADES, POR_CHAVE } from './catalogo'
+import { IconeServico } from './icones'
+import Login from './Login'
 import {
   EMPRESAS,
   ESTADOS,
@@ -80,6 +82,9 @@ export default function App() {
     JSON.parse(localStorage.getItem('notificacoesLidas') || '[]')
   )
   const [saindo, setSaindo] = useState(false)
+  const [logado, setLogado] = useState(
+    () => localStorage.getItem('sessao') === 'ativa'
+  )
   const [secao, setSecao] = useState('Portfólios')
   const [favoritos, setFavoritos] = useState(() =>
     JSON.parse(localStorage.getItem('favoritos') || '[]')
@@ -174,11 +179,25 @@ export default function App() {
     setView({ tela: 'ticket', protocolo: ticket.protocolo, novo: true })
   }
 
+  function entrar() {
+    localStorage.setItem('sessao', 'ativa')
+    setLogado(true)
+  }
+
+  function sair() {
+    localStorage.removeItem('sessao')
+    setLogado(false)
+    setSaindo(false)
+    irAoPortal()
+  }
+
   const resultados = buscar(ATIVIDADES, busca)
   const portfolio = PORTFOLIOS.find((p) => p.id === aba)
   const servicosVisiveis = filtrarServicos(portfolio.servicos, filtro)
   const ticketAtual =
     view.tela === 'ticket' && tickets.find((t) => t.protocolo === view.protocolo)
+
+  if (!logado) return <Login onEntrar={entrar} />
 
   return (
     <div className="min-h-screen bg-axia-bg font-sans text-axia-grey1">
@@ -234,12 +253,17 @@ export default function App() {
             {secao === 'Portfólios' && (
               <>
                 <Chips itens={PORTFOLIOS} ativa={aba} onSelect={setAba} />
-                <input
-                  value={filtro}
-                  onChange={(e) => setFiltro(e.target.value)}
-                  placeholder={`Filtrar serviços em ${portfolio.nome}...`}
-                  className="w-full max-w-xl rounded-full border border-axia-neutral bg-white px-5 py-2.5 text-sm outline-none focus:border-axia-blue"
-                />
+                <label className="relative block w-full max-w-xl">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
+                    <IconeLupa />
+                  </span>
+                  <input
+                    value={filtro}
+                    onChange={(e) => setFiltro(e.target.value)}
+                    placeholder={`Filtrar serviços em ${portfolio.nome}...`}
+                    className="w-full rounded-full border border-axia-neutral bg-white py-2.5 pl-11 pr-5 text-sm outline-none focus:border-axia-blue"
+                  />
+                </label>
                 <div className="mb-5 mt-3 flex items-center gap-4">
                   <span className="text-sm text-axia-grey/70">
                     {servicosVisiveis.length} de {portfolio.servicos.length} serviço(s)
@@ -447,8 +471,7 @@ export default function App() {
             Continuar no portal
           </button>
           <button
-            // ponytail: sem login real, sair só recarrega — troque pelo logout do SSO.
-            onClick={() => window.location.reload()}
+            onClick={sair}
             className="rounded-full bg-axia-error px-5 py-2 text-sm font-bold text-white hover:brightness-90"
           >
             Sair
@@ -999,7 +1022,7 @@ function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
 // auto-fit com teto de 440px: é a largura que o card tem quando cabem 3 por linha,
 // então 1 ou 2 cards ficam desse mesmo tamanho em vez de esticar pela linha toda.
 const Grade = ({ children }) => (
-  <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(360px,440px))]">
+  <div className="grid items-stretch gap-6 grid-cols-[repeat(auto-fit,minmax(360px,440px))]">
     {children}
   </div>
 )
@@ -1098,13 +1121,14 @@ function Estrela({ ativo, onClick, rotulo }) {
 
 function CardServico({ servico, favorito, onFavoritar, onClick }) {
   return (
-    <div className="relative">
+    // altura igual em todos os cards: min-h fixa o piso, h-full estica na linha
+    <div className="relative h-full">
       <Estrela ativo={favorito} onClick={onFavoritar} rotulo={servico.nome} />
       <button
         onClick={onClick}
-        className="h-full w-full rounded-card border border-axia-neutral bg-white p-10 text-center transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5"
+        className="flex h-full min-h-60 w-full flex-col items-center justify-center rounded-card border border-axia-neutral bg-white p-10 text-center transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5"
       >
-        <Icone />
+        <IconeServico nome={servico.nome} />
         <div className="mt-6 text-xl font-bold text-axia-purple">{servico.nome}</div>
         <div className="mt-2 text-base text-axia-grey/70">
           {servico.atividades.length} atividade(s)
@@ -1156,13 +1180,13 @@ function ListaChaves({
 
 function CardAtividade({ atividade, rodape, favorito, onFavoritar, onClick }) {
   return (
-    <div className="relative">
+    <div className="relative h-full">
       {onFavoritar && (
         <Estrela ativo={favorito} onClick={onFavoritar} rotulo={atividade.nome} />
       )}
       <button
         onClick={onClick}
-        className="flex h-full w-full flex-col rounded-card border border-axia-neutral bg-white p-8 pr-14 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5"
+        className="flex h-full min-h-60 w-full flex-col rounded-card border border-axia-neutral bg-white p-8 pr-14 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5"
       >
         <h3 className="text-2xl font-bold leading-snug text-axia-purple">
           {atividade.nome}
@@ -1456,7 +1480,7 @@ const inputBase =
 // mesma base, mas em pílula e com borda um tom mais escura — só na faixa de
 // filtros de "Meus chamados", onde os campos ficam soltos sobre o fundo da página
 const inputFiltro =
-  'w-full rounded-full border border-slate-300 bg-slate-100/70 px-4 py-2.5 text-sm outline-none focus:border-axia-blue focus:bg-white'
+  'w-full rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-axia-blue'
 
 const idLista = (nome) => `lista-${nome.replace(/\W+/g, '-')}`
 
@@ -2350,7 +2374,7 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
         }}
         className="mb-5 flex flex-wrap items-end gap-3 rounded-card border border-axia-neutral bg-white p-4"
       >
-        <CampoFiltro rotulo="Buscar chamado" largura="min-w-64 flex-1">
+        <CampoFiltro rotulo="Buscar chamado" largura="min-w-64 flex-1" escuro>
           <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
             <IconeLupa />
           </span>
@@ -2358,10 +2382,10 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
             value={termo}
             onChange={(e) => setTermo(e.target.value)}
             placeholder="Pesquise pelo nº do chamado"
-            className="w-full rounded-full border border-axia-neutral bg-slate-100/70 py-2.5 pl-11 pr-4 text-sm outline-none focus:border-axia-blue focus:bg-white"
+            className="w-full rounded-full border border-slate-300 bg-white py-2.5 pl-11 pr-4 text-sm outline-none focus:border-axia-blue"
           />
         </CampoFiltro>
-        <button className="shrink-0 rounded-full bg-axia-blue px-8 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2">
+        <button className="shrink-0 rounded-full border border-axia-blue px-8 py-2.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white">
           Pesquisar
         </button>
       </form>
@@ -2474,9 +2498,13 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
   )
 }
 
-const CampoFiltro = ({ rotulo, largura = 'w-52', children }) => (
+const CampoFiltro = ({ rotulo, largura = 'w-52', escuro, children }) => (
   <label className={`block ${largura}`}>
-    <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-axia-grey/70">
+    <span
+      className={`mb-1.5 block text-xs font-bold uppercase tracking-wide ${
+        escuro ? 'text-axia-sky2' : 'text-axia-grey/70'
+      }`}
+    >
       {rotulo}
     </span>
     <span className="relative block">{children}</span>

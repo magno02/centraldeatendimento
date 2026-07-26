@@ -8,6 +8,10 @@ import {
   filtrarServicos,
   filtrarOpcoes,
   responderIA,
+  chaveIcone,
+  CHAVES_ICONE,
+  validarLogin,
+  CREDENCIAL,
   alternarFavorito,
   registrarRecente,
   contarPorStatus,
@@ -53,6 +57,23 @@ assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], ''), ['São Paulo', 'Bah
 assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], 'sao'), ['São Paulo'])
 assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], 'AHI'), ['Bahia'])
 assert.deepEqual(filtrarOpcoes(['São Paulo'], 'xyz'), [])
+
+// login simulado: aceita a credencial (ignorando caixa/espaço no usuário) e nada mais
+assert.equal(validarLogin(CREDENCIAL.usuario, CREDENCIAL.senha), true)
+assert.equal(validarLogin(' JOAO.SILVA@AXIA.COM.BR ', CREDENCIAL.senha), true)
+assert.equal(validarLogin('joao.silva', CREDENCIAL.senha), false) // precisa do domínio
+assert.equal(validarLogin(CREDENCIAL.usuario, 'errada'), false)
+assert.equal(validarLogin('', ''), false)
+
+// ícones: toda regra devolve chave existente e os exemplos batem com o esperado
+assert.equal(chaveIcone('Reset de senha'), 'chave')
+assert.equal(chaveIcone('Cibersegurança de TI'), 'escudo')
+assert.equal(chaveIcone('Correio Eletrônico'), 'email')
+assert.equal(chaveIcone('Infraestrutura SAP'), 'servidor') // infraestrutura vence SAP
+assert.equal(chaveIcone('Adobe Photoshop'), 'janela') // nome de software cai no padrão
+assert.equal(chaveIcone('Operação SIEM'), 'escudo')
+assert.equal(chaveIcone('Serviços de Configuração DNS'), 'rede')
+for (const s of SERVICOS) assert.ok(CHAVES_ICONE.includes(chaveIcone(s.nome)), s.nome)
 
 // assistente: devolve sugestões do catálogo, ou texto de "não encontrei"
 const resposta = responderIA('acesso', ATIVIDADES)
