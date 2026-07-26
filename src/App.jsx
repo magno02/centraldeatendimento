@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_RBG.png'
+import logoVertical from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_VERTICAL_AZUL_RBG.png'
 import { PORTFOLIOS, ATIVIDADES, POR_CHAVE } from './catalogo'
 import { IconeServico } from './icones'
 import Login from './Login'
@@ -671,11 +672,16 @@ function Topo({
           onClick={onInicio}
           className="flex min-w-0 cursor-pointer flex-col items-center gap-2 text-center sm:flex-row sm:gap-6 sm:text-left"
         >
-          <img
-            src={logo}
-            alt="AXIA Energia"
-            className="h-24 w-auto shrink-0 object-contain sm:h-20"
-          />
+          {/* <picture> em vez de dois <img> alternados por classe: assim o navegador
+              baixa só o arquivo que vai exibir, e não os dois 170 KB + 118 KB. */}
+          <picture className="shrink-0">
+            <source media="(min-width: 640px)" srcSet={logo} />
+            <img
+              src={logoVertical}
+              alt="AXIA Energia"
+              className="h-32 w-auto shrink-0 object-contain sm:h-20"
+            />
+          </picture>
           <span className="min-w-0">
             <span className="block text-lg font-bold leading-tight sm:text-xl">
               Como podemos ajudar?
