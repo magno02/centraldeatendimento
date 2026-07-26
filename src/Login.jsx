@@ -11,7 +11,8 @@ export default function Login({ onEntrar }) {
   function entrar(e) {
     e.preventDefault()
     const f = new FormData(e.target)
-    if (validarLogin(f.get('usuario'), f.get('senha'))) return onEntrar()
+    const conta = validarLogin(f.get('usuario'), f.get('senha'))
+    if (conta) return onEntrar(conta)
     setErro('Usuário ou senha inválidos. Verifique os dados e tente novamente.')
   }
 

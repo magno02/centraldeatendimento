@@ -11,7 +11,7 @@ import {
   chaveIcone,
   CHAVES_ICONE,
   validarLogin,
-  CREDENCIAL,
+  CONTAS,
   alternarFavorito,
   registrarRecente,
   contarPorStatus,
@@ -33,6 +33,8 @@ import {
   cancelar,
   podeInteragir,
   CANCELADO,
+  STATUS,
+  STATUS_PAINEL,
 } from './lib.js'
 
 const hoje = new Date('2026-07-24')
@@ -58,12 +60,17 @@ assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], 'sao'), ['São Paulo'])
 assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], 'AHI'), ['Bahia'])
 assert.deepEqual(filtrarOpcoes(['São Paulo'], 'xyz'), [])
 
-// login simulado: aceita a credencial (ignorando caixa/espaço no usuário) e nada mais
-assert.equal(validarLogin(CREDENCIAL.usuario, CREDENCIAL.senha), true)
-assert.equal(validarLogin(' JOAO.SILVA@AXIA.COM.BR ', CREDENCIAL.senha), true)
-assert.equal(validarLogin('joao.silva', CREDENCIAL.senha), false) // precisa do domínio
-assert.equal(validarLogin(CREDENCIAL.usuario, 'errada'), false)
-assert.equal(validarLogin('', ''), false)
+// login simulado: devolve a conta (ignorando caixa/espaço no e-mail) ou null
+for (const conta of CONTAS) {
+  assert.equal(validarLogin(conta.email, conta.senha), conta)
+  assert.equal(validarLogin(` ${conta.email.toUpperCase()} `, conta.senha), conta)
+  assert.equal(validarLogin(conta.email, 'errada'), null)
+  // cada conta entra com o próprio perfil, não com o do vizinho
+  assert.ok(conta.nome && conta.empresa && conta.estado && conta.area)
+}
+assert.equal(validarLogin('joao.silva', 'axia@2026'), null) // precisa do domínio
+assert.equal(validarLogin('', ''), null)
+assert.equal(new Set(CONTAS.map((c) => c.email)).size, CONTAS.length) // sem e-mail repetido
 
 // ícones: toda regra devolve chave existente e os exemplos batem com o esperado
 assert.equal(chaveIcone('Reset de senha'), 'chave')
@@ -226,9 +233,14 @@ assert.deepEqual(filtrarServicos(area.servicos, 'zzzznaoexiste'), [])
 assert.deepEqual(contarPorStatus([{ status: 'Aberto' }, { status: 'Fechado' }]), {
   Aberto: 1,
   Andamento: 0,
-  Suspenso: 0,
+  Pendente: 0,
+  'Aguardando aprovação': 0,
   Fechado: 1,
 })
+
+// os indicadores do portal são um recorte do STATUS, nunca um status inventado
+assert.ok(STATUS_PAINEL.every((s) => STATUS.includes(s)))
+assert.ok(!STATUS_PAINEL.includes('Aberto'))
 
 // interações e cancelamento
 const t0 = { protocolo: 'TK-2026-00001', status: 'Aberto', interacoes: [] }
@@ -242,7 +254,8 @@ assert.match(t2.interacoes.at(-1).texto, /duplicidade/)
 assert.equal(podeInteragir(t2), false)
 assert.equal(cancelar(t2, 'de novo'), t2) // já cancelado: nada muda
 assert.equal(podeInteragir({ status: 'Fechado' }), false)
-assert.equal(podeInteragir({ status: 'Suspenso' }), true)
+assert.equal(podeInteragir({ status: 'Pendente' }), true)
+assert.equal(podeInteragir({ status: 'Aguardando aprovação' }), true)
 
 // todo select/combo tem opções; toda atividade tem o campo de Oferta de Serviço
 for (const a of ATIVIDADES) {

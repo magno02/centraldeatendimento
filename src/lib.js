@@ -1,5 +1,20 @@
-export const STATUS = ['Aberto', 'Andamento', 'Suspenso', 'Fechado']
+export const STATUS = [
+  'Aberto',
+  'Andamento',
+  'Pendente',
+  'Aguardando aprovação',
+  'Fechado',
+]
 export const CANCELADO = 'Cancelado'
+
+// Indicadores do portal: subconjunto do STATUS. "Aberto" fica só no acompanhamento,
+// onde a lista completa importa para filtrar.
+export const STATUS_PAINEL = [
+  'Andamento',
+  'Pendente',
+  'Aguardando aprovação',
+  'Fechado',
+]
 
 const norm = (s) =>
   s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
@@ -250,12 +265,33 @@ export function chaveIcone(nome) {
   return 'janela'
 }
 
-// ponytail: login simulado com credencial fixa — trocar por SSO/AD (Entra ID).
+// ponytail: contas simuladas com senha em claro — trocar por SSO/AD (Entra ID).
 // Não é segurança: qualquer um lê isto no bundle. Serve só para demonstrar o fluxo.
-export const CREDENCIAL = { usuario: 'joao.silva@axia.com.br', senha: 'axia@2026' }
+// empresa/estado/area pré-preenchem o formulário ao solicitar para outra pessoa.
+export const CONTAS = [
+  {
+    email: 'joao.silva@axia.com.br',
+    senha: 'axia@2026',
+    nome: 'João da Silva',
+    empresa: 'AXIA Energia',
+    estado: 'Pernambuco',
+    area: 'Compras e Contratações',
+  },
+  {
+    email: 'valeria@axia.com.br',
+    senha: 'axia@2026',
+    nome: 'Valéria',
+    empresa: 'AXIA Energia',
+    estado: 'Pernambuco',
+    area: 'Tecnologia da Informação',
+  },
+]
 
+// Devolve a conta (para virar a sessão) ou null — o e-mail ignora caixa e espaços.
 export const validarLogin = (usuario, senha) =>
-  usuario.trim().toLowerCase() === CREDENCIAL.usuario && senha === CREDENCIAL.senha
+  CONTAS.find(
+    (c) => c.email === usuario.trim().toLowerCase() && c.senha === senha
+  ) ?? null
 
 export const ITENS_POR_PAGINA = [10, 25, 50, 100]
 

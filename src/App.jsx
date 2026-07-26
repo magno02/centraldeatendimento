@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
-import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_MARINHO_RGB.png'
+﻿import { useState, useEffect, useRef } from 'react'
+import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_RBG.png'
 import { PORTFOLIOS, ATIVIDADES, POR_CHAVE } from './catalogo'
 import { IconeServico } from './icones'
 import Login from './Login'
@@ -13,6 +13,7 @@ import {
 } from './organizacao'
 import {
   STATUS,
+  STATUS_PAINEL,
   CANCELADO,
   novoProtocolo,
   buscar,
@@ -44,22 +45,14 @@ import {
   cancelar,
 } from './lib'
 
-// ponytail: usuário fixo — troque por dados da sessão quando houver login (SSO/AD).
-// empresa/estado/area pré-preenchem o formulário ao solicitar para outra pessoa.
-const USUARIO = {
-  nome: 'João da Silva',
-  empresa: 'AXIA Energia',
-  estado: 'Pernambuco',
-  area: 'Compras e Contratações',
-}
-
 const campoNome = (c) => (typeof c === 'string' ? c : c.n)
 const campoTipo = (c) => (typeof c === 'string' ? 'texto' : c.t)
 
 const CORES_STATUS = {
   Aberto: 'bg-axia-blue/10 text-axia-blue',
   Andamento: 'bg-axia-warning/15 text-yellow-700',
-  Suspenso: 'bg-axia-neutral text-axia-grey',
+  Pendente: 'bg-axia-neutral text-axia-grey',
+  'Aguardando aprovação': 'bg-axia-sky/30 text-axia-sky2',
   Fechado: 'bg-axia-success/15 text-green-700',
   [CANCELADO]: 'bg-axia-error/10 text-axia-error',
 }
@@ -67,9 +60,11 @@ const CORES_STATUS = {
 export default function App() {
   const [tickets, setTickets] = useState(() =>
     // interacoes garantido: tickets gravados por versões anteriores não tinham o campo.
+    // "Suspenso" virou "Pendente": sem isto o ticket antigo perde cor e sai dos filtros.
     JSON.parse(localStorage.getItem('tickets') || '[]').map((t) => ({
       interacoes: [],
       ...t,
+      status: t.status === 'Suspenso' ? 'Pendente' : t.status,
     }))
   )
   // view: {tela:'portal'} | {tela:'servico',servico} | {tela:'form',atividade}
@@ -82,9 +77,17 @@ export default function App() {
     JSON.parse(localStorage.getItem('notificacoesLidas') || '[]')
   )
   const [saindo, setSaindo] = useState(false)
-  const [logado, setLogado] = useState(
-    () => localStorage.getItem('sessao') === 'ativa'
-  )
+  // sessão guarda a conta inteira: o portal usa nome/empresa/estado/área em vários
+  // pontos, e reler a conta pelo e-mail a cada render não traria nada.
+  // try/catch obrigatório: a sessão antiga era a string "ativa", que estoura no parse.
+  // Quem estava logado no formato velho cai no login e entra de novo — sem tela branca.
+  const [usuario, setUsuario] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('sessao'))
+    } catch {
+      return null
+    }
+  })
   const [secao, setSecao] = useState('Portfólios')
   const [favoritos, setFavoritos] = useState(() =>
     JSON.parse(localStorage.getItem('favoritos') || '[]')
@@ -153,8 +156,8 @@ export default function App() {
       atividade: atividade.nome,
       servico: atividade.servico.nome,
       portfolio: atividade.portfolio.nome,
-      solicitante: paraOutra ? f.get('Usuário') : USUARIO.nome,
-      abertoPor: USUARIO.nome,
+      solicitante: paraOutra ? f.get('Usuário') : usuario.nome,
+      abertoPor: usuario.nome,
       responsavel: atendenteDe(novoProtocolo(tickets), ATENDENTES),
       anexos,
       status: 'Aberto',
@@ -179,14 +182,14 @@ export default function App() {
     setView({ tela: 'ticket', protocolo: ticket.protocolo, novo: true })
   }
 
-  function entrar() {
-    localStorage.setItem('sessao', 'ativa')
-    setLogado(true)
+  function entrar(conta) {
+    localStorage.setItem('sessao', JSON.stringify(conta))
+    setUsuario(conta)
   }
 
   function sair() {
     localStorage.removeItem('sessao')
-    setLogado(false)
+    setUsuario(null)
     setSaindo(false)
     irAoPortal()
   }
@@ -197,7 +200,7 @@ export default function App() {
   const ticketAtual =
     view.tela === 'ticket' && tickets.find((t) => t.protocolo === view.protocolo)
 
-  if (!logado) return <Login onEntrar={entrar} />
+  if (!usuario) return <Login onEntrar={entrar} />
 
   return (
     <div className="min-h-screen bg-axia-bg font-sans text-axia-grey1">
@@ -207,7 +210,7 @@ export default function App() {
           setBusca(v)
           setView({ tela: 'portal' })
         }}
-        usuario={USUARIO}
+        usuario={usuario}
         notificacoes={listaNotificacoes}
         novidades={naoVisualizadas(listaNotificacoes, lidas).length}
         onInicio={irAoPortal}
@@ -220,7 +223,7 @@ export default function App() {
       <main className="mx-auto max-w-[1440px] px-4 pb-20 sm:px-8">
         {view.tela === 'portal' && (
           <Indicadores
-            usuario={USUARIO}
+            usuario={usuario}
             contagem={contarPorStatus(tickets)}
             onIndicador={(status) => setView({ tela: 'tickets', status })}
             onVerTodos={() => setView({ tela: 'tickets' })}
@@ -354,7 +357,7 @@ export default function App() {
         {view.tela === 'form' && (
           <Formulario
             atividade={view.atividade}
-            usuario={USUARIO}
+            usuario={usuario}
             onSubmit={enviar}
             trilha={[
               { label: 'Portal', onClick: irAoPortal },
@@ -455,7 +458,7 @@ export default function App() {
       </main>
 
       <BotaoTopo />
-      <ChatIA usuario={USUARIO} onAtividade={abrirAtividade} />
+      <ChatIA usuario={usuario} onAtividade={abrirAtividade} />
 
       <Modal
         aberto={saindo}
@@ -651,7 +654,7 @@ function Topo({
   onSair,
 }) {
   return (
-    <header className="bg-axia-purple text-white">
+    <header className="bg-axia-blue text-white">
       <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-6 gap-y-4 px-4 py-4 sm:px-8 sm:py-6">
         {/* logo + título levam ao portal */}
         <button
@@ -741,7 +744,7 @@ function Topo({
             classeBotao="flex items-center gap-3 rounded-full py-1 pl-1 pr-3 hover:bg-white/10"
             rotulo={
               <>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-axia-blue text-sm font-bold text-white">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-axia-blue">
                   {iniciais(usuario.nome)}
                 </span>
                 <span className="text-sm font-bold">{usuario.nome}</span>
@@ -928,17 +931,19 @@ function Indicadores({ usuario, contagem, onIndicador, onVerTodos }) {
         </div>
 
         <div className="flex flex-wrap justify-end gap-3">
-          {STATUS.map((s) => (
+          {STATUS_PAINEL.map((s) => (
             <button
               key={s}
               onClick={() => onIndicador(s)}
               title={`Ver chamados com status ${s}`}
-              className="w-24 rounded-chip border border-axia-neutral bg-white px-2 py-2 text-center transition hover:border-axia-blue hover:shadow-md hover:shadow-axia-blue/5"
+              className="flex w-24 flex-col items-center justify-center rounded-chip border border-axia-neutral bg-white px-2 pb-1 pt-5 text-center transition hover:border-axia-blue hover:shadow-md hover:shadow-axia-blue/5"
             >
               <div className="text-2xl font-bold leading-none text-axia-purple">
                 {contagem[s]}
               </div>
-              <div className="mt-1 text-[11px] uppercase tracking-wide text-axia-grey/70">
+              {/* duas linhas reservadas: "Aguardando aprovação" quebra e os demais
+                  rótulos precisam ocupar a mesma altura para os números alinharem */}
+              <div className="mt-2 flex min-h-[2rem] items-start justify-center text-[11px] uppercase leading-tight tracking-wide text-axia-grey/70">
                 {s}
               </div>
             </button>
@@ -2296,15 +2301,17 @@ function Notificacoes({ lista, lidas, trilha, onAbrir, onMarcarTodas, onVoltar }
 const BORDAS_STATUS = {
   Aberto: 'border-l-axia-blue hover:border-l-axia-blue',
   Andamento: 'border-l-axia-warning hover:border-l-axia-warning',
-  Suspenso: 'border-l-axia-sky hover:border-l-axia-sky',
+  Pendente: 'border-l-axia-grey hover:border-l-axia-grey',
+  'Aguardando aprovação': 'border-l-axia-sky2 hover:border-l-axia-sky2',
   Fechado: 'border-l-axia-success hover:border-l-axia-success',
   [CANCELADO]: 'border-l-axia-error hover:border-l-axia-error',
 }
 
 const ESTATISTICAS = [
-  { status: 'Aberto', titulo: 'Em aberto', nota: 'Requerem atenção', cor: 'bg-axia-blue/10 text-axia-blue' },
+  { status: 'Aberto', titulo: 'Em aberto', nota: 'Aguardando atendimento', cor: 'bg-axia-blue/10 text-axia-blue' },
   { status: 'Andamento', titulo: 'Em andamento', nota: 'Em acompanhamento', cor: 'bg-axia-success/15 text-green-700' },
-  { status: 'Suspenso', titulo: 'Suspensos', nota: 'Aguardando retorno', cor: 'bg-axia-warning/20 text-yellow-700' },
+  { status: 'Pendente', titulo: 'Pendentes', nota: 'Aguardando retorno', cor: 'bg-axia-warning/20 text-yellow-700' },
+  { status: 'Aguardando aprovação', titulo: 'Aguardando aprovação', nota: 'Em aprovação', cor: 'bg-axia-sky/30 text-axia-sky2' },
   { status: 'Fechado', titulo: 'Concluídos', nota: 'Finalizados', cor: 'bg-axia-purple/10 text-axia-purple' },
   { status: CANCELADO, titulo: 'Cancelados', nota: 'Encerrados', cor: 'bg-axia-error/10 text-axia-error' },
 ]
@@ -2349,10 +2356,6 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
   const daPagina = paginar(visiveis, paginaAtual, porPagina)
   const primeiro = visiveis.length ? (paginaAtual - 1) * porPagina + 1 : 0
   const ultimo = (paginaAtual - 1) * porPagina + daPagina.length
-  // Suspenso só entra nos cartões quando existe — o modelo previa quatro
-  const estatisticas = ESTATISTICAS.filter(
-    (e) => e.status !== 'Suspenso' || tickets.some((t) => t.status === 'Suspenso')
-  )
 
   return (
     <>
@@ -2372,26 +2375,34 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
         </button>
       </div>
 
-      <div className="mb-6 grid gap-4 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
-        {estatisticas.map((e) => (
+      {/* 190px é o menor card que ainda cabe "Aguardando aprovação" em duas linhas:
+          os seis entram numa fileira a partir de ~1200px e quebram sozinhos abaixo disso */}
+      <div className="mb-6 grid gap-3 grid-cols-[repeat(auto-fit,minmax(190px,1fr))]">
+        {ESTATISTICAS.map((e) => (
           <button
             key={e.status}
             onClick={() => setStatus(status === e.status ? 'Todos' : e.status)}
-            className={`flex items-center gap-4 rounded-card border bg-white px-5 py-4 text-left transition hover:shadow-md ${
+            className={`flex items-center gap-3 rounded-card border bg-white px-4 py-4 text-left transition hover:shadow-md ${
               status === e.status ? 'border-axia-blue' : 'border-axia-neutral'
             }`}
           >
             <span
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-chip ${e.cor}`}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-chip ${e.cor}`}
             >
               <IconeStatus />
             </span>
+            {/* título e nota com duas linhas reservadas: sem isso o card de rótulo
+                curto fica mais baixo e o número sai do eixo dos vizinhos */}
             <div>
-              <p className="text-sm text-axia-grey/80">{e.titulo}</p>
-              <p className="text-2xl font-bold text-axia-purple">
+              <p className="min-h-[2.2rem] text-sm leading-tight text-axia-grey/80">
+                {e.titulo}
+              </p>
+              <p className="text-2xl font-bold leading-none text-axia-purple">
                 {tickets.filter((t) => t.status === e.status).length}
               </p>
-              <p className="text-xs text-axia-grey/60">{e.nota}</p>
+              <p className="mt-1 min-h-[1.9rem] text-xs leading-tight text-axia-grey/60">
+                {e.nota}
+              </p>
             </div>
           </button>
         ))}
