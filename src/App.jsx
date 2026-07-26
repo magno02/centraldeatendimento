@@ -1063,7 +1063,9 @@ function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
         {subtitulo && <p className="mt-1.5 text-base text-axia-grey">{subtitulo}</p>}
         {extra}
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      {/* no celular ocupa a linha inteira e joga um botão para cada ponta;
+          de sm para cima volta a ser um par agrupado à direita do título */}
+      <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:shrink-0 sm:justify-end">
         <button
           onClick={onVoltar}
           className="rounded-full border border-axia-blue px-6 py-1.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white"
