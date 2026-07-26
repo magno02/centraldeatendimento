@@ -16,6 +16,7 @@ import {
   buscar,
   filtrarServicos,
   filtrarOpcoes,
+  responderIA,
   alternarFavorito,
   registrarRecente,
   contarPorStatus,
@@ -23,6 +24,12 @@ import {
   prazoPrevisto,
   formatarTamanho,
   atendenteDe,
+  tempoRelativo,
+  ultimaAtualizacao,
+  filtrarChamados,
+  ordenarChamados,
+  PERIODOS,
+  ORDENS,
   notificacoes,
   naoVisualizadas,
   visualizadas,
@@ -181,6 +188,7 @@ export default function App() {
         usuario={USUARIO}
         notificacoes={listaNotificacoes}
         novidades={naoVisualizadas(listaNotificacoes, lidas).length}
+        onInicio={irAoPortal}
         onNotificacao={abrirNotificacao}
         onVerTodas={() => setView({ tela: 'notificacoes' })}
         onMeusTickets={() => setView({ tela: 'tickets' })}
@@ -227,7 +235,7 @@ export default function App() {
                   value={filtro}
                   onChange={(e) => setFiltro(e.target.value)}
                   placeholder={`Filtrar serviços em ${portfolio.nome}...`}
-                  className="w-full max-w-sm rounded-full border border-axia-neutral bg-white px-5 py-2.5 text-sm outline-none focus:border-axia-blue"
+                  className="w-full max-w-xl rounded-full border border-axia-neutral bg-white px-5 py-2.5 text-sm outline-none focus:border-axia-blue"
                 />
                 <div className="mb-5 mt-3 flex items-center gap-4">
                   <span className="text-sm text-axia-grey/70">
@@ -393,6 +401,7 @@ export default function App() {
             tickets={tickets}
             statusInicial={view.status}
             onAbrir={(protocolo) => setView({ tela: 'ticket', protocolo })}
+            onNova={irAoPortal}
             trilha={[
               { label: 'Portal', onClick: irAoPortal },
               { label: 'Meus chamados' },
@@ -417,6 +426,7 @@ export default function App() {
       </main>
 
       <BotaoTopo />
+      <ChatIA usuario={USUARIO} onAtividade={abrirAtividade} />
 
       <Modal
         aberto={saindo}
@@ -446,6 +456,133 @@ export default function App() {
   )
 }
 
+// Assistente flutuante: responde buscando no catálogo e sugere a atividade certa.
+function ChatIA({ usuario, onAtividade }) {
+  const [aberto, setAberto] = useState(false)
+  const [mensagens, setMensagens] = useState([
+    {
+      de: 'ia',
+      texto: `Olá, ${usuario.nome.split(' ')[0]}! Bem-vindo(a) ao portal de serviços da AXIA. Me diga o que você precisa — por exemplo "resetar senha do SAP" ou "solicitar acesso à rede" — que eu encontro o serviço e já abro o formulário para você.`,
+    },
+  ])
+  const fim = useRef(null)
+
+  useEffect(() => {
+    fim.current?.scrollIntoView({ block: 'end' })
+  }, [mensagens, aberto])
+
+  function perguntar(e) {
+    e.preventDefault()
+    const pergunta = new FormData(e.target).get('pergunta').trim()
+    if (!pergunta) return
+    const { texto, sugestoes } = responderIA(pergunta, ATIVIDADES)
+    setMensagens((ms) => [
+      ...ms,
+      { de: 'eu', texto: pergunta },
+      { de: 'ia', texto, sugestoes },
+    ])
+    e.target.reset()
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setAberto((v) => !v)}
+        title={aberto ? 'Fechar chat' : 'Falar com nossa IA Electra'}
+        aria-label={aberto ? 'Fechar assistente Electra' : 'Abrir assistente Electra'}
+        className="fixed bottom-8 right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-axia-blue text-white shadow-lg shadow-axia-purple/30 transition hover:bg-axia-blue2"
+      >
+        {aberto ? <span className="text-xl leading-none">×</span> : <IconeBrilho />}
+      </button>
+
+      {aberto && (
+        // altura fixa (limitada pela viewport) para o histórico ter espaço próprio
+        <section className="fixed bottom-28 right-8 z-40 flex h-[min(38rem,calc(100vh-10rem))] w-[24rem] flex-col overflow-hidden rounded-card border border-axia-neutral bg-white shadow-2xl">
+          <header className="flex items-center gap-3 border-b border-axia-neutral bg-axia-purple px-5 py-4 text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
+              <IconeBrilho />
+            </span>
+            <div>
+              <p className="font-bold leading-tight">Electra</p>
+              <p className="text-xs text-axia-sky">Assistente do portal</p>
+            </div>
+            <button
+              onClick={() => setAberto(false)}
+              aria-label="Fechar"
+              className="ml-auto rounded-full p-1 text-xl leading-none hover:bg-white/10"
+            >
+              ×
+            </button>
+          </header>
+
+          <div className="flex-1 space-y-4 overflow-y-auto p-5">
+            {mensagens.map((m, i) => (
+              <div key={i}>
+                <p
+                  className={`rounded-chip px-4 py-2.5 text-sm leading-relaxed ${
+                    m.de === 'eu'
+                      ? 'ml-8 bg-axia-blue text-white'
+                      : 'mr-4 bg-axia-bg text-axia-grey1'
+                  }`}
+                >
+                  {m.texto}
+                </p>
+                {m.sugestoes?.map((s) => (
+                  <button
+                    key={s.chave}
+                    onClick={() => {
+                      setAberto(false)
+                      onAtividade(s)
+                    }}
+                    className="mr-4 mt-2 block w-full rounded-chip border border-axia-neutral px-4 py-2.5 text-left text-sm transition hover:border-axia-blue hover:bg-axia-blue/5"
+                  >
+                    <span className="block font-bold text-axia-purple">{s.nome}</span>
+                    <span className="block text-xs text-axia-grey/70">
+                      {s.portfolio.nome} › {s.servico.nome}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            <div ref={fim} />
+          </div>
+
+          <form
+            onSubmit={perguntar}
+            className="flex items-center gap-2 border-t border-axia-neutral p-3"
+          >
+            <input
+              name="pergunta"
+              autoComplete="off"
+              placeholder="Pergunte sobre os serviços..."
+              className="min-w-0 flex-1 rounded-full border border-axia-neutral bg-axia-offwhite/60 px-4 py-2.5 text-sm outline-none focus:border-axia-blue focus:bg-white"
+            />
+            <button
+              aria-label="Enviar"
+              className="shrink-0 rounded-full bg-axia-blue px-4 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2"
+            >
+              Enviar
+            </button>
+          </form>
+
+          <p className="border-t border-axia-neutral px-5 py-2 text-[11px] text-axia-grey/60">
+            As respostas vêm do catálogo de serviços. Confira antes de abrir o chamado.
+          </p>
+        </section>
+      )}
+    </>
+  )
+}
+
+function IconeBrilho() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6" aria-hidden="true">
+      <path d="M12 3.5l1.6 4.4 4.4 1.6-4.4 1.6L12 15.5l-1.6-4.4L6 9.5l4.4-1.6L12 3.5Z" />
+      <path d="M18 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z" />
+    </svg>
+  )
+}
+
 function BotaoTopo() {
   const [visivel, setVisivel] = useState(false)
 
@@ -463,7 +600,7 @@ function BotaoTopo() {
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Voltar ao topo"
-      className={`fixed bottom-8 right-8 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-axia-blue text-xl font-bold text-white shadow-lg shadow-axia-purple/25 transition duration-200 hover:bg-axia-blue2 ${
+      className={`fixed bottom-28 right-10 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl font-bold text-axia-blue shadow-lg shadow-axia-purple/20 ring-1 ring-axia-neutral transition duration-200 hover:bg-axia-bg ${
         visivel ? 'opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
       }`}
     >
@@ -479,6 +616,7 @@ function Topo({
   usuario,
   notificacoes,
   novidades,
+  onInicio,
   onNotificacao,
   onVerTodas,
   onMeusTickets,
@@ -487,14 +625,21 @@ function Topo({
   return (
     <header className="bg-axia-purple text-white">
       <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-6 gap-y-4 px-8 py-6">
-        <img src={logo} alt="AXIA Energia" className="h-20 w-auto shrink-0" />
-
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold leading-tight">Como podemos ajudar?</h1>
-          <p className="text-xs text-axia-sky">
-            Encontre o serviço ou atividade que você precisa.
-          </p>
-        </div>
+        {/* logo + título levam ao portal */}
+        <button
+          onClick={onInicio}
+          className="flex min-w-0 cursor-pointer items-center gap-6 text-left"
+        >
+          <img src={logo} alt="AXIA Energia" className="h-20 w-auto shrink-0" />
+          <span className="min-w-0">
+            <span className="block text-xl font-bold leading-tight">
+              Como podemos ajudar?
+            </span>
+            <span className="block text-xs text-axia-sky">
+              Encontre o serviço ou atividade que você precisa.
+            </span>
+          </span>
+        </button>
 
         <label className="relative mx-auto w-full max-w-md">
           <svg
@@ -765,7 +910,7 @@ function AbasTopo({ ativa, onSelect, qtdFavoritos }) {
           className={`flex items-center gap-2 rounded-t-chip px-6 py-3 text-sm font-bold transition ${
             ativa === nome
               ? 'bg-axia-blue text-white'
-              : 'bg-slate-300 text-axia-sky2 hover:bg-slate-400/70'
+              : 'bg-slate-200/70 text-axia-sky2 hover:bg-slate-300/70'
           }`}
         >
           <Ic />
@@ -789,7 +934,7 @@ function Chips({ itens, ativa, onSelect }) {
             className={`flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-bold transition ${
               ativa === p.id
                 ? 'border-axia-blue bg-axia-blue/10 text-axia-blue'
-                : 'border-slate-300 bg-slate-200 text-axia-sky2 hover:bg-slate-300'
+                : 'border-slate-300/70 bg-slate-200/70 text-axia-sky2 hover:bg-slate-300/70'
             }`}
           >
             {p.nome}
@@ -824,7 +969,7 @@ function Trilha({ itens }) {
   )
 }
 
-function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra }) {
+function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-4 py-8">
       <div>
@@ -835,12 +980,15 @@ function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra }) {
         {subtitulo && <p className="mt-1.5 text-base text-axia-grey">{subtitulo}</p>}
         {extra}
       </div>
-      <button
-        onClick={onVoltar}
-        className="shrink-0 rounded-full border border-axia-blue px-6 py-1.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white"
-      >
-        Voltar
-      </button>
+      <div className="flex shrink-0 items-center gap-3">
+        {acao}
+        <button
+          onClick={onVoltar}
+          className="rounded-full border border-axia-blue px-6 py-1.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white"
+        >
+          Voltar
+        </button>
+      </div>
     </div>
   )
 }
@@ -931,6 +1079,7 @@ function Estrela({ ativo, onClick, rotulo }) {
   return (
     <button
       onClick={onClick}
+      title={ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
       aria-label={`${ativo ? 'Remover de' : 'Adicionar a'} favoritos: ${rotulo}`}
       aria-pressed={ativo}
       className={`absolute right-4 top-4 z-10 rounded-full p-1.5 transition ${
@@ -1305,7 +1454,14 @@ const idLista = (nome) => `lista-${nome.replace(/\W+/g, '-')}`
 
 // Combobox próprio: abre com a lista completa, filtra ao digitar, teclado e visual
 // iguais aos demais dropdowns do portal (o <datalist> nativo herdava o estilo do SO).
-function Combobox({ nome, opcoes, placeholder, inicial = '', onChange }) {
+function Combobox({
+  nome,
+  opcoes,
+  placeholder,
+  inicial = '',
+  onChange,
+  obrigatorio = true,
+}) {
   // opção única: já vem escolhida, não há o que decidir
   const [valor, setValor] = useState(inicial || (opcoes.length === 1 ? opcoes[0] : ''))
   const [aberto, setAberto] = useState(false)
@@ -1315,9 +1471,9 @@ function Combobox({ nome, opcoes, placeholder, inicial = '', onChange }) {
 
   useEffect(() => {
     inputRef.current?.setCustomValidity(
-      opcoes.includes(valor) ? '' : 'Escolha uma opção da lista.'
+      !obrigatorio || opcoes.includes(valor) ? '' : 'Escolha uma opção da lista.'
     )
-  }, [valor, opcoes])
+  }, [valor, opcoes, obrigatorio])
 
   // só reporta valor que existe na lista — quem depende disso (gestor) usa o cadastro
   const atualizar = (v) => {
@@ -1353,7 +1509,7 @@ function Combobox({ nome, opcoes, placeholder, inicial = '', onChange }) {
         id={idLista(nome)}
         name={nome}
         value={valor}
-        required
+        required={obrigatorio}
         autoComplete="off"
         role="combobox"
         aria-expanded={aberto}
@@ -2071,59 +2227,282 @@ function Notificacoes({ lista, lidas, trilha, onAbrir, onMarcarTodas, onVoltar }
   )
 }
 
-function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar }) {
-  const [filtro, setFiltro] = useState(statusInicial || 'Todos')
-  const visiveis =
-    filtro === 'Todos' ? tickets : tickets.filter((t) => t.status === filtro)
+const ESTATISTICAS = [
+  { status: 'Aberto', titulo: 'Em aberto', nota: 'Requerem atenção', cor: 'bg-axia-blue/10 text-axia-blue' },
+  { status: 'Andamento', titulo: 'Em andamento', nota: 'Em acompanhamento', cor: 'bg-axia-success/15 text-green-700' },
+  { status: 'Suspenso', titulo: 'Suspensos', nota: 'Aguardando retorno', cor: 'bg-axia-warning/20 text-yellow-700' },
+  { status: 'Fechado', titulo: 'Concluídos', nota: 'Finalizados', cor: 'bg-axia-purple/10 text-axia-purple' },
+  { status: CANCELADO, titulo: 'Cancelados', nota: 'Encerrados', cor: 'bg-axia-error/10 text-axia-error' },
+]
+
+function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova }) {
+  const [termo, setTermo] = useState('')
+  // texto só entra no filtro ao clicar em Pesquisar (ou Enter); os seletores valem na hora
+  const [termoAplicado, setTermoAplicado] = useState('')
+  const [status, setStatus] = useState(statusInicial || 'Todos')
+  const [servico, setServico] = useState('Todos')
+  const [periodo, setPeriodo] = useState('Todo o período')
+  const [ordem, setOrdem] = useState(ORDENS[0])
+  const [reset, setReset] = useState(0) // remonta o combobox ao limpar
+
+  function limpar() {
+    setTermo('')
+    setTermoAplicado('')
+    setStatus('Todos')
+    setServico('Todos')
+    setPeriodo('Todo o período')
+    setOrdem(ORDENS[0])
+    setReset((n) => n + 1)
+  }
+
+  const servicos = [...new Set(tickets.map((t) => t.servico))].sort()
+  const visiveis = ordenarChamados(
+    filtrarChamados(tickets, {
+      termo: termoAplicado,
+      status,
+      servico,
+      dias: PERIODOS[periodo],
+    }),
+    ordem
+  )
+  // Suspenso só entra nos cartões quando existe — o modelo previa quatro
+  const estatisticas = ESTATISTICAS.filter(
+    (e) => e.status !== 'Suspenso' || tickets.some((t) => t.status === 'Suspenso')
+  )
 
   return (
     <>
       <Cabecalho
         trilha={trilha}
         titulo="Meus chamados"
-        subtitulo="Acompanhe, converse com o atendente ou cancele suas solicitações."
+        subtitulo="Acompanhe o andamento das suas solicitações e interaja com a equipe responsável."
         onVoltar={onVoltar}
       />
-      <div className="mb-5 flex flex-wrap gap-2">
-        {['Todos', ...STATUS, CANCELADO].map((s) => (
+
+      <div className="mb-6 grid gap-4 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+        {estatisticas.map((e) => (
           <button
-            key={s}
-            onClick={() => setFiltro(s)}
-            className={`rounded-full px-4 py-1.5 text-xs font-bold ${
-              filtro === s
-                ? 'bg-axia-blue text-white'
-                : 'border border-axia-neutral bg-white text-axia-grey'
+            key={e.status}
+            onClick={() => setStatus(status === e.status ? 'Todos' : e.status)}
+            className={`flex items-center gap-4 rounded-card border bg-white px-5 py-4 text-left transition hover:shadow-md ${
+              status === e.status ? 'border-axia-blue' : 'border-axia-neutral'
             }`}
           >
-            {s}
+            <span
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-chip ${e.cor}`}
+            >
+              <IconeStatus />
+            </span>
+            <div>
+              <p className="text-sm text-axia-grey/80">{e.titulo}</p>
+              <p className="text-2xl font-bold text-axia-purple">
+                {tickets.filter((t) => t.status === e.status).length}
+              </p>
+              <p className="text-xs text-axia-grey/60">{e.nota}</p>
+            </div>
           </button>
         ))}
       </div>
+
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={onNova}
+          className="flex items-center gap-2 rounded-full bg-axia-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2"
+        >
+          <span className="text-lg leading-none">+</span> Nova solicitação
+        </button>
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          setTermoAplicado(termo)
+        }}
+        className="mb-5 rounded-card border border-axia-neutral bg-white p-5"
+      >
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1.2fr)_minmax(0,1.2fr)]">
+          <CampoFiltro rotulo="Buscar">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
+              <IconeLupa />
+            </span>
+            <input
+              value={termo}
+              onChange={(e) => setTermo(e.target.value)}
+              placeholder="Número ou descrição..."
+              className="w-full rounded-full border border-axia-neutral bg-axia-offwhite/60 py-2.5 pl-11 pr-4 text-sm outline-none focus:border-axia-blue focus:bg-white"
+            />
+          </CampoFiltro>
+
+          <CampoFiltro rotulo="Status">
+            <Seletor
+              valor={status}
+              onChange={setStatus}
+              opcoes={['Todos', ...STATUS, CANCELADO]}
+            />
+          </CampoFiltro>
+
+          {/* serviço é a lista mais longa: combobox com busca, como no formulário */}
+          <CampoFiltro rotulo="Serviço">
+            <Combobox
+              key={reset}
+              nome="filtro-servico"
+              opcoes={['Todos', ...servicos]}
+              inicial="Todos"
+              obrigatorio={false}
+              placeholder="Todos"
+              onChange={(v) => setServico(v || 'Todos')}
+            />
+          </CampoFiltro>
+
+          <CampoFiltro rotulo="Período">
+            <Seletor
+              valor={periodo}
+              onChange={setPeriodo}
+              opcoes={Object.keys(PERIODOS)}
+            />
+          </CampoFiltro>
+
+          <CampoFiltro rotulo="Ordenar por">
+            <Seletor valor={ordem} onChange={setOrdem} opcoes={ORDENS} />
+          </CampoFiltro>
+        </div>
+
+        <div className="mt-4 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={limpar}
+            className="rounded-full border border-axia-neutral px-6 py-2.5 text-sm font-bold text-axia-grey hover:bg-slate-100"
+          >
+            Limpar filtros
+          </button>
+          <button className="rounded-full bg-axia-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2">
+            Pesquisar
+          </button>
+        </div>
+      </form>
+
       <ul className="space-y-3">
         {visiveis.map((t) => (
           <li key={t.protocolo}>
-            <button
-              onClick={() => onAbrir(t.protocolo)}
-              className="flex w-full flex-wrap items-center gap-4 rounded-card border border-axia-neutral bg-white p-5 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-sm font-bold text-axia-blue">
-                  {t.protocolo}
-                </p>
-                <p className="text-sm font-bold text-axia-purple">{t.atividade}</p>
-                <p className="mt-0.5 text-xs text-axia-grey/70">
-                  {t.portfolio} › {t.servico} · {t.solicitante} ·{' '}
-                  {new Date(t.criadoEm).toLocaleString('pt-BR')} ·{' '}
-                  {t.interacoes.length} interação(ões)
-                </p>
-              </div>
-              <Badge status={t.status} />
-              <span className="text-sm font-bold text-axia-blue">Ver →</span>
-            </button>
+            <LinhaChamado chamado={t} onAbrir={() => onAbrir(t.protocolo)} />
           </li>
         ))}
-        {!visiveis.length && <Vazio>Nenhum chamado neste status.</Vazio>}
+        {!visiveis.length && <Vazio>Nenhum chamado com esses filtros.</Vazio>}
       </ul>
+
+      {visiveis.length > 0 && (
+        <p className="mt-6 text-center text-sm text-axia-grey/60">
+          Mostrando {visiveis.length} de {tickets.length} chamado(s)
+        </p>
+      )}
     </>
+  )
+}
+
+const CampoFiltro = ({ rotulo, children }) => (
+  <label className="block">
+    <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-axia-grey/70">
+      {rotulo}
+    </span>
+    <span className="relative block">{children}</span>
+  </label>
+)
+
+const Seletor = ({ valor, onChange, opcoes }) => (
+  <select
+    value={valor}
+    onChange={(e) => onChange(e.target.value)}
+    className="w-full cursor-pointer truncate rounded-full border border-axia-neutral bg-axia-offwhite/60 px-4 py-2.5 text-sm font-bold text-axia-purple outline-none focus:border-axia-blue focus:bg-white"
+  >
+    {opcoes.map((o) => (
+      <option key={o}>{o}</option>
+    ))}
+  </select>
+)
+
+function LinhaChamado({ chamado, onAbrir }) {
+  const prazo = new Date(prazoPrevisto(chamado.criadoEm))
+  const hoje = new Date().toDateString() === prazo.toDateString()
+  const vencido = prazo < new Date() && !hoje
+  const encerrado = !podeInteragir(chamado)
+
+  return (
+    // colunas fixas no desktop para tudo alinhar entre as linhas; empilha no mobile
+    <button
+      onClick={onAbrir}
+      className={`flex w-full flex-wrap items-center gap-6 rounded-card border border-l-4 border-axia-neutral bg-white p-6 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5 lg:grid lg:grid-cols-[minmax(0,1fr)_130px_220px_130px_120px_20px] lg:gap-10 ${
+        encerrado ? 'border-l-axia-neutral' : 'border-l-axia-blue'
+      }`}
+    >
+      <div className="min-w-0">
+        <p className="font-mono text-sm font-bold tracking-wide text-axia-blue">
+          {chamado.protocolo}
+        </p>
+        <p className="mt-1 truncate font-bold text-axia-purple">{chamado.atividade}</p>
+        <p className="mt-0.5 truncate text-xs text-axia-grey/60">{chamado.servico}</p>
+      </div>
+
+      <div>
+        <Badge status={chamado.status} />
+      </div>
+
+      <Coluna rotulo="Responsável">
+        {chamado.responsavel || atendenteDe(chamado.protocolo, ATENDENTES)}
+      </Coluna>
+      <Coluna rotulo="Atualização">{tempoRelativo(ultimaAtualizacao(chamado))}</Coluna>
+      <Coluna rotulo="Prazo">
+        <span
+          className={
+            encerrado ? '' : hoje || vencido ? 'font-bold text-axia-error' : ''
+          }
+        >
+          {encerrado ? '—' : hoje ? 'Hoje' : prazo.toLocaleDateString('pt-BR')}
+        </span>
+      </Coluna>
+
+      <span className="justify-self-end text-axia-grey/50">
+        <ChevronDireita />
+      </span>
+    </button>
+  )
+}
+
+const Coluna = ({ rotulo, children }) => (
+  <div className="min-w-0">
+    <p className="text-xs text-axia-grey/60">{rotulo}</p>
+    <p className="mt-0.5 truncate text-sm text-axia-grey1">{children}</p>
+  </div>
+)
+
+function ChevronDireita() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  )
+}
+
+function IconeLupa() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
   )
 }

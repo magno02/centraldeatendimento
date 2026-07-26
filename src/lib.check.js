@@ -7,6 +7,7 @@ import {
   buscar,
   filtrarServicos,
   filtrarOpcoes,
+  responderIA,
   alternarFavorito,
   registrarRecente,
   contarPorStatus,
@@ -14,6 +15,10 @@ import {
   prazoPrevisto,
   formatarTamanho,
   atendenteDe,
+  tempoRelativo,
+  ultimaAtualizacao,
+  filtrarChamados,
+  ordenarChamados,
   notificacoes,
   naoVisualizadas,
   visualizadas,
@@ -46,6 +51,14 @@ assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], ''), ['São Paulo', 'Bah
 assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], 'sao'), ['São Paulo'])
 assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], 'AHI'), ['Bahia'])
 assert.deepEqual(filtrarOpcoes(['São Paulo'], 'xyz'), [])
+
+// assistente: devolve sugestões do catálogo, ou texto de "não encontrei"
+const resposta = responderIA('acesso', ATIVIDADES)
+assert.ok(resposta.sugestoes.length > 0 && resposta.sugestoes.length <= 4)
+assert.ok(resposta.sugestoes.every((s) => s.chave && s.servico && s.portfolio))
+const vazia = responderIA('zzzznaoexiste', ATIVIDADES)
+assert.deepEqual(vazia.sugestoes, [])
+assert.match(vazia.texto, /Não encontrei/)
 
 // favoritos: alterna e não duplica; recentes: entra na frente, sem repetir, com teto
 assert.deepEqual(alternarFavorito([], 'a/b'), ['a/b'])
@@ -105,6 +118,50 @@ assert.equal(
   prazoPrevisto('2026-07-23T12:00:00.000Z').slice(0, 10), // quinta -> terça
   '2026-07-28'
 )
+
+// lista de chamados: filtros combinam e ordenação respeita a escolha
+const chamados = [
+  {
+    protocolo: 'TK-2026-00001',
+    atividade: 'Reset de senha',
+    servico: 'Acessos',
+    status: 'Aberto',
+    criadoEm: '2026-07-01T10:00:00.000Z',
+    dados: [['Descrição da necessidade', 'Não consigo entrar no SAP']],
+    interacoes: [{ autor: 'Sistema', texto: 'ok', em: '2026-07-01T10:00:00.000Z' }],
+  },
+  {
+    protocolo: 'TK-2026-00002',
+    atividade: 'Nova caixa postal',
+    servico: 'Correio',
+    status: 'Fechado',
+    criadoEm: '2026-07-20T10:00:00.000Z',
+    dados: [['Descrição da necessidade', 'Caixa compartilhada']],
+    interacoes: [],
+  },
+]
+const agora = new Date('2026-07-25T10:00:00.000Z')
+assert.equal(filtrarChamados(chamados, {}, agora).length, 2)
+assert.equal(filtrarChamados(chamados, { status: 'Aberto' }, agora).length, 1)
+assert.equal(filtrarChamados(chamados, { servico: 'Correio' }, agora).length, 1)
+assert.equal(filtrarChamados(chamados, { dias: 7 }, agora).length, 1) // só o de 20/07
+assert.equal(filtrarChamados(chamados, { termo: 'SAP' }, agora).length, 1) // busca na descrição
+assert.equal(filtrarChamados(chamados, { termo: '00002' }, agora).length, 1) // e no protocolo
+assert.equal(
+  filtrarChamados(chamados, { termo: 'SAP', status: 'Fechado' }, agora).length,
+  0 // filtros se somam
+)
+assert.equal(ordenarChamados(chamados, 'Mais recentes')[0].protocolo, 'TK-2026-00002')
+assert.equal(ordenarChamados(chamados, 'Mais antigos')[0].protocolo, 'TK-2026-00001')
+assert.deepEqual(chamados.map((c) => c.protocolo), [
+  'TK-2026-00001',
+  'TK-2026-00002',
+]) // ordenar não muta
+
+assert.equal(ultimaAtualizacao(chamados[0]), '2026-07-01T10:00:00.000Z')
+assert.equal(ultimaAtualizacao(chamados[1]), '2026-07-20T10:00:00.000Z') // sem interação, cai na criação
+assert.equal(tempoRelativo('2026-07-25T09:00:00.000Z', agora), 'há 1 h')
+assert.equal(tempoRelativo('2026-07-23T10:00:00.000Z', agora), 'há 2 dias')
 
 // atendente: sempre da lista e estável para o mesmo protocolo
 assert.ok(ATENDENTES.includes(atendenteDe('TK-2026-00003', ATENDENTES)))

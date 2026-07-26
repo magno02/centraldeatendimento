@@ -86,6 +86,26 @@ export const alternarFavorito = (favoritos, chave) =>
 export const registrarRecente = (recentes, chave, max = 12) =>
   [chave, ...recentes.filter((c) => c !== chave)].slice(0, max)
 
+// ponytail: "IA" é busca no catálogo, não modelo de linguagem — troque esta função
+// por chamada à API do assistente quando existir; a UI do chat não muda.
+export function responderIA(pergunta, atividades, max = 4) {
+  const achados = buscar(atividades, pergunta).slice(0, max)
+  if (!achados.length) {
+    return {
+      texto:
+        'Não encontrei nenhum serviço com esses termos. Tente descrever de outro jeito — por exemplo "senha", "acesso", "notebook" ou o nome do sistema.',
+      sugestoes: [],
+    }
+  }
+  return {
+    texto:
+      achados.length === 1
+        ? 'Encontrei esta atividade. Clique para abrir o formulário:'
+        : `Encontrei ${achados.length} atividades relacionadas. Clique na que resolve seu caso:`,
+    sugestoes: achados,
+  }
+}
+
 export function contarPorStatus(tickets) {
   return Object.fromEntries(
     STATUS.map((s) => [s, tickets.filter((t) => t.status === s).length])
@@ -120,6 +140,58 @@ export function formatarTamanho(bytes) {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
+
+export const ultimaAtualizacao = (t) => t.interacoes?.at(-1)?.em || t.criadoEm
+
+export function tempoRelativo(iso, agora = new Date()) {
+  const min = Math.round((agora - new Date(iso)) / 60000)
+  if (min < 1) return 'agora mesmo'
+  if (min < 60) return `há ${min} min`
+  const horas = Math.round(min / 60)
+  if (horas < 24) return `há ${horas} h`
+  const dias = Math.round(horas / 24)
+  if (dias < 30) return `há ${dias} dia${dias > 1 ? 's' : ''}`
+  return new Date(iso).toLocaleDateString('pt-BR')
+}
+
+export const PERIODOS = {
+  'Últimos 7 dias': 7,
+  'Últimos 30 dias': 30,
+  'Últimos 90 dias': 90,
+  'Todo o período': null,
+}
+
+export const ORDENS = ['Mais recentes', 'Mais antigos', 'Prazo mais próximo']
+
+export function filtrarChamados(
+  tickets,
+  { termo = '', status = 'Todos', servico = 'Todos', dias = null } = {},
+  agora = new Date()
+) {
+  const t = norm(termo.trim())
+  const limite = dias ? agora.getTime() - dias * 86400000 : null
+  return tickets.filter((c) => {
+    if (status !== 'Todos' && c.status !== status) return false
+    if (servico !== 'Todos' && c.servico !== servico) return false
+    if (limite && new Date(c.criadoEm).getTime() < limite) return false
+    if (!t) return true
+    const texto = [c.protocolo, c.atividade, c.servico, ...c.dados.map(([, v]) => v)]
+    return norm(texto.join(' ')).includes(t)
+  })
+}
+
+export function ordenarChamados(lista, ordem) {
+  const copia = [...lista]
+  if (ordem === 'Mais antigos') {
+    return copia.sort((a, b) => a.criadoEm.localeCompare(b.criadoEm))
+  }
+  if (ordem === 'Prazo mais próximo') {
+    return copia.sort((a, b) =>
+      prazoPrevisto(a.criadoEm).localeCompare(prazoPrevisto(b.criadoEm))
+    )
+  }
+  return copia.sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
 }
 
 export const podeInteragir = (t) => t.status !== 'Fechado' && t.status !== CANCELADO
