@@ -121,6 +121,20 @@ export function responderIA(pergunta, atividades, max = 4) {
   }
 }
 
+// Visibilidade: cada pessoa enxerga só o que ela mesma abriu. O e-mail é o critério,
+// por ser único — dois cadastros podem repetir o nome. Tickets gravados antes das
+// contas não têm e-mail, então caem no nome como reserva.
+// ponytail: filtro no cliente, todos os tickets continuam no localStorage do navegador.
+// Não é controle de acesso — quando houver backend, quem filtra é a API.
+export const doUsuario = (tickets, usuario) =>
+  usuario
+    ? tickets.filter((t) =>
+        t.abertoPorEmail
+          ? t.abertoPorEmail === usuario.email
+          : t.abertoPor === usuario.nome
+      )
+    : []
+
 export function contarPorStatus(tickets) {
   return Object.fromEntries(
     STATUS.map((s) => [s, tickets.filter((t) => t.status === s).length])
@@ -281,6 +295,22 @@ export const CONTAS = [
     email: 'valeria@axia.com.br',
     senha: 'axia@2026',
     nome: 'Valéria',
+    empresa: 'AXIA Energia',
+    estado: 'Pernambuco',
+    area: 'Tecnologia da Informação',
+  },
+  {
+    email: 'livia@axia.com.br',
+    senha: 'axia@2026',
+    nome: 'Lívia',
+    empresa: 'AXIA Energia',
+    estado: 'Pernambuco',
+    area: 'Tecnologia da Informação',
+  },
+  {
+    email: 'gestao@axia.com.br',
+    senha: 'axia@2026',
+    nome: 'Gestão',
     empresa: 'AXIA Energia',
     estado: 'Pernambuco',
     area: 'Tecnologia da Informação',

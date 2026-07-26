@@ -5,8 +5,9 @@
 @theme {
   --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 
-  --color-axia-blue: #0015f8;
-  --color-axia-blue-soft: #4d5cfa; /* primária clareada: links de navegação */
+  /* azul primário do manual da marca — é a mesma chapada dos PNGs do logo */
+  --color-axia-blue: #0000ff;
+  --color-axia-blue-soft: #4d4dff; /* primária clareada (30% branco): links de navegação */
   --color-axia-blue1: #1726c8;
   --color-axia-blue2: #0f1a8d;
   --color-axia-purple: #0a003c;

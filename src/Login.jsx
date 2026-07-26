@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_MARINHO_RGB.png'
+import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_RBG.png'
 import { validarLogin } from './lib'
 import { PORTFOLIOS, SERVICOS } from './catalogo'
 
@@ -19,16 +19,17 @@ export default function Login({ onEntrar }) {
   return (
     <div className="grid min-h-screen font-sans lg:grid-cols-2">
       {/* brilho radial no canto superior direito, como no protótipo */}
-      <aside className="relative hidden flex-col justify-center overflow-hidden border-r-2 border-axia-blue bg-axia-purple p-14 text-white lg:flex">
+      <aside className="relative hidden flex-col justify-center overflow-hidden bg-axia-blue p-14 text-white lg:flex">
+        {/* brilho branco: o azul-escuro original sumiria sobre o azul primário */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(23,38,200,0.55),transparent_65%)]"
+          className="pointer-events-none absolute -right-24 -top-24 h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.18),transparent_65%)]"
         />
 
         {/* bloco único, centrado na vertical e alinhado à esquerda */}
         <div className="relative flex flex-col items-start">
           {/* shrink-0 + object-contain: no flex-column a imagem era achatada na altura */}
-          {/* versão azul-marinho: o card do logo é a própria cor do painel e some.
+          {/* versão azul: o card do logo é a própria cor do painel e some.
               -ml-16 compensa a margem interna do PNG e alinha o texto do logo ao título */}
           <img
             src={logo}
@@ -39,19 +40,19 @@ export default function Login({ onEntrar }) {
           <h2 className="mt-2 max-w-lg text-5xl font-medium leading-[1.15]">
             Tudo o que você precisa, em um só lugar.
           </h2>
-          <p className="mt-6 max-w-md leading-relaxed text-axia-sky">
+          <p className="mt-6 max-w-md leading-relaxed text-white/80">
             Abra solicitações, acompanhe seus chamados e converse com a equipe
             responsável — tudo no mesmo portal.
           </p>
 
           <dl className="mt-10 flex gap-10">
-            <div className="border-l-2 border-axia-blue pl-4">
+            <div className="border-l-2 border-white/60 pl-4">
               <dt className="text-2xl font-bold">{PORTFOLIOS.length}</dt>
-              <dd className="text-sm text-axia-sky">áreas atendidas</dd>
+              <dd className="text-sm text-white/80">áreas atendidas</dd>
             </div>
-            <div className="border-l-2 border-axia-blue pl-4">
+            <div className="border-l-2 border-white/60 pl-4">
               <dt className="text-2xl font-bold">{SERVICOS.length}</dt>
-              <dd className="text-sm text-axia-sky">serviços disponíveis</dd>
+              <dd className="text-sm text-white/80">serviços disponíveis</dd>
             </div>
           </dl>
         </div>
@@ -60,7 +61,7 @@ export default function Login({ onEntrar }) {
           <p className="text-sm font-bold">
             O novo vem com <span className="text-axia-amarelo">energia</span>.
           </p>
-          <p className="mt-1 text-xs text-axia-sky">
+          <p className="mt-1 text-xs text-white/80">
             © {new Date().getFullYear()} AXIA Energia ·{' '}
             <span className="underline">Uso interno</span>
           </p>

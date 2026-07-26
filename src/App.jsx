@@ -23,6 +23,7 @@ import {
   alternarFavorito,
   registrarRecente,
   contarPorStatus,
+  doUsuario,
   deveMostrarTopo,
   prazoPrevisto,
   formatarTamanho,
@@ -130,7 +131,10 @@ export default function App() {
     setView({ tela: 'form', atividade })
   }
 
-  const listaNotificacoes = notificacoes(tickets)
+  // tudo que a tela mostra sai daqui; `tickets` (a lista inteira) só é usada para
+  // gravar e para numerar o protocolo, que precisa ser único entre todas as contas.
+  const meusTickets = doUsuario(tickets, usuario)
+  const listaNotificacoes = notificacoes(meusTickets)
 
   function abrirNotificacao(n) {
     setLidas((ls) => (ls.includes(n.id) ? ls : [...ls, n.id]))
@@ -158,6 +162,7 @@ export default function App() {
       portfolio: atividade.portfolio.nome,
       solicitante: paraOutra ? f.get('Usuário') : usuario.nome,
       abertoPor: usuario.nome,
+      abertoPorEmail: usuario.email,
       responsavel: atendenteDe(novoProtocolo(tickets), ATENDENTES),
       anexos,
       status: 'Aberto',
@@ -197,8 +202,11 @@ export default function App() {
   const resultados = buscar(ATIVIDADES, busca)
   const portfolio = PORTFOLIOS.find((p) => p.id === aba)
   const servicosVisiveis = filtrarServicos(portfolio.servicos, filtro)
+  // busca em meusTickets, não em tickets: assim um protocolo de outra conta na view
+  // (sessão trocada, link antigo) não abre a tela de detalhe.
   const ticketAtual =
-    view.tela === 'ticket' && tickets.find((t) => t.protocolo === view.protocolo)
+    view.tela === 'ticket' &&
+    meusTickets.find((t) => t.protocolo === view.protocolo)
 
   if (!usuario) return <Login onEntrar={entrar} />
 
@@ -224,7 +232,7 @@ export default function App() {
         {view.tela === 'portal' && (
           <Indicadores
             usuario={usuario}
-            contagem={contarPorStatus(tickets)}
+            contagem={contarPorStatus(meusTickets)}
             onIndicador={(status) => setView({ tela: 'tickets', status })}
             onVerTodos={() => setView({ tela: 'tickets' })}
           />
@@ -430,7 +438,7 @@ export default function App() {
 
         {view.tela === 'tickets' && (
           <MeusTickets
-            tickets={tickets}
+            tickets={meusTickets}
             statusInicial={view.status}
             onAbrir={(protocolo) => setView({ tela: 'ticket', protocolo })}
             onNova={irAoPortal}

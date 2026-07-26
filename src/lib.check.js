@@ -15,6 +15,7 @@ import {
   alternarFavorito,
   registrarRecente,
   contarPorStatus,
+  doUsuario,
   deveMostrarTopo,
   prazoPrevisto,
   formatarTamanho,
@@ -241,6 +242,23 @@ assert.deepEqual(contarPorStatus([{ status: 'Aberto' }, { status: 'Fechado' }]),
 // os indicadores do portal são um recorte do STATUS, nunca um status inventado
 assert.ok(STATUS_PAINEL.every((s) => STATUS.includes(s)))
 assert.ok(!STATUS_PAINEL.includes('Aberto'))
+
+// visibilidade: cada conta vê só o que abriu
+const [joao, valeria] = CONTAS
+const doJoao = { protocolo: 'A', abertoPor: joao.nome, abertoPorEmail: joao.email }
+const daValeria = {
+  protocolo: 'B',
+  abertoPor: valeria.nome,
+  abertoPorEmail: valeria.email,
+}
+const antigo = { protocolo: 'C', abertoPor: joao.nome } // gravado antes das contas
+const todos = [doJoao, daValeria, antigo]
+
+assert.deepEqual(doUsuario(todos, joao), [doJoao, antigo]) // e-mail + reserva pelo nome
+assert.deepEqual(doUsuario(todos, valeria), [daValeria])
+assert.deepEqual(doUsuario(todos, null), []) // sem sessão, nada vaza
+// homônimo com e-mail diferente não herda o ticket de quem tem e-mail gravado
+assert.deepEqual(doUsuario([doJoao], { ...joao, email: 'outro@axia.com.br' }), [])
 
 // interações e cancelamento
 const t0 = { protocolo: 'TK-2026-00001', status: 'Aberto', interacoes: [] }
