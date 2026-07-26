@@ -220,8 +220,10 @@ export default function App() {
       <main className="mx-auto max-w-[1440px] px-4 pb-20 sm:px-8">
         {view.tela === 'portal' && (
           <Indicadores
+            usuario={USUARIO}
             contagem={contarPorStatus(tickets)}
             onIndicador={(status) => setView({ tela: 'tickets', status })}
+            onVerTodos={() => setView({ tela: 'tickets' })}
           />
         )}
 
@@ -899,30 +901,54 @@ function ItemNotificacao({ n, naoVista }) {
   )
 }
 
-// Cards de acompanhamento: fora do header, centralizados acima das abas.
-function Indicadores({ contagem, onIndicador }) {
+// Saudação à esquerda, acompanhamento à direita — clicar num cartão filtra a lista.
+function Indicadores({ usuario, contagem, onIndicador, onVerTodos }) {
   return (
-    <div className="pt-8">
-      <h2 className="text-center text-xl font-bold text-axia-purple">Meus chamados</h2>
-      <div className="mt-4 flex flex-wrap justify-center gap-3">
-        {STATUS.map((s) => (
-          <button
-            key={s}
-            onClick={() => onIndicador(s)}
-            className="w-24 rounded-chip border border-axia-neutral bg-white px-2 py-2 text-center transition hover:border-axia-blue hover:shadow-md hover:shadow-axia-blue/5"
-          >
-            <div className="text-2xl font-bold leading-none text-axia-purple">
-              {contagem[s]}
-            </div>
-            <div className="mt-1 text-[11px] uppercase tracking-wide text-axia-grey/70">
-              {s}
-            </div>
-          </button>
-        ))}
+    <section className="flex flex-wrap items-center gap-x-10 gap-y-6 pt-8">
+      <div className="min-w-64 flex-1">
+        <h2 className="text-2xl font-bold text-axia-purple">
+          Olá, {usuario.nome.split(' ')[0]}!
+        </h2>
+        <p className="mt-2 max-w-sm text-sm leading-relaxed text-axia-grey">
+          Aqui você encontra tudo o que precisa de forma rápida e acompanha seus
+          chamados.
+        </p>
       </div>
-    </div>
+
+      {/* w-fit: o bloco tem a largura dos cards, então título e "Ver todos" alinham com eles */}
+      <div className="ml-auto w-fit max-w-full">
+        <div className="mb-3 flex items-center justify-between gap-4">
+          <h3 className="text-sm font-bold text-axia-purple">Meus chamados</h3>
+          <button
+            onClick={onVerTodos}
+            className="text-sm font-bold text-axia-blue-soft hover:text-axia-blue"
+          >
+            Ver todos →
+          </button>
+        </div>
+
+        <div className="flex flex-wrap justify-end gap-3">
+          {STATUS.map((s) => (
+            <button
+              key={s}
+              onClick={() => onIndicador(s)}
+              title={`Ver chamados com status ${s}`}
+              className="w-24 rounded-chip border border-axia-neutral bg-white px-2 py-2 text-center transition hover:border-axia-blue hover:shadow-md hover:shadow-axia-blue/5"
+            >
+              <div className="text-2xl font-bold leading-none text-axia-purple">
+                {contagem[s]}
+              </div>
+              <div className="mt-1 text-[11px] uppercase tracking-wide text-axia-grey/70">
+                {s}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
+
 
 const SECOES = [
   { nome: 'Portfólios', icone: IconeGrade },
