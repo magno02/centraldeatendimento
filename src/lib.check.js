@@ -1,6 +1,14 @@
 // node src/lib.check.js
 import assert from 'node:assert/strict'
-import { ATIVIDADES, PORTFOLIOS, SERVICOS, POR_CHAVE } from './catalogo.js'
+import { readFileSync } from 'node:fs'
+import {
+  ATIVIDADES,
+  ATIVIDADES_VISIVEIS,
+  PORTFOLIOS,
+  SERVICOS,
+  POR_CHAVE,
+  GRUPOS,
+} from './catalogo.js'
 import { USUARIOS, GESTOR_DE, ATENDENTES } from './organizacao.js'
 import {
   novoProtocolo,
@@ -10,12 +18,17 @@ import {
   responderIA,
   chaveIcone,
   CHAVES_ICONE,
+  artigoDe,
   validarLogin,
   CONTAS,
   alternarFavorito,
   registrarRecente,
   contarPorStatus,
   doUsuario,
+  ofertasDoServico,
+  chaveOferta,
+  registrarAcesso,
+  maisAcessadas,
   deveMostrarTopo,
   prazoPrevisto,
   formatarTamanho,
@@ -82,6 +95,50 @@ assert.equal(chaveIcone('Adobe Photoshop'), 'janela') // nome de software cai no
 assert.equal(chaveIcone('Operação SIEM'), 'escudo')
 assert.equal(chaveIcone('Serviços de Configuração DNS'), 'rede')
 for (const s of SERVICOS) assert.ok(CHAVES_ICONE.includes(chaveIcone(s.nome)), s.nome)
+// serviços da planilha também: eles não estão em SERVICOS
+for (const g of GRUPOS)
+  for (const s of g.servicos)
+    assert.ok(CHAVES_ICONE.includes(chaveIcone(s.nome)), s.nome)
+
+// artigo do placeholder: gênero pelo substantivo-núcleo, que é a primeira palavra
+assert.equal(artigoDe('Gestor'), 'o')
+assert.equal(artigoDe('Matrícula'), 'a')
+assert.equal(artigoDe('Centro de custo'), 'o') // núcleo é "centro", não "custo"
+assert.equal(artigoDe('Data necessária'), 'a')
+assert.equal(artigoDe('Conexão'), 'a') // -ão feminino
+assert.equal(artigoDe('Padrão de idioma'), 'o') // -ão masculino
+assert.equal(artigoDe('Conexões'), 'as')
+assert.equal(artigoDe('Softwares necessários'), 'os')
+assert.equal(artigoDe('Unidade'), 'a')
+assert.equal(artigoDe('Sistema operacional'), 'o') // exceção: -a masculino
+assert.equal(artigoDe('Fonte e cabos'), 'a') // exceção: -e feminino
+// nenhum rótulo do catálogo pode ficar sem artigo
+for (const g of GRUPOS)
+  for (const s of g.servicos)
+    for (const a of s.atividades)
+      for (const c of a.campos) {
+        const rotulo = typeof c === 'string' ? c : c.n
+        assert.match(artigoDe(rotulo), /^(o|a|os|as)$/, rotulo)
+      }
+
+// os periféricos do catálogo de TI têm ícone próprio, e não o genérico de notebook
+assert.equal(chaveIcone('Monitor'), 'monitor')
+assert.equal(chaveIcone('Mouse'), 'mouse')
+assert.equal(chaveIcone('Teclado'), 'teclado')
+assert.equal(chaveIcone('Headset'), 'headset')
+assert.equal(chaveIcone('Webcam'), 'webcam')
+assert.equal(chaveIcone('Docking Station'), 'docking')
+assert.equal(chaveIcone('Desktop'), 'desktop')
+assert.equal(chaveIcone('Monitoramento de ativos'), 'pulso') // não confundir com Monitor
+
+// toda chave precisa de um desenho em icones.jsx, senão o ícone cai no fallback
+// silenciosamente. Lido como texto porque o arquivo é JSX e não importa aqui.
+const desenhos = readFileSync(new URL('./icones.jsx', import.meta.url), 'utf8')
+for (const chave of CHAVES_ICONE)
+  assert.ok(
+    new RegExp(`^\\s{2}${chave}:`, 'm').test(desenhos),
+    `sem desenho para o ícone "${chave}"`
+  )
 
 // assistente: devolve sugestões do catálogo, ou texto de "não encontrei"
 const resposta = responderIA('acesso', ATIVIDADES)
@@ -99,15 +156,44 @@ assert.deepEqual(registrarRecente(['x', 'y'], 'y'), ['y', 'x'])
 assert.deepEqual(registrarRecente(['a', 'b', 'c'], 'd', 3), ['d', 'a', 'b'])
 
 // chaves de favoritos/recentes resolvem para itens do catálogo
-const umServico = PORTFOLIOS[0].servicos[0]
+const umServico = GRUPOS[0].servicos[0]
 assert.equal(POR_CHAVE.get(umServico.chave).tipo, 'servico')
 assert.equal(POR_CHAVE.get(umServico.atividades[0].chave).tipo, 'atividade')
 assert.equal(POR_CHAVE.get('Área/Serviço/Inexistente'), undefined)
-assert.equal(POR_CHAVE.size, SERVICOS.length + ATIVIDADES.length)
+// só o que está em alguma aba: resolver uma chave de área fora do portal levaria
+// a uma tela sem caminho de volta
+const SERVICOS_EM_ABA = GRUPOS.flatMap((g) => g.servicos)
+assert.equal(
+  POR_CHAVE.size,
+  SERVICOS_EM_ABA.length + ATIVIDADES_VISIVEIS.length
+)
 // chave globalmente única: é o key do React em busca, favoritos e recentes,
 // onde itens de áreas diferentes aparecem na mesma lista.
-const chaves = [...SERVICOS, ...ATIVIDADES].map((i) => i.chave)
+const chaves = [...SERVICOS_EM_ABA, ...ATIVIDADES_VISIVEIS].map((i) => i.chave)
 assert.equal(new Set(chaves).size, chaves.length)
+
+// as abas removidas não podem voltar por nenhum caminho
+const nomesAbas = GRUPOS.map((g) => g.nome)
+assert.ok(nomesAbas.includes('Serviços de TI'))
+assert.ok(!nomesAbas.includes('Suporte e Infraestrutura'))
+assert.ok(!nomesAbas.includes('Segurança'))
+
+// catálogo da planilha: atividade é o card, com descrição, SLA e campos próprios
+{
+  const ti = GRUPOS.find((g) => g.nome === 'Serviços de TI')
+  assert.equal(ti.servicos.length, 10)
+  for (const s of ti.servicos) {
+    assert.equal(s.atividades.length, 3) // solicitar / trocar / devolver
+    for (const a of s.atividades) {
+      assert.ok(a.descricao, a.nome)
+      assert.ok(a.sla, a.nome)
+      assert.ok(a.campos.length, a.nome)
+      assert.deepEqual(a.ofertas, []) // sem oferta: o card já é a atividade
+      // campo sem nome viraria label vazia no formulário
+      for (const c of a.campos) assert.ok(c.n?.trim(), `${a.nome}: campo sem nome`)
+    }
+  }
+}
 
 // iniciais do avatar
 assert.equal(iniciais('João da Silva'), 'JS')
@@ -242,6 +328,61 @@ assert.deepEqual(contarPorStatus([{ status: 'Aberto' }, { status: 'Fechado' }]),
 // os indicadores do portal são um recorte do STATUS, nunca um status inventado
 assert.ok(STATUS_PAINEL.every((s) => STATUS.includes(s)))
 assert.ok(!STATUS_PAINEL.includes('Aberto'))
+
+// cada oferta vira um card; atividade sem oferta continua sendo um card só
+{
+  const servico = {
+    atividades: [
+      { id: 'A', ofertas: ['Conceder', 'Revogar'] },
+      { id: 'B', ofertas: [] },
+    ],
+  }
+  const cards = ofertasDoServico(servico)
+  assert.equal(cards.length, 3)
+  assert.deepEqual(
+    cards.map((c) => c.oferta),
+    ['Conceder', 'Revogar', null]
+  )
+  // o formulário precisa da atividade junto para saber quais campos montar
+  assert.equal(cards[0].atividade.id, 'A')
+
+  // nenhum serviço do catálogo real pode gerar zero cards: sumiria da tela
+  for (const s of SERVICOS) assert.ok(ofertasDoServico(s).length, s.nome)
+}
+
+// mais acessadas: frequência por card, e não por atividade
+{
+  const a1 = { chave: 'Area/Serv/Ativ', nome: 'Ativ' }
+  const cards = [
+    { atividade: a1, oferta: 'Instalar' },
+    { atividade: a1, oferta: 'Configurar' },
+    { atividade: a1, oferta: 'Atualizar' },
+  ]
+  // duas ofertas da mesma atividade não podem compartilhar contador
+  assert.notEqual(chaveOferta(a1, 'Instalar'), chaveOferta(a1, 'Configurar'))
+  assert.equal(chaveOferta(a1, null), a1.chave) // sem oferta, a chave é a da atividade
+
+  let acessos = {}
+  acessos = registrarAcesso(acessos, chaveOferta(a1, 'Configurar'))
+  acessos = registrarAcesso(acessos, chaveOferta(a1, 'Configurar'))
+  acessos = registrarAcesso(acessos, chaveOferta(a1, 'Instalar'))
+
+  const top = maisAcessadas(cards, acessos)
+  assert.deepEqual(
+    top.map((t) => [t.oferta, t.acessos]),
+    [
+      ['Configurar', 2],
+      ['Instalar', 1],
+    ]
+  ) // ordenado por frequência, e "Atualizar" (zero) fora
+  assert.deepEqual(maisAcessadas(cards, {}), []) // sem acesso, lista vazia -> aviso na tela
+  assert.equal(maisAcessadas(cards, acessos, 1).length, 1) // respeita o teto
+
+  // registrarAcesso não muda o mapa recebido
+  const antes = { x: 1 }
+  registrarAcesso(antes, 'x')
+  assert.deepEqual(antes, { x: 1 })
+}
 
 // visibilidade: cada conta vê só o que abriu
 const [joao, valeria] = CONTAS

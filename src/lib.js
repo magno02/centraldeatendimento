@@ -135,6 +135,37 @@ export const doUsuario = (tickets, usuario) =>
       )
     : []
 
+// Identidade de um card de atividade. A chave da atividade não basta: um mesmo
+// "Gestão de softwares" rende os cards Configurar/Instalar/Atualizar, e contar
+// acesso por atividade misturaria os três num número só.
+export const chaveOferta = (atividade, oferta) =>
+  oferta ? `${atividade.chave}#${oferta}` : atividade.chave
+
+// Frequência, não recência: `recentes` responde "o que abri por último", este mapa
+// responde "o que abro mais". São perguntas diferentes e precisam de dados diferentes.
+export const registrarAcesso = (acessos, chave) => ({
+  ...acessos,
+  [chave]: (acessos[chave] ?? 0) + 1,
+})
+
+// Nunca inventa item: quem tem zero acesso fica de fora, e a tela mostra o aviso.
+export function maisAcessadas(cards, acessos, max = 10) {
+  return cards
+    .map((c) => ({ ...c, acessos: acessos[chaveOferta(c.atividade, c.oferta)] ?? 0 }))
+    .filter((c) => c.acessos > 0)
+    .sort((a, b) => b.acessos - a.acessos)
+    .slice(0, max)
+}
+
+// Ao abrir um serviço, cada oferta vira um card próprio — a escolha que antes era
+// um select dentro do formulário. Atividade sem oferta cadastrada entra como card único.
+export const ofertasDoServico = (servico) =>
+  servico.atividades.flatMap((a) =>
+    a.ofertas?.length
+      ? a.ofertas.map((oferta) => ({ atividade: a, oferta }))
+      : [{ atividade: a, oferta: null }]
+  )
+
 export function contarPorStatus(tickets) {
   return Object.fromEntries(
     STATUS.map((s) => [s, tickets.filter((t) => t.status === s).length])
@@ -223,9 +254,47 @@ export function ordenarChamados(lista, ordem) {
   return copia.sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
 }
 
+// Artigo do placeholder ("Informe o gestor", "Informe a matrícula"). O gênero sai do
+// substantivo-núcleo, que é a primeira palavra do rótulo — "Centro de custo" é o
+// centro, não o custo.
+// ponytail: heurística por terminação com lista de exceções. Cobre os 79 rótulos do
+// catálogo; rótulo novo que a regra errar entra em EXCECOES_ARTIGO.
+const EXCECOES_ARTIGO = {
+  sistema: 'o', // termina em -a mas é masculino
+  problema: 'o',
+  dia: 'o',
+  mapa: 'o',
+  fonte: 'a', // termina em -e mas é feminino
+  rede: 'a',
+  chave: 'a',
+  imagem: 'a',
+}
+
+export function artigoDe(rotulo) {
+  const nucleo = rotulo.trim().split(/\s+/)[0].toLowerCase()
+  if (EXCECOES_ARTIGO[nucleo]) return EXCECOES_ARTIGO[nucleo]
+
+  // plural primeiro: o -s final esconde a terminação que define o gênero
+  if (/(ões|ãs)$/.test(nucleo)) return 'as'
+  if (/s$/.test(nucleo)) return /as$/.test(nucleo) ? 'as' : 'os'
+
+  // -ão só é feminino nas terminações -ção/-são/-xão (conexão, condição)
+  if (/(a|ção|são|xão|dade|agem|ice|ude|ez|tude)$/.test(nucleo)) return 'a'
+  return 'o'
+}
+
 // Ícone do serviço por palavra-chave do nome: 196 serviços não comportam escolha
 // manual. A ordem importa — a primeira regra que casar vence.
 const REGRAS_ICONE = [
+  // Periféricos primeiro: os nomes do catálogo de TI ("Monitor", "Mouse", "Teclado")
+  // casavam com regras genéricas mais abaixo e todos viravam o ícone de notebook.
+  [/webcam|c[âa]mera/, 'webcam'],
+  [/headset|fone de ouvido/, 'headset'],
+  [/docking|dock station/, 'docking'],
+  [/\bmouse\b/, 'mouse'],
+  [/teclado/, 'teclado'],
+  [/\bmonitor(es)?\b/, 'monitor'], // "monitoramento" continua caindo em pulso
+  [/desktop|torre|gabinete|workstation/, 'desktop'],
   [/senha|acesso|permiss|perfil|credencial|login|autentic/, 'chave'],
   [/ciberseguran|seguranca da informacao|vulnerab|antiv|firewall|phishing/, 'escudo'],
   [/rede|wi-?fi|internet|vpn|conectividade|conexao|link de dados/, 'rede'],
@@ -262,7 +331,7 @@ const REGRAS_ICONE = [
   [/remetente/, 'email'],
   [/planilha|excel|\bword\b|power ?point|formulario|data room|cnpj|cpf/, 'documento'],
   [/servicenow|portal de servico|\bsla\b|\bola\b|item de configuracao|regras de negocio/, 'prancheta'],
-  [/headset|monitor|tablet|teclado|mouse|tower/, 'notebook'],
+  [/tablet|tower/, 'notebook'], // headset/monitor/teclado/mouse têm ícone próprio agora
   [/linha corporativa/, 'telefone'],
   [/marca|rebranding/, 'brilho'],
   [/sistema|aplicacao|plataforma|plugin|benner|pipeline|empreendimento|oportunidade|necessidade/, 'camadas'],

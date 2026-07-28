@@ -1,17 +1,15 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_RBG.png'
-import logoVertical from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_VERTICAL_AZUL_RBG.png'
-import { PORTFOLIOS, ATIVIDADES, POR_CHAVE } from './catalogo'
+import fundoHero from './assets/UHE_Luiz_Gonzaga_Banner.webp'
+import {
+  GRUPOS,
+  ATIVIDADES_VISIVEIS,
+  POR_CHAVE,
+  grupoDoPortfolio,
+} from './catalogo'
 import { IconeServico } from './icones'
 import Login from './Login'
-import {
-  EMPRESAS,
-  ESTADOS,
-  AREAS,
-  USUARIOS,
-  GESTOR_DE,
-  ATENDENTES,
-} from './organizacao'
+import { ATENDENTES } from './organizacao'
 import {
   STATUS,
   STATUS_PAINEL,
@@ -24,7 +22,12 @@ import {
   alternarFavorito,
   registrarRecente,
   contarPorStatus,
+  artigoDe,
   doUsuario,
+  ofertasDoServico,
+  chaveOferta,
+  registrarAcesso,
+  maisAcessadas,
   deveMostrarTopo,
   prazoPrevisto,
   formatarTamanho,
@@ -72,7 +75,7 @@ export default function App() {
   // view: {tela:'portal'} | {tela:'servico',servico} | {tela:'form',atividade}
   //     | {tela:'ticket',protocolo} | {tela:'tickets',status?}
   const [view, setView] = useState({ tela: 'portal' })
-  const [aba, setAba] = useState(PORTFOLIOS[0].id)
+  const [aba, setAba] = useState(GRUPOS[0].id)
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('')
   const [lidas, setLidas] = useState(() =>
@@ -97,6 +100,10 @@ export default function App() {
   const [recentes, setRecentes] = useState(() =>
     JSON.parse(localStorage.getItem('recentes') || '[]')
   )
+  // contador de aberturas por card de atividade — alimenta "mais acessadas"
+  const [acessos, setAcessos] = useState(() =>
+    JSON.parse(localStorage.getItem('acessos') || '{}')
+  )
 
   useEffect(() => {
     localStorage.setItem('tickets', JSON.stringify(tickets))
@@ -120,6 +127,10 @@ export default function App() {
     localStorage.setItem('recentes', JSON.stringify(recentes))
   }, [recentes])
 
+  useEffect(() => {
+    localStorage.setItem('acessos', JSON.stringify(acessos))
+  }, [acessos])
+
   const favoritar = (chave) => setFavoritos((f) => alternarFavorito(f, chave))
 
   function abrirServico(servico, portfolio) {
@@ -129,6 +140,7 @@ export default function App() {
 
   function abrirAtividade(atividade) {
     setRecentes((r) => registrarRecente(r, atividade.chave))
+    setAcessos((a) => registrarAcesso(a, chaveOferta(atividade, atividade.oferta)))
     setView({ tela: 'form', atividade })
   }
 
@@ -150,32 +162,23 @@ export default function App() {
     setView({ tela: 'portal' })
   }
 
-  function enviar(e, atividade, { para, anexos }) {
+  // o formulário não pergunta mais para quem é a solicitação: quem abre é o solicitante
+  function enviar(e, atividade, { anexos }) {
     e.preventDefault()
     const f = new FormData(e.target)
-    const paraOutra = para === 'Outra pessoa'
-    const camposOrigem = ['Empresa', 'Estado', 'Área']
-    const camposTerceiro = ['Usuário', 'Gestor imediato']
     const ticket = {
       protocolo: novoProtocolo(tickets),
       atividade: atividade.nome,
       servico: atividade.servico.nome,
       portfolio: atividade.portfolio.nome,
-      solicitante: paraOutra ? f.get('Usuário') : usuario.nome,
+      solicitante: usuario.nome,
       abertoPor: usuario.nome,
       abertoPorEmail: usuario.email,
       responsavel: atendenteDe(novoProtocolo(tickets), ATENDENTES),
       anexos,
       status: 'Aberto',
       criadoEm: new Date().toISOString(),
-      dados: [
-        ['Solicitado para', para],
-        // origem só existe no formulário quando é para outra pessoa
-        ...(paraOutra
-          ? [...camposOrigem, ...camposTerceiro].map((n) => [n, f.get(n)])
-          : []),
-        ...atividade.campos.map((c) => [campoNome(c), f.get(campoNome(c))]),
-      ],
+      dados: atividade.campos.map((c) => [campoNome(c), f.get(campoNome(c))]),
       interacoes: [
         {
           autor: 'Sistema',
@@ -200,44 +203,57 @@ export default function App() {
     irAoPortal()
   }
 
-  const resultados = buscar(ATIVIDADES, busca)
-  const portfolio = PORTFOLIOS.find((p) => p.id === aba)
-  const servicosVisiveis = filtrarServicos(portfolio.servicos, filtro)
+  const resultados = buscar(ATIVIDADES_VISIVEIS, busca)
+  const grupo = GRUPOS.find((g) => g.id === aba)
+  const servicosVisiveis = filtrarServicos(grupo.servicos, filtro)
   // busca em meusTickets, não em tickets: assim um protocolo de outra conta na view
   // (sessão trocada, link antigo) não abre a tela de detalhe.
   const ticketAtual =
     view.tela === 'ticket' &&
     meusTickets.find((t) => t.protocolo === view.protocolo)
 
+  // qual link do header está aceso. "Aprovações" é a mesma tela de chamados, então
+  // só o filtro de status separa os dois; telas de detalhe não acendem nenhum.
+  const linkAtivo =
+    view.tela === 'portal'
+      ? 'Portal'
+      : view.tela === 'tickets'
+        ? view.status === 'Aguardando aprovação'
+          ? 'Aprovações'
+          : 'Meus chamados'
+        : null
+
   if (!usuario) return <Login onEntrar={entrar} />
 
   return (
     <div className="min-h-screen bg-axia-bg font-sans text-axia-grey1">
       <Topo
-        busca={busca}
-        setBusca={(v) => {
-          setBusca(v)
-          setView({ tela: 'portal' })
-        }}
         usuario={usuario}
+        ativo={linkAtivo}
         notificacoes={listaNotificacoes}
         novidades={naoVisualizadas(listaNotificacoes, lidas).length}
         onInicio={irAoPortal}
         onNotificacao={abrirNotificacao}
         onVerTodas={() => setView({ tela: 'notificacoes' })}
         onMeusTickets={() => setView({ tela: 'tickets' })}
+        onAprovacoes={() =>
+          setView({ tela: 'tickets', status: 'Aguardando aprovação' })
+        }
         onSair={() => setSaindo(true)}
       />
 
+      {/* fora do <main> de propósito: lá dentro o fundo pararia nos 1440px do
+          container, e a faixa precisa ir de ponta a ponta da tela */}
+      {view.tela === 'portal' && (
+        <Hero
+          busca={busca}
+          setBusca={setBusca}
+          contagem={contarPorStatus(meusTickets)}
+          onIndicador={(status) => setView({ tela: 'tickets', status })}
+        />
+      )}
+
       <main className="mx-auto max-w-[1440px] px-4 pb-20 sm:px-8">
-        {view.tela === 'portal' && (
-          <Indicadores
-            usuario={usuario}
-            contagem={contarPorStatus(meusTickets)}
-            onIndicador={(status) => setView({ tela: 'tickets', status })}
-            onVerTodos={() => setView({ tela: 'tickets' })}
-          />
-        )}
 
         {view.tela === 'portal' && busca.trim() && (
           <Secao titulo={`Resultados para "${busca}"`}>
@@ -262,25 +278,34 @@ export default function App() {
 
         {view.tela === 'portal' && !busca.trim() && (
           <>
-            <AbasTopo ativa={secao} onSelect={setSecao} qtdFavoritos={favoritos.length} />
+            <Abas
+              ativa={secao === 'Portfólios' ? aba : secao}
+              onSelect={(id) => {
+                setAba(id)
+                setSecao('Portfólios')
+                setFiltro('')
+              }}
+              secao={secao}
+              onSecao={setSecao}
+              qtdFavoritos={favoritos.length}
+            />
 
             {secao === 'Portfólios' && (
               <>
-                <Chips itens={PORTFOLIOS} ativa={aba} onSelect={setAba} />
-                <label className="relative block w-full max-w-xl">
+                <label className="relative mt-8 block w-full max-w-xl">
                   <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
                     <IconeLupa />
                   </span>
                   <input
                     value={filtro}
                     onChange={(e) => setFiltro(e.target.value)}
-                    placeholder={`Filtrar serviços em ${portfolio.nome}...`}
+                    placeholder={`Filtrar serviços em ${grupo.nome}...`}
                     className="w-full rounded-full border border-axia-neutral bg-white py-2.5 pl-11 pr-5 text-sm outline-none focus:border-axia-blue"
                   />
                 </label>
                 <div className="mb-5 mt-3 flex items-center gap-4">
                   <span className="text-sm text-axia-grey/70">
-                    {servicosVisiveis.length} de {portfolio.servicos.length} serviço(s)
+                    {servicosVisiveis.length} de {grupo.servicos.length} serviço(s)
                   </span>
                   {filtro && (
                     <button
@@ -298,12 +323,12 @@ export default function App() {
                       servico={s}
                       favorito={favoritos.includes(s.chave)}
                       onFavoritar={() => favoritar(s.chave)}
-                      onClick={() => abrirServico(s, portfolio)}
+                      onClick={() => abrirServico(s, s.portfolio)}
                     />
                   ))}
                 </Grade>
                 {!servicosVisiveis.length && (
-                  <Vazio>Nenhum serviço com "{filtro}" nesta área.</Vazio>
+                  <Vazio>Nenhum serviço com "{filtro}" nesta aba.</Vazio>
                 )}
               </>
             )}
@@ -328,52 +353,94 @@ export default function App() {
         {view.tela === 'servico' && (
           <>
             <Cabecalho
+              // a trilha mostra a aba, não a área: área deixou de ser nível de
+              // navegação, e o nome dela não aparece em lugar nenhum do portal
               trilha={[
                 { label: 'Portal', onClick: irAoPortal },
                 {
-                  label: view.portfolio.nome,
+                  label: grupoDoPortfolio(view.portfolio.nome),
                   onClick: () => {
-                    setAba(view.portfolio.id)
+                    setAba(grupoDoPortfolio(view.portfolio.nome))
                     irAoPortal()
                   },
                 },
                 { label: view.servico.nome },
               ]}
-              titulo={view.servico.nome}
-              subtitulo={view.servico.descricao}
+              // sem título próprio: o nome do serviço passou para o título da seção
+              // de atividades, e repetir os dois seria o mesmo texto duas vezes
               onVoltar={irAoPortal}
             />
-            <Grade>
-              {view.servico.atividades.map((a) => (
-                <CardAtividade
-                  key={a.id}
-                  atividade={a}
-                  favorito={favoritos.includes(a.chave)}
-                  onFavoritar={() => favoritar(a.chave)}
-                  onClick={() =>
-                    abrirAtividade({
-                      ...a,
-                      servico: view.servico,
-                      portfolio: view.portfolio,
-                    })
-                  }
-                />
-              ))}
-            </Grade>
+
+            {/* mesmo card da lista de baixo, só que ordenado por uso: o atalho perde
+                a graça se não for reconhecível como a atividade que a pessoa já abriu */}
+            <Secao titulo="Atividades mais acessadas">
+              {(() => {
+                const topo = maisAcessadas(
+                  ofertasDoServico(view.servico),
+                  acessos
+                )
+                if (!topo.length)
+                  return (
+                    <Vazio>
+                      Você ainda não acessou nenhuma atividade deste serviço.
+                    </Vazio>
+                  )
+                return (
+                  <Grade>
+                    {topo.map(({ atividade, oferta }) => (
+                      <CardAtividade
+                        key={chaveOferta(atividade, oferta)}
+                        atividade={{ ...atividade, oferta }}
+                        favorito={favoritos.includes(atividade.chave)}
+                        onFavoritar={() => favoritar(atividade.chave)}
+                        onClick={() =>
+                          abrirAtividade({
+                            ...atividade,
+                            oferta,
+                            servico: view.servico,
+                            portfolio: view.portfolio,
+                          })
+                        }
+                      />
+                    ))}
+                  </Grade>
+                )
+              })()}
+            </Secao>
+
+            <Secao titulo={view.servico.nome}>
+              <Grade>
+                {ofertasDoServico(view.servico).map(({ atividade, oferta }) => (
+                  <CardAtividade
+                    key={`${atividade.id}#${oferta ?? ''}`}
+                    atividade={{ ...atividade, oferta }}
+                    favorito={favoritos.includes(atividade.chave)}
+                    onFavoritar={() => favoritar(atividade.chave)}
+                    onClick={() =>
+                      abrirAtividade({
+                        ...atividade,
+                        oferta,
+                        servico: view.servico,
+                        portfolio: view.portfolio,
+                      })
+                    }
+                  />
+                ))}
+              </Grade>
+            </Secao>
           </>
         )}
 
         {view.tela === 'form' && (
           <Formulario
             atividade={view.atividade}
-            usuario={usuario}
             onSubmit={enviar}
             trilha={[
               { label: 'Portal', onClick: irAoPortal },
               {
-                label: view.atividade.portfolio.nome,
+                label: grupoDoPortfolio(view.atividade.portfolio.nome),
                 onClick: () => {
-                  setAba(view.atividade.portfolio.id)
+                  setAba(grupoDoPortfolio(view.atividade.portfolio.nome))
                   irAoPortal()
                 },
               },
@@ -386,8 +453,8 @@ export default function App() {
                     portfolio: view.atividade.portfolio,
                   }),
               },
-              // sem o nome da atividade: ele já é o título dentro do formulário,
-              // e na coluna de 768px o breadcrumb quebrava em duas linhas
+              // a oferta fecha a trilha: é ela que identifica o formulário agora
+              { label: view.atividade.oferta ?? view.atividade.nome },
             ]}
             onVoltar={() =>
               setView(
@@ -439,6 +506,10 @@ export default function App() {
 
         {view.tela === 'tickets' && (
           <MeusTickets
+            // key força remontagem ao trocar de status vindo do menu: o filtro é
+            // useState(statusInicial), que só é lido na primeira renderização —
+            // sem isto, "Aprovações" não mudaria nada se já estivéssemos aqui
+            key={view.status ?? 'todos'}
             tickets={meusTickets}
             statusInicial={view.status}
             onAbrir={(protocolo) => setView({ tela: 'ticket', protocolo })}
@@ -515,7 +586,7 @@ function ChatIA({ usuario, onAtividade }) {
     e.preventDefault()
     const pergunta = new FormData(e.target).get('pergunta').trim()
     if (!pergunta) return
-    const { texto, sugestoes } = responderIA(pergunta, ATIVIDADES)
+    const { texto, sugestoes } = responderIA(pergunta, ATIVIDADES_VISIVEIS)
     setMensagens((ms) => [
       ...ms,
       { de: 'eu', texto: pergunta },
@@ -651,69 +722,65 @@ function BotaoTopo() {
 
 // Barra única: logo à esquerda, título, busca no centro e "Meus tickets" à direita.
 function Topo({
-  busca,
-  setBusca,
   usuario,
+  ativo,
   notificacoes,
   novidades,
   onInicio,
   onNotificacao,
   onVerTodas,
   onMeusTickets,
+  onAprovacoes,
   onSair,
 }) {
   return (
-    <header className="bg-axia-blue text-white">
-      {/* no celular vira uma coluna centrada: logo, título, busca e conta, nessa ordem.
-          De sm para cima volta a ser a barra única com tudo lado a lado. */}
-      <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-4 px-4 py-4 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-4 sm:px-8 sm:py-6">
-        {/* logo + título levam ao portal */}
+    <header className="border-b border-axia-neutral bg-white text-axia-purple">
+      {/* barra fina: só logo e conta, uma linha em qualquer largura. A busca saiu
+          daqui — quem busca é o hero do portal. */}
+      <div className="mx-auto flex max-w-[1440px] items-center gap-4 px-4 py-2 sm:px-8">
         <button
           onClick={onInicio}
-          className="flex min-w-0 cursor-pointer flex-col items-center gap-2 text-center sm:flex-row sm:gap-6 sm:text-left"
+          className="flex min-w-0 shrink-0 cursor-pointer items-center gap-3"
+          aria-label="Ir para o portal"
         >
-          {/* <picture> em vez de dois <img> alternados por classe: assim o navegador
-              baixa só o arquivo que vai exibir, e não os dois 170 KB + 118 KB. */}
-          <picture className="shrink-0">
-            <source media="(min-width: 640px)" srcSet={logo} />
-            <img
-              src={logoVertical}
-              alt="AXIA Energia"
-              className="h-32 w-auto shrink-0 object-contain sm:h-20"
-            />
-          </picture>
-          <span className="min-w-0">
-            <span className="block text-lg font-bold leading-tight sm:text-xl">
-              Como podemos ajudar?
-            </span>
-            <span className="hidden text-xs text-axia-sky sm:block">
-              Encontre o serviço ou atividade que você precisa.
-            </span>
+          <img
+            src={logo}
+            alt="AXIA Energia"
+            className="h-10 w-auto shrink-0 object-contain sm:h-12"
+          />
+          {/* some no celular: com os links ocultos lá, o espaço é para logo e conta */}
+          <span className="hidden text-[13px] font-semibold uppercase tracking-wide text-axia-blue sm:block">
+            Portal de Serviços
           </span>
         </button>
 
-        <label className="relative mx-auto w-full max-w-md">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-axia-grey/60"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-          </svg>
-          <input
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            placeholder="Pesquisar serviço ou atividade..."
-            className="w-full rounded-full bg-white py-2.5 pl-12 pr-5 text-sm text-axia-grey1 outline-none placeholder:text-axia-grey/60 focus:ring-2 focus:ring-axia-blue"
-          />
-        </label>
+        {/* oculto no celular: três links + logo + conta não cabem numa barra fina.
+            No dropdown do usuário os mesmos destinos continuam acessíveis. */}
+        <nav className="mx-auto hidden items-center gap-2 sm:flex">
+          {[
+            { rotulo: 'Portal', onClick: onInicio },
+            { rotulo: 'Meus chamados', onClick: onMeusTickets },
+            { rotulo: 'Aprovações', onClick: onAprovacoes },
+          ].map(({ rotulo, onClick }) => (
+            <button
+              key={rotulo}
+              onClick={onClick}
+              aria-current={ativo === rotulo ? 'page' : undefined}
+              // borda transparente nos inativos: sem ela o item saltaria 2px ao ativar
+              className={`border-b-2 px-4 py-1.5 text-sm font-bold transition ${
+                ativo === rotulo
+                  ? 'border-axia-blue text-axia-blue'
+                  : 'border-transparent text-axia-grey hover:text-axia-blue'
+              }`}
+            >
+              {rotulo}
+            </button>
+          ))}
+        </nav>
 
-        {/* sem ml-auto no celular: na coluna ele empurraria o bloco para a direita */}
-        <div className="flex shrink-0 items-center gap-5 sm:ml-auto">
+        {/* sem ml-auto: quem empurra agora é o mx-auto do nav, senão as duas
+            margens automáticas brigam e o menu volta a encostar no logo */}
+        <div className="flex shrink-0 items-center gap-4">
           <Popover
             rotulo={
               <>
@@ -737,7 +804,7 @@ function Topo({
               </>
             }
             aria-label={`Notificações: ${novidades} sem visualizar`}
-            classeBotao="relative rounded-full p-2 hover:bg-white/10"
+            classeBotao="relative rounded-full p-2 text-axia-grey hover:bg-axia-bg hover:text-axia-blue"
           >
             {(fechar) => (
               <PainelNotificacoes
@@ -754,14 +821,15 @@ function Topo({
             )}
           </Popover>
 
-          <span className="h-8 w-px bg-white/25" aria-hidden="true" />
+          <span className="h-6 w-px bg-axia-neutral" aria-hidden="true" />
 
           <Popover
             largura="w-64"
-            classeBotao="flex items-center gap-3 rounded-full py-1 pl-1 pr-3 hover:bg-white/10"
+            classeBotao="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 hover:bg-axia-bg"
             rotulo={
               <>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-axia-blue">
+                {/* invertido junto com o header: no fundo branco quem colore é o avatar */}
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-axia-blue text-xs font-bold text-white">
                   {iniciais(usuario.nome)}
                 </span>
                 <span className="text-sm font-bold">{usuario.nome}</span>
@@ -775,6 +843,10 @@ function Topo({
                 onMeusTickets={() => {
                   fechar()
                   onMeusTickets()
+                }}
+                onAprovacoes={() => {
+                  fechar()
+                  onAprovacoes()
                 }}
                 onSair={() => {
                   fechar()
@@ -842,7 +914,7 @@ function Popover({ rotulo, classeBotao, largura = 'w-96', children, ...props }) 
   )
 }
 
-function MenuUsuario({ usuario, onMeusTickets, onSair }) {
+function MenuUsuario({ usuario, onMeusTickets, onAprovacoes, onSair }) {
   return (
     <div className="p-2">
       <div className="px-3 py-2">
@@ -854,6 +926,13 @@ function MenuUsuario({ usuario, onMeusTickets, onSair }) {
         className="w-full rounded-chip px-3 py-2.5 text-left text-sm hover:bg-axia-blue/5 hover:text-axia-blue"
       >
         Meus chamados
+      </button>
+      {/* no celular a barra de navegação está oculta: é por aqui que se chega */}
+      <button
+        onClick={onAprovacoes}
+        className="w-full rounded-chip px-3 py-2.5 text-left text-sm hover:bg-axia-blue/5 hover:text-axia-blue sm:hidden"
+      >
+        Aprovações
       </button>
       <button
         onClick={onSair}
@@ -921,55 +1000,69 @@ function ItemNotificacao({ n, naoVista }) {
   )
 }
 
-// Saudação à esquerda, acompanhamento à direita — clicar num cartão filtra a lista.
-function Indicadores({ usuario, contagem, onIndicador, onVerTodos }) {
+// Faixa de destaque: fundo, busca e os contadores de chamado.
+
+function Hero({ busca, setBusca, contagem, onIndicador }) {
   return (
-    <section className="flex flex-wrap items-center gap-x-10 gap-y-6 pt-8">
-      <div className="min-w-64 flex-1">
-        <h2 className="text-2xl font-bold text-axia-purple">
-          Olá, {usuario.nome.split(' ')[0]}!
-        </h2>
-        <p className="mt-2 max-w-sm text-sm leading-relaxed text-axia-grey">
-          Aqui você encontra tudo o que precisa de forma rápida e acompanha seus
-          chamados.
-        </p>
-      </div>
+    // o fundo ocupa a largura toda; só o conteúdo interno respeita os 1440px
+    <section
+      className="relative mb-12 overflow-hidden bg-axia-purple bg-cover bg-center px-4 pb-14 pt-14 text-white sm:px-8 sm:pb-16 sm:pt-16"
+      style={{ backgroundImage: `url(${fundoHero})` }}
+    >
+      {/* véu mais leve: a foto aparece mais, e o azul fica só onde o texto senta.
+          Sem véu nenhum o branco perde contraste sobre as partes claras da imagem. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-r from-axia-purple/65 via-axia-purple/35 to-axia-blue/25"
+      />
 
-      {/* w-fit a partir de 420px: o bloco tem a largura dos cards, então título e
-          "Ver todos" alinham com eles. No modo de 2 colunas ele ocupa a largura toda,
-          para o título ir a uma ponta e o "Ver todos" à outra — os cards seguem
-          centrados pelo justify-center do grid. */}
-      <div className="w-full max-w-full min-[420px]:mx-auto min-[420px]:w-fit sm:ml-auto sm:mr-0">
-        <div className="mb-3 flex items-center justify-between gap-4">
-          <h3 className="text-sm font-bold text-axia-purple">Meus chamados</h3>
-          <button
-            onClick={onVerTodos}
-            className="text-sm font-bold text-axia-blue-soft hover:text-axia-blue"
-          >
-            Ver todos →
-          </button>
-        </div>
+      {/* Busca centrada com mx-auto simples. A grade de 3 colunas que estava aqui não
+          servia: um `1fr` não encolhe abaixo do conteúdo, então a coluna dos indicadores
+          crescia, a do outro lado encolhia e o meio saía do centro da tela. */}
+      <div className="relative mx-auto max-w-[1440px]">
+        <div className="mx-auto w-full max-w-md">
+          <h2 className="text-center text-lg font-bold">Como podemos te ajudar?</h2>
 
-        {/* trilhas fixas de 6rem (a largura do card) em vez de flex-wrap: assim nunca
-            sobra uma linha de 3 + 1. São 4 por linha quando cabem os ~420px, 2 abaixo disso. */}
-        <div className="grid justify-center gap-3 grid-cols-[repeat(2,6rem)] min-[420px]:grid-cols-[repeat(4,6rem)] sm:justify-end">
-          {STATUS_PAINEL.map((s) => (
-            <button
-              key={s}
-              onClick={() => onIndicador(s)}
-              title={`Ver chamados com status ${s}`}
-              className="flex w-24 flex-col items-center justify-center rounded-chip border border-axia-neutral bg-white px-2 pb-1 pt-5 text-center transition hover:border-axia-blue hover:shadow-md hover:shadow-axia-blue/5"
-            >
-              <div className="text-2xl font-bold leading-none text-axia-purple">
-                {contagem[s]}
-              </div>
-              {/* duas linhas reservadas: "Aguardando aprovação" quebra e os demais
-                  rótulos precisam ocupar a mesma altura para os números alinharem */}
-              <div className="mt-2 flex min-h-[2rem] items-start justify-center text-[11px] uppercase leading-tight tracking-wide text-axia-grey/70">
-                {s}
-              </div>
-            </button>
-          ))}
+          {/* âncora dos indicadores: esta div tem exatamente a altura do campo */}
+          <div className="relative mt-3">
+            <label className="relative block">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
+                <IconeLupa />
+              </span>
+              <input
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Pesquisar serviço ou atividade..."
+                className="w-full rounded-full bg-white py-2 pl-11 pr-4 text-sm text-axia-grey1 outline-none placeholder:text-axia-grey/60 focus:ring-2 focus:ring-white/60"
+              />
+            </label>
+
+            {/* rótulo fora do quadrado: só a contagem fica dentro, então os números
+                alinham mesmo com rótulo de duas linhas.
+                Fora do fluxo a partir de xl (onde sobra largura ao lado da busca):
+                left-full os põe à direita do campo, top-0 alinha os topos e
+                -translate-y-2.5 desce metade da diferença entre o quadrado de 56px
+                e o campo de 36px, centrando um no outro. */}
+            <div className="mt-8 flex flex-wrap items-start justify-center gap-2 xl:absolute xl:left-full xl:top-0 xl:ml-10 xl:mt-0 xl:-translate-y-2.5 xl:flex-nowrap">
+              {STATUS_PAINEL.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => onIndicador(s)}
+                  title={`Ver chamados com status ${s}`}
+                  className="group flex w-20 shrink-0 flex-col items-center gap-2"
+                >
+                  {/* branco chapado: o hover é sombra, já que não há mais opacidade
+                      para variar entre repouso e destaque */}
+                  <span className="flex h-14 w-14 items-center justify-center rounded-chip bg-white text-xl font-bold text-axia-purple shadow-sm transition group-hover:shadow-lg">
+                    {contagem[s]}
+                  </span>
+                  <span className="text-center text-[11px] uppercase leading-tight tracking-wide text-white/80 transition group-hover:text-white">
+                    {s}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -977,51 +1070,57 @@ function Indicadores({ usuario, contagem, onIndicador, onVerTodos }) {
 }
 
 
-const SECOES = [
-  { nome: 'Portfólios', icone: IconeGrade },
-  { nome: 'Favoritos', icone: IconeEstrela },
-  { nome: 'Recentes', icone: IconeRelogio },
-]
-
-function AbasTopo({ ativa, onSelect, qtdFavoritos }) {
+// Abas em formato de pasta: o trapézio vem de skewX numa camada de fundo separada,
+// para o texto não inclinar junto. A aba ativa sobe 2px e cobre a linha de baixo,
+// que é o que dá a leitura de "pasta à frente das outras".
+function Aba({ ativa, onClick, children }) {
   return (
-    <div className="flex flex-wrap gap-2 border-b border-slate-300 pt-14">
-      {SECOES.map(({ nome, icone: Ic }) => (
-        <button
-          key={nome}
-          onClick={() => onSelect(nome)}
-          className={`flex items-center gap-2 rounded-t-chip px-6 py-3 text-sm font-bold transition ${
-            ativa === nome
-              ? 'bg-axia-blue text-white'
-              : 'bg-slate-200/70 text-axia-sky2 hover:bg-slate-300/70'
-          }`}
-        >
-          <Ic />
-          {nome}
-          {nome === 'Favoritos' && qtdFavoritos > 0 && ` (${qtdFavoritos})`}
-        </button>
-      ))}
-    </div>
+    <button
+      onClick={onClick}
+      className={`relative isolate shrink-0 px-7 pb-3 pt-3 text-sm font-bold transition ${
+        ativa ? 'z-10 -mb-px text-white' : 'text-axia-sky2 hover:text-axia-blue'
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className={`absolute inset-0 -z-10 origin-bottom skew-x-[18deg] rounded-t-lg transition ${
+          ativa ? 'bg-axia-blue' : 'bg-slate-200 hover:bg-slate-300'
+        }`}
+      />
+      {children}
+    </button>
   )
 }
 
-// Portfólios como chips, com a linha azul fechando o bloco.
-function Chips({ itens, ativa, onSelect }) {
+function Abas({ ativa, onSelect, secao, onSecao, qtdFavoritos }) {
   return (
-    <div className="mb-8 border-b-2 border-axia-blue pb-4 pt-4">
-      <div className="flex flex-wrap gap-2">
-        {itens.map((p) => (
+    // rolagem lateral em vez de quebra: fileiras empilhadas destroem o efeito de pasta
+    <div className="flex items-end gap-1 overflow-x-auto border-b-2 border-axia-blue [scrollbar-width:none]">
+      {GRUPOS.map((g) => (
+        <Aba key={g.id} ativa={ativa === g.id} onClick={() => onSelect(g.id)}>
+          {g.nome}
+        </Aba>
+      ))}
+
+      {/* favoritos e recentes ficam fora das pastas: são recortes do catálogo,
+          não mais um grupo de serviços */}
+      <div className="ml-auto flex shrink-0 items-center gap-1 pb-3 pl-6 pr-2">
+        {[
+          { nome: 'Favoritos', icone: IconeEstrela },
+          { nome: 'Recentes', icone: IconeRelogio },
+        ].map(({ nome, icone: Ic }) => (
           <button
-            key={p.id}
-            onClick={() => onSelect(p.id)}
-            className={`flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-bold transition ${
-              ativa === p.id
-                ? 'border-axia-blue bg-axia-blue/10 text-axia-blue'
-                : 'border-slate-300/70 bg-slate-200/70 text-axia-sky2 hover:bg-slate-300/70'
+            key={nome}
+            onClick={() => onSecao(nome)}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold transition ${
+              secao === nome
+                ? 'bg-axia-blue/10 text-axia-blue'
+                : 'text-axia-grey/70 hover:text-axia-blue'
             }`}
           >
-            {p.nome}
-            {ativa === p.id && <span aria-hidden="true">›</span>}
+            <Ic />
+            {nome}
+            {nome === 'Favoritos' && qtdFavoritos > 0 && ` (${qtdFavoritos})`}
           </button>
         ))}
       </div>
@@ -1055,7 +1154,7 @@ function Trilha({ itens }) {
 function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-4 py-8">
-      <div>
+      <div className="min-w-0 flex-1">
         <Trilha itens={trilha} />
         {titulo && (
           <h2 className="mt-5 text-3xl font-bold text-axia-purple">{titulo}</h2>
@@ -1078,11 +1177,12 @@ function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
   )
 }
 
-// auto-fit com teto de 440px: é a largura que o card tem quando cabem 3 por linha,
-// então 1 ou 2 cards ficam desse mesmo tamanho em vez de esticar pela linha toda.
+
+// Teto de 320px em vez de 1fr: sem ele, um card sozinho esticava pela linha inteira.
+// O piso de 300px é o que limita a 4 colunas nos ~1376px úteis — com 240px entravam 5.
 const Grade = ({ children }) => (
-  // min(100%,360px): sem isso a coluna nunca desce de 360px e estoura a tela do celular
-  <div className="grid items-stretch gap-6 grid-cols-[repeat(auto-fit,minmax(min(100%,360px),440px))]">
+  // min(100%,300px): sem isso a coluna nunca desce de 300px e estoura a tela do celular
+  <div className="grid items-stretch justify-start gap-5 grid-cols-[repeat(auto-fit,minmax(min(100%,300px),320px))]">
     {children}
   </div>
 )
@@ -1115,18 +1215,7 @@ const Icone = () => (
   </svg>
 )
 
-// function (não const) porque SECOES referencia esses ícones antes deste ponto do arquivo.
-function IconeGrade() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
-      <rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor" />
-      <rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor" opacity=".6" />
-      <rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor" opacity=".6" />
-      <rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor" />
-    </svg>
-  )
-}
-
+// function (não const): Abas referencia estes ícones antes deste ponto do arquivo.
 function IconeEstrela({ preenchida }) {
   return (
     <svg
@@ -1186,12 +1275,18 @@ function CardServico({ servico, favorito, onFavoritar, onClick }) {
       <Estrela ativo={favorito} onClick={onFavoritar} rotulo={servico.nome} />
       <button
         onClick={onClick}
-        className="flex h-full min-h-60 w-full flex-col items-center justify-center rounded-card border border-axia-neutral bg-white p-10 text-center transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5"
+        className="flex h-full min-h-44 w-full flex-col items-center justify-center rounded-card border border-axia-neutral bg-white p-6 text-center shadow-card transition hover:border-axia-blue hover:shadow-card-hover"
       >
         <IconeServico nome={servico.nome} />
-        <div className="mt-6 text-xl font-bold text-axia-purple">{servico.nome}</div>
-        <div className="mt-2 text-base text-axia-grey/70">
-          {servico.atividades.length} atividade(s)
+        <div className="mt-4 text-base font-bold leading-snug text-axia-purple">
+          {servico.nome}
+        </div>
+        {/* conta os cards que o serviço abre — cada oferta do catálogo é uma
+            atividade para quem usa o portal */}
+        <div className="mt-1.5 text-sm text-axia-grey/70">
+          {ofertasDoServico(servico).length === 1
+            ? '1 atividade'
+            : `${ofertasDoServico(servico).length} atividades`}
         </div>
       </button>
     </div>
@@ -1246,23 +1341,33 @@ function CardAtividade({ atividade, rodape, favorito, onFavoritar, onClick }) {
       )}
       <button
         onClick={onClick}
-        className="flex h-full min-h-60 w-full flex-col rounded-card border border-axia-neutral bg-white p-8 pr-14 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5"
+        className="flex h-full min-h-44 w-full flex-col rounded-card border border-axia-neutral bg-white p-6 pr-12 text-left shadow-card transition hover:border-axia-blue hover:shadow-card-hover"
       >
-        <h3 className="text-2xl font-bold leading-snug text-axia-purple">
-          {atividade.nome}
+        {/* card de oferta: o título é a oferta e a atividade vira contexto.
+            Sem oferta (busca do portal, favoritos) o card segue como era. */}
+        <h3 className="text-base font-bold leading-snug text-axia-purple">
+          {atividade.oferta ?? atividade.nome}
         </h3>
-        {atividade.ofertas?.length > 1 && (
-          <p className="mt-3 text-base leading-relaxed text-axia-grey">
-            {atividade.ofertas.length} ofertas de serviço disponíveis
+        {/* atividade do catálogo novo traz descrição própria e não tem oferta */}
+        {atividade.descricao ? (
+          <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-axia-grey">
+            {atividade.descricao}
           </p>
-        )}
-        {atividade.ofertas?.length === 1 && (
-          <p className="mt-3 text-base leading-relaxed text-axia-grey">
-            {atividade.ofertas[0]}
+        ) : atividade.oferta ? (
+          <p className="mt-2 text-sm leading-relaxed text-axia-grey">
+            {atividade.nome}
           </p>
+        ) : (
+          atividade.ofertas?.length > 0 && (
+            <p className="mt-2 text-sm leading-relaxed text-axia-grey">
+              {atividade.ofertas.length === 1
+                ? atividade.ofertas[0]
+                : `${atividade.ofertas.length} ofertas de serviço disponíveis`}
+            </p>
+          )
         )}
-        {rodape && <p className="mt-3 text-sm text-axia-grey/60">{rodape}</p>}
-        <span className="mt-auto pt-6 text-base font-bold text-axia-blue">
+        {rodape && <p className="mt-2 text-xs text-axia-grey/60">{rodape}</p>}
+        <span className="mt-auto pt-4 text-sm font-bold text-axia-blue">
           Acessar Formulário →
         </span>
       </button>
@@ -1277,202 +1382,110 @@ const PLACEHOLDERS = {
   Urgência: 'Selecione o nível de urgência',
 }
 
-function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
-  const [para, setPara] = useState('Eu mesmo(a)')
+// Campo de evidência/anexo vira a área de upload, não um input de texto.
+const ehAnexo = (nome) => /anexo|evid[êe]ncia/i.test(nome)
+
+function Formulario({ atividade, onSubmit, trilha, onVoltar }) {
   const [anexos, setAnexos] = useState([])
-  const [usuarioAlvo, setUsuarioAlvo] = useState('')
-  const seusDados = useRef(null)
-  const outraPessoa = para === 'Outra pessoa'
+
+  const visiveis = atividade.campos.filter(
+    (c) => !(atividade.oferta && campoNome(c) === 'Oferta de Serviço')
+  )
+  const pedeAnexo = visiveis.some((c) => ehAnexo(campoNome(c)))
+
+  // Textos longos vão para o fim: como cada um ocupa a linha inteira, no meio da
+  // lista eles quebram o empacotamento e deixam buracos na grade de 3 colunas.
+  // `sort` é estável, então a ordem da planilha se mantém dentro de cada bloco.
+  const campos = visiveis
+    .filter((c) => !ehAnexo(campoNome(c)))
+    .sort(
+      (a, b) =>
+        (campoTipo(a) === 'textarea' ? 1 : 0) - (campoTipo(b) === 'textarea' ? 1 : 0)
+    )
 
   return (
     <>
-      {/* TESTE de layout: cabeçalho e formulário na mesma coluna centralizada.
-          Para voltar ao anterior: remova esta div e devolva `max-w-3xl` ao <form>. */}
-      <div className="mx-auto max-w-3xl">
       <Cabecalho trilha={trilha} onVoltar={onVoltar} />
 
       <form
-        onSubmit={(e) => onSubmit(e, atividade, { para, anexos })}
-        // campo inválido dentro do bloco recolhido: abre para o usuário poder corrigir
-        onInvalid={() => seusDados.current && (seusDados.current.open = true)}
-        className="space-y-6 rounded-card border border-axia-neutral bg-white p-5 sm:p-8"
+        onSubmit={(e) => onSubmit(e, atividade, { anexos })}
+        className="space-y-6 overflow-hidden rounded-card border border-axia-neutral bg-white p-5 shadow-card sm:p-8"
       >
-        <div className="space-y-4 border-b border-axia-neutral pb-6">
-          <div>
-            <h2 className="text-2xl font-bold leading-snug text-axia-purple">
-              {atividade.nome}
-            </h2>
-            <p className="mt-1 text-sm text-axia-grey/70">
-              {atividade.servico.nome}
-            </p>
+        {/* Cabeçalho no formato do print: ícone, nome, descrição e prazo numa faixa,
+            e a aba "Solicitação" fechando o bloco — tudo no azul da marca.
+            O overflow-hidden do <form> apara a faixa nos cantos arredondados: sem ele
+            ela passava por cima do raio e o canto superior ficava quadrado. */}
+        <div className="-mx-5 -mt-5 border-b border-axia-neutral bg-white px-5 pt-5 sm:-mx-8 sm:-mt-8 sm:px-8 sm:pt-8">
+          <div className="flex items-start gap-4">
+            <span className="shrink-0 text-axia-blue">
+              <IconeServico nome={atividade.servico.nome} />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold leading-snug text-axia-purple">
+                {atividade.oferta ?? atividade.nome}
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-axia-grey">
+                {atividade.descricao ??
+                  'Use este formulário para registrar esta solicitação. Ao enviar, você recebe um número de protocolo para acompanhar o atendimento em "Meus chamados".'}
+              </p>
+              {atividade.sla && (
+                <p className="mt-2 text-sm font-bold text-axia-purple">
+                  Tempo de atendimento da solicitação:{' '}
+                  <span className="text-axia-blue">{atividade.sla}</span>
+                </p>
+              )}
+            </div>
           </div>
 
-          <p className="text-base leading-relaxed text-axia-grey">
-            Use este formulário para registrar esta solicitação. Ao enviar, você
-            recebe um número de protocolo para acompanhar o atendimento em "Meus
-            chamados".
-          </p>
-
-          <div className="rounded-chip bg-axia-bg p-5">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-axia-purple">
-              Instruções
-            </h3>
-            <ul className="mt-3 space-y-1.5 text-sm leading-relaxed text-axia-grey">
-              <li>
-                • Informe se a solicitação é para você ou para outra pessoa — nesse
-                caso, identifique empresa, estado, área, usuário e gestor imediato.
-              </li>
-              <li>
-                • Escolha a oferta de serviço que corresponde ao que você precisa;
-                ela define a fila de atendimento.
-              </li>
-              <li>
-                • Descreva a necessidade com o máximo de contexto: sistema, tela,
-                mensagem de erro, data em que começou.
-              </li>
-              <li>
-                • Anexe evidências quando houver (prints, planilhas, e-mails) — isso
-                costuma reduzir o tempo de atendimento.
-              </li>
-              <li>
-                • Solicitações incompletas voltam para você antes de irem à fila.
-              </li>
-            </ul>
+          {/* aba contornada no mesmo cinza do card, rente à esquerda: os -mx cancelam
+              o padding lateral da faixa, e a borda de baixo some para ela se fundir
+              com o corpo do formulário */}
+          <div className="-mx-5 mt-8 flex sm:-mx-8">
+            <span className="-mb-px rounded-tr-lg border border-l-0 border-b-white border-axia-neutral px-6 py-2 text-sm font-bold text-axia-purple">
+              Solicitação
+            </span>
           </div>
-
-          <p className="text-sm text-axia-grey">
-            Campos marcados com <Obrigatorio /> são de preenchimento obrigatório.
-          </p>
         </div>
 
-        <fieldset>
-          <legend className="mb-2 text-sm font-bold text-axia-purple">
-            Solicitante <Obrigatorio />
-          </legend>
-          <div className="flex flex-wrap gap-3">
-            {['Eu mesmo(a)', 'Outra pessoa'].map((op) => (
-              <label
-                key={op}
-                className={`flex cursor-pointer items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-bold transition ${
-                  para === op
-                    ? 'border-axia-blue bg-axia-blue/10 text-axia-blue'
-                    : 'border-slate-300 bg-slate-100 text-axia-sky2 hover:bg-slate-200'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="__para"
-                  value={op}
-                  checked={para === op}
-                  onChange={() => setPara(op)}
-                  className="accent-axia-blue"
-                />
-                {op}
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <p className="text-sm text-axia-grey">
+          Campos marcados com <Obrigatorio /> são de preenchimento obrigatório.
+        </p>
 
-        {outraPessoa && (
-          <div className="space-y-4 rounded-chip border border-axia-blue bg-white p-5">
-            <p className="text-sm font-bold text-axia-purple">
-              Dados de quem vai receber o atendimento
-            </p>
-            <CamposOrigem usuario={usuario} />
-            <Campo
-              label="Usuário"
-              nome="Usuário"
-              tipo="combo"
-              opcoes={USUARIOS}
-              placeholder="Digite o nome do usuário"
-              onChange={setUsuarioAlvo}
-            />
-            {/* gestor não é escolhido: vem do cadastro do usuário selecionado */}
-            <div>
-              <span className="mb-1.5 block text-sm font-bold text-axia-purple">
-                Gestor imediato <Obrigatorio />
-              </span>
-              <input
-                name="Gestor imediato"
-                value={GESTOR_DE[usuarioAlvo] || ''}
-                readOnly
-                required
-                placeholder="Selecione o usuário para carregar o gestor"
-                className={`${inputBase} cursor-not-allowed text-axia-grey/80`}
-              />
-            </div>
-          </div>
+
+        {/* a oferta veio do card: campo escondido em vez de select, para o ticket
+            continuar gravando "Oferta de Serviço" sem pedir de novo ao usuário */}
+        {atividade.oferta && (
+          <input type="hidden" name="Oferta de Serviço" value={atividade.oferta} />
         )}
 
-        {/* Bloco "Seus dados" (dropdown recolhido no modo "Eu mesmo(a)") desativado
-            a pedido: não fazia sentido pedir empresa/estado/área de quem já está logado.
-            Para reativar, troque o `{outraPessoa && (` acima por `{outraPessoa ? (`,
-            feche com `) : (` e devolva este bloco — o `onInvalid` do <form> e o ref
-            `seusDados` continuam prontos para abri-lo quando houver campo inválido.
-
-          <details ref={seusDados} className="group rounded-chip border border-axia-blue">
-            <summary className="flex cursor-pointer list-none items-center gap-2 px-5 py-4 text-sm font-bold text-axia-purple [&::-webkit-details-marker]:hidden">
-              Seus dados
-              <span className="ml-auto text-axia-blue transition group-open:rotate-180">
-                <Chevron />
-              </span>
-            </summary>
-            <div className="space-y-4 border-t border-axia-neutral p-5">
-              <CamposOrigem usuario={usuario} />
+        {/* três por linha; o textarea ocupa a linha inteira, porque texto longo numa
+            coluna de um terço vira uma caixa estreita e alta */}
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {campos.map((c) => (
+            <div
+              key={campoNome(c)}
+              className={
+                campoTipo(c) === 'textarea' ? 'sm:col-span-2 lg:col-span-3' : ''
+              }
+            >
+              <Campo
+                label={campoNome(c)}
+                nome={campoNome(c)}
+                tipo={campoTipo(c)}
+                opcoes={c.opcoes}
+                placeholder={PLACEHOLDERS[campoNome(c)]}
+              />
             </div>
-          </details>
-        */}
+          ))}
+        </div>
 
-        {atividade.campos.map((c) => (
-          <Campo
-            key={campoNome(c)}
-            label={campoNome(c)}
-            nome={campoNome(c)}
-            tipo={campoTipo(c)}
-            opcoes={c.opcoes}
-            placeholder={PLACEHOLDERS[campoNome(c)]}
-          />
-        ))}
-
-        <Anexos arquivos={anexos} onChange={setAnexos} />
+        {/* upload só quando a planilha pede evidência/anexo nesta atividade */}
+        {pedeAnexo && <Anexos arquivos={anexos} onChange={setAnexos} />}
 
         <button className="rounded-full bg-axia-blue px-7 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2">
           Enviar solicitação
         </button>
       </form>
-      </div>
-    </>
-  )
-}
-
-// Empresa/Estado/Área: mesmos campos nos dois modos, pré-preenchidos com a sessão.
-function CamposOrigem({ usuario }) {
-  return (
-    <>
-      <Campo
-        label="Empresa"
-        nome="Empresa"
-        tipo="combo"
-        opcoes={EMPRESAS}
-        inicial={usuario.empresa}
-        placeholder="Digite para filtrar a empresa"
-      />
-      <Campo
-        label="Estado"
-        nome="Estado"
-        tipo="combo"
-        opcoes={ESTADOS}
-        inicial={usuario.estado}
-        placeholder="Digite para filtrar o estado"
-      />
-      <Campo
-        label="Área"
-        nome="Área"
-        tipo="combo"
-        opcoes={AREAS}
-        inicial={usuario.area}
-        placeholder="Digite para filtrar a área"
-      />
     </>
   )
 }
@@ -1662,6 +1675,9 @@ function Combobox({
 }
 
 function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
+  // "Informe o gestor" / "Informe a matrícula": o artigo vem do gênero do rótulo
+  const dica = `Informe ${artigoDe(label)} ${label.toLowerCase()}`
+
   if (tipo === 'combo') {
     return (
       <div>
@@ -1692,7 +1708,7 @@ function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
           name={nome}
           required
           rows={4}
-          placeholder={placeholder || `Informe ${label.toLowerCase()}`}
+          placeholder={placeholder || dica}
           className={inputBase}
         />
       ) : tipo === 'select' ? (
@@ -1719,8 +1735,9 @@ function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
         <input
           name={nome}
           required
-          type={tipo === 'date' ? 'date' : 'text'}
-          placeholder={placeholder || `Informe ${label.toLowerCase()}`}
+          // "data" é o tipo que a planilha gera; "date" veio do catálogo antigo
+          type={tipo === 'date' || tipo === 'data' ? 'date' : 'text'}
+          placeholder={placeholder || dica}
           className={inputBase}
         />
       )}
@@ -1794,7 +1811,7 @@ function DetalheTicket({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-5">
-        <section className="rounded-card border border-axia-neutral bg-white p-6 lg:col-span-3">
+        <section className="rounded-card border border-axia-neutral bg-white shadow-card p-6 lg:col-span-3">
           <div className="flex items-center justify-between gap-4">
             <h3 className="font-bold text-axia-purple">Atividade do chamado</h3>
             {aberto && (
@@ -1889,7 +1906,7 @@ function DetalheTicket({
             )}
           </Bloco>
 
-          <section className="rounded-card border border-axia-neutral bg-white p-6">
+          <section className="rounded-card border border-axia-neutral bg-white shadow-card p-6">
             <h3 className="font-bold text-axia-purple">Descrição da necessidade</h3>
             <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-axia-grey">
               {Object.fromEntries(ticket.dados)['Descrição da necessidade'] || '—'}
@@ -1980,7 +1997,7 @@ function Modal({ aberto, titulo, onFechar, children }) {
 
 // Cartão de resumo do topo (Solicitante, Responsável, Prazo, Status).
 const Resumo = ({ icone, rotulo, children }) => (
-  <div className="flex items-center gap-3 rounded-card border border-axia-neutral bg-white px-5 py-4">
+  <div className="flex items-center gap-3 rounded-card border border-axia-neutral bg-white shadow-card px-5 py-4">
     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-axia-blue/10 text-axia-blue">
       {icone}
     </span>
@@ -1993,7 +2010,7 @@ const Resumo = ({ icone, rotulo, children }) => (
 
 // Bloco recolhível da coluna direita: <details> nativo, aberto por padrão.
 const Bloco = ({ titulo, children }) => (
-  <details open className="group rounded-card border border-axia-neutral bg-white">
+  <details open className="group rounded-card border border-axia-neutral bg-white shadow-card">
     <summary className="flex cursor-pointer list-none items-center gap-2 p-6 font-bold text-axia-purple [&::-webkit-details-marker]:hidden">
       {titulo}
       <span className="ml-auto text-axia-grey/60 transition group-open:rotate-180">
@@ -2307,7 +2324,7 @@ function Notificacoes({ lista, lidas, trilha, onAbrir, onMarcarTodas, onVoltar }
           <li key={n.id}>
             <button
               onClick={() => onAbrir(n)}
-              className={`w-full rounded-card border bg-white p-5 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5 ${
+              className={`w-full rounded-card border bg-white p-5 text-left shadow-card transition hover:border-axia-blue hover:shadow-card-hover ${
                 vistas.has(n.id) ? 'border-axia-neutral' : 'border-axia-blue/40'
               }`}
             >
@@ -2412,7 +2429,7 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
           <button
             key={e.status}
             onClick={() => setStatus(status === e.status ? 'Todos' : e.status)}
-            className={`flex items-center gap-3 rounded-card border bg-white px-4 py-4 text-left transition hover:shadow-md ${
+            className={`flex items-center gap-3 rounded-card border bg-white px-4 py-4 text-left shadow-card transition hover:shadow-card-hover ${
               status === e.status ? 'border-axia-blue' : 'border-axia-neutral'
             }`}
           >
@@ -2444,7 +2461,7 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
           e.preventDefault()
           setTermoAplicado(termo)
         }}
-        className="mb-5 flex flex-wrap items-end gap-3 rounded-card border border-axia-neutral bg-white p-4"
+        className="mb-5 flex flex-wrap items-end gap-3 rounded-card border border-axia-neutral bg-white shadow-card p-4"
       >
         <CampoFiltro rotulo="Buscar chamado" largura="min-w-64 flex-1" escuro>
           <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
@@ -2615,7 +2632,7 @@ function LinhaChamado({ chamado, onAbrir }) {
     // colunas fixas no desktop para tudo alinhar entre as linhas; empilha no mobile
     <button
       onClick={onAbrir}
-      className={`flex w-full flex-wrap items-center gap-6 rounded-card border border-l-4 border-axia-neutral bg-white p-6 text-left transition hover:border-axia-blue hover:shadow-lg hover:shadow-axia-blue/5 lg:grid lg:grid-cols-[minmax(0,1fr)_130px_220px_130px_120px_20px] lg:gap-10 ${BORDAS_STATUS[chamado.status]}`}
+      className={`flex w-full flex-wrap items-center gap-6 rounded-card border border-l-4 border-axia-neutral bg-white p-6 text-left shadow-card transition hover:border-axia-blue hover:shadow-card-hover lg:grid lg:grid-cols-[minmax(0,1fr)_130px_220px_130px_120px_20px] lg:gap-10 ${BORDAS_STATUS[chamado.status]}`}
     >
       <div className="min-w-0">
         <p className="font-mono text-sm font-bold tracking-wide text-axia-blue">

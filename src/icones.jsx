@@ -95,6 +95,55 @@ const TRACOS = {
       <path d="M2.5 19h19" />
     </>
   ),
+  // periféricos do catálogo "Serviços de TI": sem estes, todos caíam em "notebook"
+  monitor: (
+    <>
+      <rect x="2.5" y="4" width="19" height="12.5" rx="2" />
+      <path d="M12 16.5v3.5M8.5 20h7" />
+    </>
+  ),
+  desktop: (
+    <>
+      <rect x="5" y="2.8" width="10" height="18.4" rx="2" />
+      <path d="M8 6.5h4M10 17.8h.01" />
+      <path d="M18 9.5v8" />
+    </>
+  ),
+  headset: (
+    <>
+      <path d="M4.5 14v-2a7.5 7.5 0 0 1 15 0v2" />
+      <rect x="2.5" y="13" width="4" height="6.5" rx="1.8" />
+      <rect x="17.5" y="13" width="4" height="6.5" rx="1.8" />
+      <path d="M19.5 19.5v.8a2 2 0 0 1-2 2H13" />
+    </>
+  ),
+  mouse: (
+    <>
+      <rect x="7.5" y="2.5" width="9" height="19" rx="4.5" />
+      <path d="M12 6.5v4" />
+    </>
+  ),
+  teclado: (
+    <>
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <path d="M6 9.5h.01M9.5 9.5h.01M13 9.5h.01M16.5 9.5h.01M6 12.7h.01M9.5 12.7h.01M13 12.7h.01M16.5 12.7h.01" />
+      <path d="M8 15.6h8" />
+    </>
+  ),
+  docking: (
+    <>
+      <rect x="2.5" y="12" width="19" height="7" rx="2" />
+      <path d="M8 12V8.5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2V12" />
+      <path d="M6.5 15.5h4" />
+    </>
+  ),
+  webcam: (
+    <>
+      <circle cx="12" cy="9.5" r="6" />
+      <circle cx="12" cy="9.5" r="2.2" />
+      <path d="M12 15.5v3M7.5 21h9" />
+    </>
+  ),
   telefone: (
     <>
       <rect x="6.5" y="2.8" width="11" height="18.4" rx="2.5" />
