@@ -92,9 +92,10 @@ const AREA_TI = {
 // ponytail: agrupamento fixo no código. Quando o catálogo tiver o campo de área-pai,
 // troque por leitura do JSON e apague esta tabela.
 const GRUPOS_AREAS = [
-  { nome: AREA_TI.nome, areas: [AREA_TI.nome] },
+  { nome: AREA_TI.nome, icone: 'grade', areas: [AREA_TI.nome] },
   {
     nome: 'Sistemas Corporativos',
+    icone: 'janela',
     areas: [
       'SAP',
       'VID > Benner',
@@ -106,6 +107,7 @@ const GRUPOS_AREAS = [
   },
   {
     nome: 'Dados e Automação',
+    icone: 'backup',
     areas: [
       'COE de Hiperautomação',
       'COE de IA',
@@ -126,6 +128,7 @@ const TODAS_AREAS = [AREA_TI, ...PORTFOLIOS]
 export const GRUPOS = GRUPOS_AREAS.map((g) => ({
   id: g.nome,
   nome: g.nome,
+  icone: g.icone,
   servicos: TODAS_AREAS.filter((p) => grupoDaArea.get(p.nome) === g.nome)
     .flatMap((p) => p.servicos.map((s) => ({ ...s, portfolio: p })))
     .sort(porNome),

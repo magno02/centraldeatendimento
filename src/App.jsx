@@ -23,6 +23,7 @@ import {
   registrarRecente,
   contarPorStatus,
   artigoDe,
+  prazoLegivel,
   doUsuario,
   ofertasDoServico,
   chaveOferta,
@@ -246,6 +247,7 @@ export default function App() {
           container, e a faixa precisa ir de ponta a ponta da tela */}
       {view.tela === 'portal' && (
         <Hero
+          usuario={usuario}
           busca={busca}
           setBusca={setBusca}
           contagem={contarPorStatus(meusTickets)}
@@ -264,8 +266,6 @@ export default function App() {
                     key={a.chave}
                     atividade={a}
                     rodape={`${a.portfolio.nome} › ${a.servico.nome}`}
-                    favorito={favoritos.includes(a.chave)}
-                    onFavoritar={() => favoritar(a.chave)}
                     onClick={() => abrirAtividade(a)}
                   />
                 ))}
@@ -342,7 +342,7 @@ export default function App() {
                 onAtividade={abrirAtividade}
                 vazio={
                   secao === 'Favoritos'
-                    ? 'Nenhum favorito ainda. Use a estrela nos cards de serviço ou atividade.'
+                    ? 'Nenhum favorito ainda. Use a estrela nos cards de serviço.'
                     : 'Nada acessado ainda.'
                 }
               />
@@ -371,63 +371,46 @@ export default function App() {
               onVoltar={irAoPortal}
             />
 
-            {/* mesmo card da lista de baixo, só que ordenado por uso: o atalho perde
-                a graça se não for reconhecível como a atividade que a pessoa já abriu */}
-            <Secao titulo="Atividades mais acessadas">
-              {(() => {
-                const topo = maisAcessadas(
-                  ofertasDoServico(view.servico),
-                  acessos
-                )
-                if (!topo.length)
-                  return (
-                    <Vazio>
-                      Você ainda não acessou nenhuma atividade deste serviço.
-                    </Vazio>
-                  )
-                return (
-                  <Grade>
-                    {topo.map(({ atividade, oferta }) => (
-                      <CardAtividade
-                        key={chaveOferta(atividade, oferta)}
-                        atividade={{ ...atividade, oferta }}
-                        favorito={favoritos.includes(atividade.chave)}
-                        onFavoritar={() => favoritar(atividade.chave)}
-                        onClick={() =>
-                          abrirAtividade({
-                            ...atividade,
-                            oferta,
-                            servico: view.servico,
-                            portfolio: view.portfolio,
-                          })
-                        }
-                      />
-                    ))}
-                  </Grade>
-                )
-              })()}
-            </Secao>
+            {(() => {
+              const todas = ofertasDoServico(view.servico)
+              const topo = maisAcessadas(todas, acessos)
+              const chavesTopo = new Set(
+                topo.map((t) => chaveOferta(t.atividade, t.oferta))
+              )
+              // "menos acessadas" é o complemento do topo, e não outra ordenação:
+              // assim nenhuma atividade aparece nas duas listas nem some das duas
+              const resto = todas.filter(
+                (t) => !chavesTopo.has(chaveOferta(t.atividade, t.oferta))
+              )
+              const abrir = ({ atividade, oferta }) =>
+                abrirAtividade({
+                  ...atividade,
+                  oferta,
+                  servico: view.servico,
+                  portfolio: view.portfolio,
+                })
 
-            <Secao titulo={view.servico.nome}>
-              <Grade>
-                {ofertasDoServico(view.servico).map(({ atividade, oferta }) => (
-                  <CardAtividade
-                    key={`${atividade.id}#${oferta ?? ''}`}
-                    atividade={{ ...atividade, oferta }}
-                    favorito={favoritos.includes(atividade.chave)}
-                    onFavoritar={() => favoritar(atividade.chave)}
-                    onClick={() =>
-                      abrirAtividade({
-                        ...atividade,
-                        oferta,
-                        servico: view.servico,
-                        portfolio: view.portfolio,
-                      })
-                    }
+              return (
+                <>
+                  <SecaoAtividades
+                    titulo="Atividades mais acessadas"
+                    subtitulo="As atividades que mais são utilizadas pelos colaboradores."
+                    subindo
+                    itens={topo}
+                    aoAbrir={abrir}
+                    vazio="Você ainda não acessou nenhuma atividade deste serviço."
                   />
-                ))}
-              </Grade>
-            </Secao>
+                  <SecaoAtividades
+                    titulo="Atividades menos acessadas"
+                    subtitulo="Atividades com menor frequência de utilização."
+                    subindo={false}
+                    itens={resto}
+                    aoAbrir={abrir}
+                    vazio="Nenhuma outra atividade neste serviço."
+                  />
+                </>
+              )
+            })()}
           </>
         )}
 
@@ -1002,67 +985,62 @@ function ItemNotificacao({ n, naoVista }) {
 
 // Faixa de destaque: fundo, busca e os contadores de chamado.
 
-function Hero({ busca, setBusca, contagem, onIndicador }) {
+function Hero({ usuario, busca, setBusca, contagem, onIndicador }) {
   return (
     // o fundo ocupa a largura toda; só o conteúdo interno respeita os 1440px
     <section
-      className="relative mb-12 overflow-hidden bg-axia-purple bg-cover bg-center px-4 pb-14 pt-14 text-white sm:px-8 sm:pb-16 sm:pt-16"
+      className="relative mb-12 overflow-hidden bg-axia-purple bg-cover bg-center py-12 text-white"
       style={{ backgroundImage: `url(${fundoHero})` }}
     >
-      {/* véu mais leve: a foto aparece mais, e o azul fica só onde o texto senta.
-          Sem véu nenhum o branco perde contraste sobre as partes claras da imagem. */}
+      {/* véu só do lado do texto: escurece a esquerda e some à direita, onde a foto
+          precisa aparecer. Sem ele o branco some sobre as partes claras da imagem. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-r from-axia-purple/65 via-axia-purple/35 to-axia-blue/25"
+        className="absolute inset-0 bg-gradient-to-r from-axia-purple/85 via-axia-purple/45 to-transparent"
       />
 
-      {/* Busca centrada com mx-auto simples. A grade de 3 colunas que estava aqui não
-          servia: um `1fr` não encolhe abaixo do conteúdo, então a coluna dos indicadores
-          crescia, a do outro lado encolhia e o meio saía do centro da tela. */}
-      <div className="relative mx-auto max-w-[1440px]">
-        <div className="mx-auto w-full max-w-md">
-          <h2 className="text-center text-lg font-bold">Como podemos te ajudar?</h2>
+      {/* mesma caixa do <main>: centraliza e só então aplica o padding, senão o texto
+          do hero fica ~30px fora do eixo das abas e dos cards de baixo */}
+      <div className="relative mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-10 gap-y-8 px-4 sm:px-8">
+        <div className="min-w-64 flex-1">
+          <h2 className="text-3xl font-bold sm:text-4xl">
+            Olá, {usuario.nome.split(' ')[0]}!
+          </h2>
+          <p className="mt-1 text-lg text-white/85">Como podemos te ajudar hoje?</p>
 
-          {/* âncora dos indicadores: esta div tem exatamente a altura do campo */}
-          <div className="relative mt-3">
-            <label className="relative block">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
-                <IconeLupa />
+          <label className="relative mt-6 block w-full max-w-md">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
+              <IconeLupa />
+            </span>
+            <input
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Pesquisar serviço ou atividade..."
+              className="w-full rounded-full bg-white py-3 pl-12 pr-5 text-sm text-axia-grey1 outline-none placeholder:text-axia-grey/60 focus:ring-2 focus:ring-white/60"
+            />
+          </label>
+        </div>
+
+        {/* Painel translúcido único, com divisórias no lugar de cards soltos.
+            overflow-hidden é o que faz o divide-x respeitar o arredondamento. */}
+        <div className="flex w-full shrink-0 overflow-hidden rounded-card border border-white/20 bg-white/5 backdrop-blur-[2px] sm:w-auto">
+          {STATUS_PAINEL.map((s, i) => (
+            <button
+              key={s}
+              onClick={() => onIndicador(s)}
+              title={`Ver chamados com status ${s}`}
+              className={`flex flex-1 flex-col items-center gap-1 px-3 py-3.5 text-center transition hover:bg-white/10 sm:w-24 sm:flex-none ${
+                i > 0 ? 'border-l border-white/25' : ''
+              }`}
+            >
+              <span className="text-2xl font-bold leading-none">{contagem[s]}</span>
+              {/* min-h reserva a segunda linha de "Aguardando aprovação" para os
+                  números continuarem no mesmo eixo */}
+              <span className="flex min-h-7 items-start justify-center text-[10px] uppercase leading-tight tracking-wide text-white/85">
+                {s}
               </span>
-              <input
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                placeholder="Pesquisar serviço ou atividade..."
-                className="w-full rounded-full bg-white py-2 pl-11 pr-4 text-sm text-axia-grey1 outline-none placeholder:text-axia-grey/60 focus:ring-2 focus:ring-white/60"
-              />
-            </label>
-
-            {/* rótulo fora do quadrado: só a contagem fica dentro, então os números
-                alinham mesmo com rótulo de duas linhas.
-                Fora do fluxo a partir de xl (onde sobra largura ao lado da busca):
-                left-full os põe à direita do campo, top-0 alinha os topos e
-                -translate-y-2.5 desce metade da diferença entre o quadrado de 56px
-                e o campo de 36px, centrando um no outro. */}
-            <div className="mt-8 flex flex-wrap items-start justify-center gap-2 xl:absolute xl:left-full xl:top-0 xl:ml-10 xl:mt-0 xl:-translate-y-2.5 xl:flex-nowrap">
-              {STATUS_PAINEL.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => onIndicador(s)}
-                  title={`Ver chamados com status ${s}`}
-                  className="group flex w-20 shrink-0 flex-col items-center gap-2"
-                >
-                  {/* branco chapado: o hover é sombra, já que não há mais opacidade
-                      para variar entre repouso e destaque */}
-                  <span className="flex h-14 w-14 items-center justify-center rounded-chip bg-white text-xl font-bold text-axia-purple shadow-sm transition group-hover:shadow-lg">
-                    {contagem[s]}
-                  </span>
-                  <span className="text-center text-[11px] uppercase leading-tight tracking-wide text-white/80 transition group-hover:text-white">
-                    {s}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+            </button>
+          ))}
         </div>
       </div>
     </section>
@@ -1070,41 +1048,85 @@ function Hero({ busca, setBusca, contagem, onIndicador }) {
 }
 
 
-// Abas em formato de pasta: o trapézio vem de skewX numa camada de fundo separada,
-// para o texto não inclinar junto. A aba ativa sobe 2px e cobre a linha de baixo,
-// que é o que dá a leitura de "pasta à frente das outras".
-function Aba({ ativa, onClick, children }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`relative isolate shrink-0 px-7 pb-3 pt-3 text-sm font-bold transition ${
-        ativa ? 'z-10 -mb-px text-white' : 'text-axia-sky2 hover:text-axia-blue'
-      }`}
-    >
-      <span
-        aria-hidden="true"
-        className={`absolute inset-0 -z-10 origin-bottom skew-x-[18deg] rounded-t-lg transition ${
-          ativa ? 'bg-axia-blue' : 'bg-slate-200 hover:bg-slate-300'
-        }`}
-      />
-      {children}
-    </button>
-  )
-}
+// Abas em pílula: a ativa é preenchida de azul, as outras ficam brancas com contorno.
+const PILULA =
+  'flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition'
+
+// ponytail: categorias de mentira, só para mostrar o modal. Não abrem nada — quando
+// virarem portfólios de verdade, elas entram em GRUPOS_AREAS e esta lista sai.
+const MAIS_CATEGORIAS = [
+  'Recursos Humanos',
+  'Financeiro',
+  'Suprimentos',
+  'Jurídico e Compliance',
+  'Facilities',
+  'Comercial',
+  'Engenharia',
+  'Manutenção',
+  'Meio Ambiente',
+  'Segurança do Trabalho',
+  'Comunicação',
+  'Regulatório',
+]
 
 function Abas({ ativa, onSelect, secao, onSecao, qtdFavoritos }) {
   return (
-    // rolagem lateral em vez de quebra: fileiras empilhadas destroem o efeito de pasta
-    <div className="flex items-end gap-1 overflow-x-auto border-b-2 border-axia-blue [scrollbar-width:none]">
+    // rolagem lateral em vez de quebra: numa linha só as pílulas mantêm a leitura
+    // de barra de navegação, que empilhadas se perde
+    <div className="flex items-center gap-2 overflow-x-auto py-1 [scrollbar-width:none]">
       {GRUPOS.map((g) => (
-        <Aba key={g.id} ativa={ativa === g.id} onClick={() => onSelect(g.id)}>
+        <button
+          key={g.id}
+          onClick={() => onSelect(g.id)}
+          className={`${PILULA} ${
+            ativa === g.id
+              ? 'bg-axia-blue text-white shadow-card'
+              : 'border border-axia-neutral bg-white text-axia-purple hover:border-axia-blue hover:text-axia-blue'
+          }`}
+        >
+          <IconeServico chave={g.icone} className="h-4 w-4" />
           {g.nome}
-        </Aba>
+        </button>
       ))}
 
-      {/* favoritos e recentes ficam fora das pastas: são recortes do catálogo,
-          não mais um grupo de serviços */}
-      <div className="ml-auto flex shrink-0 items-center gap-1 pb-3 pl-6 pr-2">
+      {/* lista suspensa ancorada no botão, não modal centralizado */}
+      <Popover
+        largura="w-72"
+        classeBotao={`${PILULA} text-axia-grey/70 hover:text-axia-blue`}
+        rotulo={
+          <>
+            Mais categorias
+            <Chevron />
+          </>
+        }
+      >
+        {() => (
+          <div className="p-2">
+            <p className="px-3 pb-2 pt-1 text-xs text-axia-grey/60">
+              Áreas ainda sem catálogo publicado.
+            </p>
+            {/* <li> e não <button>: sem clique morto, e o teclado não para em item
+                que não leva a lugar nenhum */}
+            <ul className="max-h-72 overflow-y-auto">
+              {MAIS_CATEGORIAS.map((c) => (
+                <li
+                  key={c}
+                  className="flex items-center justify-between gap-3 rounded-chip px-3 py-2 text-sm text-axia-grey/70"
+                >
+                  {c}
+                  <span className="shrink-0 rounded-full bg-axia-neutral px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-axia-grey/70">
+                    em breve
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </Popover>
+
+      {/* favoritos e recentes são recortes do catálogo, não um grupo de serviços:
+          ficam separados do bloco de abas, à direita */}
+      <div className="ml-auto flex shrink-0 items-center gap-2 pl-6">
         {[
           { nome: 'Favoritos', icone: IconeEstrela },
           { nome: 'Recentes', icone: IconeRelogio },
@@ -1112,7 +1134,7 @@ function Abas({ ativa, onSelect, secao, onSecao, qtdFavoritos }) {
           <button
             key={nome}
             onClick={() => onSecao(nome)}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold transition ${
+            className={`${PILULA} ${
               secao === nome
                 ? 'bg-axia-blue/10 text-axia-blue'
                 : 'text-axia-grey/70 hover:text-axia-blue'
@@ -1187,6 +1209,81 @@ const Grade = ({ children }) => (
   </div>
 )
 
+function IconeTendencia({ subindo }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      {subindo ? (
+        <>
+          <path d="m3 16 5.5-5.5 3.5 3.5L21 6" />
+          <path d="M15.5 6H21v5.5" />
+        </>
+      ) : (
+        <>
+          <path d="m3 8 5.5 5.5L12 10l9 8" />
+          <path d="M15.5 18H21v-5.5" />
+        </>
+      )}
+    </svg>
+  )
+}
+
+// Bloco de atividades com cabeçalho e recolhimento. Mostra 3 por padrão porque a
+// lista inteira de um serviço grande empurraria a segunda seção para fora da tela.
+const VISIVEIS_POR_SECAO = 3
+
+function SecaoAtividades({ titulo, subtitulo, subindo, itens, aoAbrir, vazio }) {
+  const [tudo, setTudo] = useState(false)
+  const mostrando = tudo ? itens : itens.slice(0, VISIVEIS_POR_SECAO)
+
+  return (
+    <section className="py-6">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 shrink-0 text-axia-blue">
+            <IconeTendencia subindo={subindo} />
+          </span>
+          <div>
+            <h2 className="text-lg font-bold text-axia-purple">{titulo}</h2>
+            <p className="mt-0.5 text-sm text-axia-grey/70">{subtitulo}</p>
+          </div>
+        </div>
+
+        {itens.length > VISIVEIS_POR_SECAO && (
+          <button
+            onClick={() => setTudo((v) => !v)}
+            className="shrink-0 rounded-full bg-axia-blue/10 px-4 py-1.5 text-sm font-bold text-axia-blue transition hover:bg-axia-blue hover:text-white"
+          >
+            {tudo ? 'Ver menos' : 'Ver todas'}
+          </button>
+        )}
+      </div>
+
+      {mostrando.length ? (
+        <Grade>
+          {mostrando.map(({ atividade, oferta }) => (
+            <CardAtividade
+              key={chaveOferta(atividade, oferta)}
+              atividade={{ ...atividade, oferta }}
+              onClick={() => aoAbrir({ atividade, oferta })}
+            />
+          ))}
+        </Grade>
+      ) : (
+        <Vazio>{vazio}</Vazio>
+      )}
+    </section>
+  )
+}
+
 const Secao = ({ titulo, children }) => (
   <section className="py-8">
     <h2 className="mb-5 text-2xl font-bold text-axia-purple">{titulo}</h2>
@@ -1232,7 +1329,7 @@ function IconeEstrela({ preenchida }) {
   )
 }
 
-function IconeRelogio() {
+function IconeInfo() {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -1240,7 +1337,24 @@ function IconeRelogio() {
       stroke="currentColor"
       strokeWidth="1.8"
       strokeLinecap="round"
-      className="h-4 w-4"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 11v5M12 8h.01" />
+    </svg>
+  )
+}
+
+function IconeRelogio({ className = 'h-4 w-4' }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      className={className}
       aria-hidden="true"
     >
       <circle cx="12" cy="12" r="8.5" />
@@ -1249,15 +1363,34 @@ function IconeRelogio() {
   )
 }
 
+function IconeSeta() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M4 12h15M13 6l6 6-6 6" />
+    </svg>
+  )
+}
+
 // Estrela de favoritar; fica sobre o card, como irmã do botão (não aninhada nele).
-function Estrela({ ativo, onClick, rotulo }) {
+// `posicao` existe porque o card de serviço sobrepõe a estrela ao conteúdo, enquanto
+// o de atividade a coloca em fluxo, ao lado do botão "sobre".
+function Estrela({ ativo, onClick, rotulo, posicao = 'absolute right-4 top-4 z-10' }) {
   return (
     <button
       onClick={onClick}
       title={ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
       aria-label={`${ativo ? 'Remover de' : 'Adicionar a'} favoritos: ${rotulo}`}
       aria-pressed={ativo}
-      className={`absolute right-4 top-4 z-10 rounded-full p-1.5 transition ${
+      className={`${posicao} rounded-full p-1.5 transition ${
         ativo
           ? 'text-axia-warning'
           : 'text-axia-grey/35 hover:bg-axia-blue/5 hover:text-axia-blue'
@@ -1275,18 +1408,11 @@ function CardServico({ servico, favorito, onFavoritar, onClick }) {
       <Estrela ativo={favorito} onClick={onFavoritar} rotulo={servico.nome} />
       <button
         onClick={onClick}
-        className="flex h-full min-h-44 w-full flex-col items-center justify-center rounded-card border border-axia-neutral bg-white p-6 text-center shadow-card transition hover:border-axia-blue hover:shadow-card-hover"
+        className="flex h-full min-h-32 w-full flex-col items-center justify-center rounded-card border border-axia-neutral bg-white p-5 text-center shadow-card transition hover:border-axia-blue hover:shadow-card-hover"
       >
         <IconeServico nome={servico.nome} />
         <div className="mt-4 text-base font-bold leading-snug text-axia-purple">
           {servico.nome}
-        </div>
-        {/* conta os cards que o serviço abre — cada oferta do catálogo é uma
-            atividade para quem usa o portal */}
-        <div className="mt-1.5 text-sm text-axia-grey/70">
-          {ofertasDoServico(servico).length === 1
-            ? '1 atividade'
-            : `${ofertasDoServico(servico).length} atividades`}
         </div>
       </button>
     </div>
@@ -1322,8 +1448,6 @@ function ListaChaves({
               key={item.chave}
               atividade={item}
               rodape={`${item.portfolio.nome} › ${item.servico.nome}`}
-              favorito={favoritos.includes(item.chave)}
-              onFavoritar={() => onFavoritar(item.chave)}
               onClick={() => onAtividade(item)}
             />
           )
@@ -1333,44 +1457,105 @@ function ListaChaves({
   )
 }
 
-function CardAtividade({ atividade, rodape, favorito, onFavoritar, onClick }) {
+function CardAtividade({ atividade, rodape, onClick }) {
+  const titulo = atividade.oferta ?? atividade.nome
+  // id estável para o aria-describedby ligar o ícone ao texto da dica
+  const idDica = `dica-${atividade.chave}${atividade.oferta ?? ''}`.replace(
+    /\W+/g,
+    '-'
+  )
+
+  // linha de contexto de quem não tem descrição própria (ofertas do catálogo antigo)
+  const contexto = atividade.oferta
+    ? atividade.nome
+    : atividade.ofertas?.length === 1
+      ? atividade.ofertas[0]
+      : atividade.ofertas?.length > 1
+        ? `${atividade.ofertas.length} ofertas de serviço disponíveis`
+        : null
+
   return (
-    <div className="relative h-full">
-      {onFavoritar && (
-        <Estrela ativo={favorito} onClick={onFavoritar} rotulo={atividade.nome} />
-      )}
-      <button
-        onClick={onClick}
-        className="flex h-full min-h-44 w-full flex-col rounded-card border border-axia-neutral bg-white p-6 pr-12 text-left shadow-card transition hover:border-axia-blue hover:shadow-card-hover"
-      >
-        {/* card de oferta: o título é a oferta e a atividade vira contexto.
-            Sem oferta (busca do portal, favoritos) o card segue como era. */}
-        <h3 className="text-base font-bold leading-snug text-axia-purple">
-          {atividade.oferta ?? atividade.nome}
-        </h3>
-        {/* atividade do catálogo novo traz descrição própria e não tem oferta */}
-        {atividade.descricao ? (
-          <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-axia-grey">
-            {atividade.descricao}
-          </p>
-        ) : atividade.oferta ? (
-          <p className="mt-2 text-sm leading-relaxed text-axia-grey">
-            {atividade.nome}
-          </p>
-        ) : (
-          atividade.ofertas?.length > 0 && (
-            <p className="mt-2 text-sm leading-relaxed text-axia-grey">
-              {atividade.ofertas.length === 1
-                ? atividade.ofertas[0]
-                : `${atividade.ofertas.length} ofertas de serviço disponíveis`}
-            </p>
-          )
-        )}
-        {rodape && <p className="mt-2 text-xs text-axia-grey/60">{rodape}</p>}
-        <span className="mt-auto pt-4 text-sm font-bold text-axia-blue">
-          Acessar Formulário →
+    // div e não button: o card tem ações próprias dentro (favoritar, "sobre" e
+    // acessar), e botão dentro de botão é HTML inválido
+    <div className="relative flex h-full min-h-48 flex-col rounded-card border border-axia-neutral bg-white p-5 shadow-card transition hover:border-axia-blue hover:shadow-card-hover">
+      <div className="flex items-start gap-3">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-chip bg-axia-blue/10">
+          <IconeServico
+            nome={atividade.servico?.nome ?? atividade.nome}
+            className="h-7 w-7 text-axia-blue"
+          />
         </span>
-      </button>
+
+        <h3 className="flex-1 pt-1 text-base font-semibold leading-snug text-axia-purple">
+          {titulo}
+        </h3>
+
+        {/* sem estrela aqui: favoritar passou a existir só no card de serviço.
+            A descrição vem em tooltip no hover; focus-within faz o teclado ver
+            também, já que "passar o cursor" não existe para quem navega por Tab. */}
+        {atividade.descricao && (
+          <span
+            tabIndex={0}
+            aria-describedby={idDica}
+            // z-10 mantém o ícone acima da área clicável esticada do botão da seta,
+            // senão o card inteiro cobriria ele e o tooltip não abriria
+            className="group/info relative z-10 shrink-0 rounded-full p-1 text-axia-grey/50 outline-none transition hover:text-axia-blue focus-visible:text-axia-blue"
+          >
+            <IconeInfo />
+            {/* à direita do ícone (left-full), fora da área do card: abrindo para
+                baixo ele cobria a descrição e o prazo, que é o conteúdo do card */}
+            <span
+              id={idDica}
+              role="tooltip"
+              className="pointer-events-none absolute left-full top-0 z-20 ml-3 w-64 rounded-lg border border-axia-neutral bg-white px-3 py-2 text-left text-xs font-normal leading-relaxed text-axia-blue opacity-0 shadow-lg transition group-hover/info:opacity-100 group-focus-within/info:opacity-100"
+            >
+              {atividade.descricao}
+            </span>
+          </span>
+        )}
+      </div>
+
+      {contexto && (
+        <p className="mt-3 text-sm leading-relaxed text-axia-grey">{contexto}</p>
+      )}
+      {rodape && <p className="mt-2 text-xs text-axia-grey/60">{rodape}</p>}
+
+      {/* rodapé: prazo à esquerda e a seta de abrir à direita. A divisória só
+          aparece com SLA — sem ele sobraria uma linha sem conteúdo abaixo */}
+      <div
+        className={`mt-auto flex items-end justify-between gap-3 ${
+          atividade.sla ? 'border-t border-axia-neutral/70 pt-3' : ''
+        }`}
+      >
+        {atividade.sla && (
+          // relógio fora do texto e centrado nas duas linhas: inline com o rótulo
+          // ele ficava pequeno e preso na primeira linha
+          <div className="flex min-w-0 items-center gap-3">
+            <IconeRelogio className="h-6 w-6 shrink-0 text-axia-blue" />
+            <span className="min-w-0">
+              <span className="block text-xs text-axia-grey/70">
+                Prazo de atendimento
+              </span>
+              <span className="block text-[15px] font-semibold text-axia-purple">
+                {prazoLegivel(atividade.sla)}
+              </span>
+            </span>
+          </div>
+        )}
+
+        {/* after:inset-0 estica a área clicável deste botão por cima do card
+            inteiro: o card fica clicável sem virar um segundo elemento interativo,
+            que duplicaria o alvo para leitor de tela e teclado */}
+        <button
+          onClick={onClick}
+          title="Acessar formulário"
+          aria-label={`Acessar formulário: ${titulo}`}
+          className="ml-auto flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-axia-blue/10 text-axia-blue transition after:absolute after:inset-0 after:content-[''] hover:bg-axia-blue hover:text-white"
+        >
+          <IconeSeta />
+        </button>
+      </div>
+
     </div>
   )
 }
@@ -1431,7 +1616,9 @@ function Formulario({ atividade, onSubmit, trilha, onVoltar }) {
               {atividade.sla && (
                 <p className="mt-2 text-sm font-bold text-axia-purple">
                   Tempo de atendimento da solicitação:{' '}
-                  <span className="text-axia-blue">{atividade.sla}</span>
+                  <span className="text-axia-blue">
+                    {prazoLegivel(atividade.sla)}
+                  </span>
                 </p>
               )}
             </div>

@@ -238,7 +238,13 @@ const TRACOS = {
   ),
 }
 
-export function IconeServico({ nome, className = 'mx-auto h-11 w-11 text-axia-blue' }) {
+// `chave` tem prioridade sobre `nome`: as abas do portal trazem a chave pronta,
+// em vez de deduzir o desenho pelo texto do rótulo.
+export function IconeServico({
+  nome,
+  chave,
+  className = 'mx-auto h-11 w-11 text-axia-blue',
+}) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -250,7 +256,7 @@ export function IconeServico({ nome, className = 'mx-auto h-11 w-11 text-axia-bl
       className={className}
       aria-hidden="true"
     >
-      {TRACOS[chaveIcone(nome)] || TRACOS.grade}
+      {TRACOS[chave ?? chaveIcone(nome)] || TRACOS.grade}
     </svg>
   )
 }

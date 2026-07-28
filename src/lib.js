@@ -166,6 +166,18 @@ export const ofertasDoServico = (servico) =>
       : [{ atividade: a, oferta: null }]
   )
 
+// A planilha traz o SLA em horas úteis ("16h"), mas quem abre o chamado pensa em
+// dias: "16 horas" é lido como 16 horas corridas, e não como dois expedientes.
+// Abaixo de 12h a hora ainda é a unidade natural ("resolvo hoje"); acima disso,
+// converte a 8 horas úteis por dia. Texto sem número ("Sem SLA definido") passa direto.
+export function prazoLegivel(sla) {
+  const horas = Number(String(sla ?? '').match(/(\d+)\s*h/i)?.[1])
+  if (!horas) return sla
+  if (horas <= 12) return `${horas} horas`
+  const dias = Math.ceil(horas / 8)
+  return `${dias} ${dias === 1 ? 'dia útil' : 'dias úteis'}`
+}
+
 export function contarPorStatus(tickets) {
   return Object.fromEntries(
     STATUS.map((s) => [s, tickets.filter((t) => t.status === s).length])

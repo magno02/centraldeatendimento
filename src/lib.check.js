@@ -19,6 +19,7 @@ import {
   chaveIcone,
   CHAVES_ICONE,
   artigoDe,
+  prazoLegivel,
   validarLogin,
   CONTAS,
   alternarFavorito,
@@ -99,6 +100,22 @@ for (const s of SERVICOS) assert.ok(CHAVES_ICONE.includes(chaveIcone(s.nome)), s
 for (const g of GRUPOS)
   for (const s of g.servicos)
     assert.ok(CHAVES_ICONE.includes(chaveIcone(s.nome)), s.nome)
+
+// SLA legível: horas para prazos curtos, dias úteis acima de 12h (8h = 1 dia útil)
+assert.equal(prazoLegivel('4h'), '4 horas')
+assert.equal(prazoLegivel('8h'), '8 horas')
+assert.equal(prazoLegivel('12h'), '12 horas')
+assert.equal(prazoLegivel('16h'), '2 dias úteis')
+assert.equal(prazoLegivel('24h'), '3 dias úteis')
+assert.equal(prazoLegivel('40h'), '5 dias úteis')
+assert.equal(prazoLegivel('13h'), '2 dias úteis') // primeiro degrau acima de 12h
+assert.equal(prazoLegivel('Sem SLA definido'), 'Sem SLA definido') // sem número, passa direto
+assert.equal(prazoLegivel('Não identificado'), 'Não identificado')
+// todo SLA do catálogo precisa virar texto, nunca "undefined" ou "NaN"
+for (const g of GRUPOS)
+  for (const s of g.servicos)
+    for (const a of s.atividades)
+      if (a.sla) assert.doesNotMatch(prazoLegivel(a.sla), /NaN|undefined/, a.nome)
 
 // artigo do placeholder: gênero pelo substantivo-núcleo, que é a primeira palavra
 assert.equal(artigoDe('Gestor'), 'o')
