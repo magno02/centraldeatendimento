@@ -227,6 +227,37 @@ export function tempoRelativo(iso, agora = new Date()) {
   return new Date(iso).toLocaleDateString('pt-BR')
 }
 
+// "Hoje, 10:24" / "Ontem, 09:15" / "14/05/2026": na lista de chamados o horário só
+// importa nos últimos dois dias; antes disso a data seca basta.
+export function dataCurta(iso, agora = new Date()) {
+  const d = new Date(iso)
+  const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  const dia = 86400000
+  const soData = (x) => new Date(x).setHours(0, 0, 0, 0)
+  const diferenca = (soData(agora) - soData(d)) / dia
+  if (diferenca === 0) return `Hoje, ${hora}`
+  if (diferenca === 1) return `Ontem, ${hora}`
+  return d.toLocaleDateString('pt-BR')
+}
+
+// Dias úteis restantes até o prazo. Negativo quando já venceu, 0 quando é hoje.
+// Conta em dias úteis porque o SLA do catálogo também é em horas úteis.
+export function diasUteisAte(iso, agora = new Date()) {
+  const alvo = new Date(iso)
+  alvo.setHours(0, 0, 0, 0)
+  const hoje = new Date(agora)
+  hoje.setHours(0, 0, 0, 0)
+  if (alvo <= hoje) return alvo < hoje ? -1 : 0
+
+  let dias = 0
+  const cursor = new Date(hoje)
+  while (cursor < alvo) {
+    cursor.setDate(cursor.getDate() + 1)
+    if (cursor.getDay() !== 0 && cursor.getDay() !== 6) dias++
+  }
+  return dias
+}
+
 export const PERIODOS = {
   'Últimos 7 dias': 7,
   'Últimos 30 dias': 30,

@@ -35,6 +35,8 @@ import {
   formatarTamanho,
   atendenteDe,
   tempoRelativo,
+  dataCurta,
+  diasUteisAte,
   ultimaAtualizacao,
   filtrarChamados,
   ordenarChamados,
@@ -100,6 +102,25 @@ for (const s of SERVICOS) assert.ok(CHAVES_ICONE.includes(chaveIcone(s.nome)), s
 for (const g of GRUPOS)
   for (const s of g.servicos)
     assert.ok(CHAVES_ICONE.includes(chaveIcone(s.nome)), s.nome)
+
+// data curta da lista de chamados: hora só nos últimos dois dias
+{
+  const agora = new Date('2026-07-24T15:00:00')
+  assert.match(dataCurta('2026-07-24T10:24:00', agora), /^Hoje, \d{2}:\d{2}$/)
+  assert.match(dataCurta('2026-07-23T09:15:00', agora), /^Ontem, \d{2}:\d{2}$/)
+  assert.equal(dataCurta('2026-07-14T09:15:00', agora), '14/07/2026')
+  // 23:59 de ontem ainda é "Ontem", e não "há 15 horas": o corte é por dia civil
+  assert.match(dataCurta('2026-07-23T23:59:00', agora), /^Ontem/)
+}
+
+// prazo em dias úteis: fim de semana não conta
+{
+  const sexta = new Date('2026-07-24T09:00:00') // 24/07/2026 é sexta
+  assert.equal(diasUteisAte('2026-07-24T18:00:00', sexta), 0) // vence hoje
+  assert.equal(diasUteisAte('2026-07-23T18:00:00', sexta), -1) // vencido
+  assert.equal(diasUteisAte('2026-07-27T09:00:00', sexta), 1) // segunda: pula o fim de semana
+  assert.equal(diasUteisAte('2026-07-29T09:00:00', sexta), 3)
+}
 
 // SLA legível: horas para prazos curtos, dias úteis acima de 12h (8h = 1 dia útil)
 assert.equal(prazoLegivel('4h'), '4 horas')

@@ -33,7 +33,8 @@ import {
   prazoPrevisto,
   formatarTamanho,
   atendenteDe,
-  tempoRelativo,
+  dataCurta,
+  diasUteisAte,
   ultimaAtualizacao,
   filtrarChamados,
   ordenarChamados,
@@ -501,7 +502,6 @@ export default function App() {
               { label: 'Portal', onClick: irAoPortal },
               { label: 'Meus chamados' },
             ]}
-            onVoltar={irAoPortal}
           />
         )}
 
@@ -1175,25 +1175,33 @@ function Trilha({ itens }) {
 
 function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4 py-8">
-      <div className="min-w-0 flex-1">
-        <Trilha itens={trilha} />
-        {titulo && (
-          <h2 className="mt-5 text-3xl font-bold text-axia-purple">{titulo}</h2>
-        )}
-        {subtitulo && <p className="mt-1.5 text-base text-axia-grey">{subtitulo}</p>}
-        {extra}
-      </div>
-      {/* no celular ocupa a linha inteira e joga um botão para cada ponta;
-          de sm para cima volta a ser um par agrupado à direita do título */}
-      <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:shrink-0 sm:justify-end">
-        <button
-          onClick={onVoltar}
-          className="rounded-full border border-axia-blue px-6 py-1.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white"
-        >
-          Voltar
-        </button>
-        {acao}
+    <div className="py-8">
+      {/* a trilha fica fora da linha abaixo: dentro dela o items-center centraria
+          a ação no conjunto trilha+texto, e o botão subia acima do título */}
+      <Trilha itens={trilha} />
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          {titulo && (
+            <h2 className="text-3xl font-bold text-axia-purple">{titulo}</h2>
+          )}
+          {subtitulo && <p className="mt-1.5 text-base text-axia-grey">{subtitulo}</p>}
+          {extra}
+        </div>
+        {/* no celular ocupa a linha inteira e joga um botão para cada ponta;
+            de sm para cima volta a ser um par agrupado à direita do título */}
+        <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:shrink-0 sm:justify-end">
+          {/* telas que não passam onVoltar não mostram o botão: em "Meus chamados"
+              a volta já existe na trilha, e sobrava um botão sem função clara */}
+          {onVoltar && (
+            <button
+              onClick={onVoltar}
+              className="rounded-full border border-axia-blue px-6 py-1.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white"
+            >
+              Voltar
+            </button>
+          )}
+          {acao}
+        </div>
       </div>
     </div>
   )
@@ -2525,16 +2533,6 @@ function Notificacoes({ lista, lidas, trilha, onAbrir, onMarcarTodas, onVoltar }
   )
 }
 
-// tarja lateral do card: mesma leitura de cor do badge de status
-const BORDAS_STATUS = {
-  Aberto: 'border-l-axia-blue hover:border-l-axia-blue',
-  Andamento: 'border-l-axia-warning hover:border-l-axia-warning',
-  Pendente: 'border-l-axia-grey hover:border-l-axia-grey',
-  'Aguardando aprovação': 'border-l-axia-sky2 hover:border-l-axia-sky2',
-  Fechado: 'border-l-axia-success hover:border-l-axia-success',
-  [CANCELADO]: 'border-l-axia-error hover:border-l-axia-error',
-}
-
 const ESTATISTICAS = [
   { status: 'Aberto', titulo: 'Em aberto', nota: 'Aguardando atendimento', cor: 'bg-axia-blue/10 text-axia-blue' },
   { status: 'Andamento', titulo: 'Em andamento', nota: 'Em acompanhamento', cor: 'bg-axia-success/15 text-green-700' },
@@ -2544,7 +2542,7 @@ const ESTATISTICAS = [
   { status: CANCELADO, titulo: 'Cancelados', nota: 'Encerrados', cor: 'bg-axia-error/10 text-axia-error' },
 ]
 
-function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova }) {
+function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onNova }) {
   const [termo, setTermo] = useState('')
   // texto só entra no filtro ao clicar em Pesquisar (ou Enter); os seletores valem na hora
   const [termoAplicado, setTermoAplicado] = useState('')
@@ -2585,7 +2583,6 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
   const primeiro = visiveis.length ? (paginaAtual - 1) * porPagina + 1 : 0
   const ultimo = (paginaAtual - 1) * porPagina + daPagina.length
 
-  // definido uma vez e posicionado em dois lugares por breakpoint
   const botaoNova = (
     <button
       onClick={onNova}
@@ -2601,13 +2598,9 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
         trilha={trilha}
         titulo="Meus chamados"
         subtitulo="Acompanhe o andamento das suas solicitações e interaja com a equipe responsável."
-        onVoltar={onVoltar}
-        // no celular o botão sobe para a linha do Voltar; no desktop segue na
-        // própria faixa abaixo, como já era
-        acao={<span className="sm:hidden">{botaoNova}</span>}
+        // sem onVoltar: a trilha já leva de volta ao portal
+        acao={botaoNova}
       />
-
-      <div className="mb-4 hidden justify-end sm:flex">{botaoNova}</div>
 
       {/* 190px é o menor card que ainda cabe "Aguardando aprovação" em duas linhas:
           os seis entram numa fileira a partir de ~1200px e quebram sozinhos abaixo disso */}
@@ -2616,57 +2609,62 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
           <button
             key={e.status}
             onClick={() => setStatus(status === e.status ? 'Todos' : e.status)}
-            className={`flex items-center gap-3 rounded-card border bg-white px-4 py-4 text-left shadow-card transition hover:shadow-card-hover ${
+            className={`flex flex-col rounded-card border bg-white px-4 pb-3 pt-3.5 text-left shadow-card transition hover:shadow-card-hover ${
               status === e.status ? 'border-axia-blue' : 'border-axia-neutral'
             }`}
           >
-            <span
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-chip ${e.cor}`}
-            >
-              <IconeStatus />
-            </span>
-            {/* título e nota com duas linhas reservadas: sem isso o card de rótulo
-                curto fica mais baixo e o número sai do eixo dos vizinhos */}
-            <div>
-              <p className="min-h-[2.2rem] text-sm leading-tight text-axia-grey/80">
-                {e.titulo}
-              </p>
-              <p className="text-2xl font-bold leading-none text-axia-purple">
+            {/* duas linhas reservadas no título: sem isso o card de rótulo curto
+                fica mais baixo e o número sai do eixo dos vizinhos */}
+            <p className="min-h-[2.2rem] text-sm font-bold leading-tight text-axia-purple">
+              {e.titulo}
+            </p>
+
+            <span className="mt-1 flex items-center gap-3">
+              <span
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${e.cor}`}
+              >
+                <IconeStatus />
+              </span>
+              <span className="text-3xl font-bold leading-none text-axia-purple">
                 {tickets.filter((t) => t.status === e.status).length}
-              </p>
-              <p className="mt-1 min-h-[1.9rem] text-xs leading-tight text-axia-grey/60">
-                {e.nota}
-              </p>
-            </div>
+              </span>
+            </span>
+
+            {/* mt-auto: com alturas iguais na fileira, a nota encosta no pé do card */}
+            <span className="mt-auto pt-2 text-xs leading-tight text-axia-grey/60">
+              {e.nota}
+            </span>
           </button>
         ))}
       </div>
 
-      {/* busca e filtros separados: a busca é uma ação (Enter/botão), os filtros valem na hora */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          setTermoAplicado(termo)
-        }}
-        className="mb-5 flex flex-wrap items-end gap-3 rounded-card border border-axia-neutral bg-white shadow-card p-4"
-      >
-        <CampoFiltro rotulo="Buscar chamado" largura="min-w-64 flex-1" escuro>
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
-            <IconeLupa />
-          </span>
-          <input
-            value={termo}
-            onChange={(e) => setTermo(e.target.value)}
-            placeholder="Pesquise pelo nº do chamado"
-            className="w-full rounded-full border border-slate-300 bg-white py-2.5 pl-11 pr-4 text-sm outline-none focus:border-axia-blue"
-          />
-        </CampoFiltro>
-        <button className="shrink-0 rounded-full border border-axia-blue px-8 py-2.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white">
-          Pesquisar
-        </button>
-      </form>
+      {/* busca e filtros no mesmo painel; a busca continua sendo uma ação
+          (Enter ou botão) e os seletores valem na hora */}
+      <div className="mb-6 rounded-card border border-axia-neutral bg-white p-5 shadow-card">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            setTermoAplicado(termo)
+          }}
+          className="flex flex-wrap items-end gap-3"
+        >
+          <CampoFiltro rotulo="Buscar chamado" largura="min-w-64 flex-1" escuro>
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
+              <IconeLupa />
+            </span>
+            <input
+              value={termo}
+              onChange={(e) => setTermo(e.target.value)}
+              placeholder="Pesquise por nº do chamado, serviço ou palavra-chave"
+              className="w-full rounded-full border border-slate-300 bg-white py-2.5 pl-11 pr-4 text-sm outline-none focus:border-axia-blue"
+            />
+          </CampoFiltro>
+          <button className="shrink-0 rounded-full border border-axia-blue px-8 py-2.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white">
+            Pesquisar
+          </button>
+        </form>
 
-      <div className="mb-5 flex flex-wrap items-end gap-4">
+        <div className="mt-4 flex flex-wrap items-end gap-4">
         <CampoFiltro rotulo="Status">
           <Seletor
             valor={status}
@@ -2701,13 +2699,25 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
           <Seletor valor={ordem} onChange={setOrdem} opcoes={ORDENS} />
         </CampoFiltro>
 
-        <button
-          type="button"
-          onClick={limpar}
-          className="ml-auto rounded-full border border-axia-neutral bg-white px-6 py-2.5 text-sm font-bold text-axia-grey hover:bg-slate-100"
-        >
-          Limpar filtros
-        </button>
+          <button
+            type="button"
+            onClick={limpar}
+            className="ml-auto rounded-full px-4 py-2.5 text-sm font-bold text-axia-grey/70 transition hover:text-axia-blue"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+
+      {/* cabeçalho de colunas: o mesmo template do grid da linha, para as duas
+          grades ficarem alinhadas. Só no desktop, onde a linha vira tabela. */}
+      <div className="hidden px-6 pb-2 text-[11px] font-bold uppercase tracking-wide text-axia-grey/60 lg:grid lg:grid-cols-[minmax(0,1fr)_180px_180px_170px_150px_20px] lg:gap-8">
+        <span>Chamado</span>
+        <span>Serviço</span>
+        <span>Status</span>
+        <span>Última atualização</span>
+        <span>Prazo estimado</span>
+        <span />
       </div>
 
       <ul className="space-y-3">
@@ -2770,6 +2780,18 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar, onNova
           </div>
         </div>
       )}
+
+      {/* saída para o catálogo no pé da lista, no lugar do botão no topo: quem
+          chega aqui e não acha o chamado normalmente quer abrir um novo */}
+      <p className="mt-10 text-center text-sm text-axia-grey/70">
+        Não encontrou o que precisa?{' '}
+        <button
+          onClick={onNova}
+          className="font-bold text-axia-blue hover:underline"
+        >
+          Acesse nosso Catálogo de Serviços →
+        </button>
+      </p>
     </>
   )
 }
@@ -2810,41 +2832,79 @@ const SetaCampo = () => (
 )
 
 function LinhaChamado({ chamado, onAbrir }) {
-  const prazo = new Date(prazoPrevisto(chamado.criadoEm))
-  const hoje = new Date().toDateString() === prazo.toDateString()
-  const vencido = prazo < new Date() && !hoje
+  const prazo = prazoPrevisto(chamado.criadoEm)
+  const restam = diasUteisAte(prazo)
   const encerrado = !podeInteragir(chamado)
+  const atualizadoEm = ultimaAtualizacao(chamado)
+  const autor =
+    chamado.interacoes?.at(-1)?.autor ||
+    chamado.responsavel ||
+    atendenteDe(chamado.protocolo, ATENDENTES)
+
+  // texto do prazo: encerrado não tem prazo a cumprir, e vencido precisa saltar
+  const prazoTexto = encerrado
+    ? '—'
+    : restam < 0
+      ? 'Vencido'
+      : restam === 0
+        ? 'Vence hoje'
+        : `${restam} ${restam === 1 ? 'dia útil' : 'dias úteis'}`
 
   return (
     // colunas fixas no desktop para tudo alinhar entre as linhas; empilha no mobile
     <button
       onClick={onAbrir}
-      className={`flex w-full flex-wrap items-center gap-6 rounded-card border border-l-4 border-axia-neutral bg-white p-6 text-left shadow-card transition hover:border-axia-blue hover:shadow-card-hover lg:grid lg:grid-cols-[minmax(0,1fr)_130px_220px_130px_120px_20px] lg:gap-10 ${BORDAS_STATUS[chamado.status]}`}
+      className="flex w-full flex-wrap items-center gap-6 rounded-card border border-axia-neutral bg-white p-5 text-left shadow-card transition hover:border-axia-blue hover:shadow-card-hover lg:grid lg:grid-cols-[minmax(0,1fr)_180px_180px_170px_150px_20px] lg:gap-8"
     >
-      <div className="min-w-0">
-        <p className="font-mono text-sm font-bold tracking-wide text-axia-blue">
-          {chamado.protocolo}
-        </p>
-        <p className="mt-1 truncate font-bold text-axia-purple">{chamado.atividade}</p>
-        <p className="mt-0.5 truncate text-xs text-axia-grey/60">{chamado.servico}</p>
-      </div>
-
-      <div>
-        <Badge status={chamado.status} />
-      </div>
-
-      <Coluna rotulo="Responsável">
-        {chamado.responsavel || atendenteDe(chamado.protocolo, ATENDENTES)}
-      </Coluna>
-      <Coluna rotulo="Atualização">{tempoRelativo(ultimaAtualizacao(chamado))}</Coluna>
-      <Coluna rotulo="Prazo">
-        <span
-          className={
-            encerrado ? '' : hoje || vencido ? 'font-bold text-axia-error' : ''
-          }
-        >
-          {encerrado ? '—' : hoje ? 'Hoje' : prazo.toLocaleDateString('pt-BR')}
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-chip bg-axia-blue/10">
+          <IconeServico nome={chamado.servico} className="h-5 w-5 text-axia-blue" />
         </span>
+        <span className="min-w-0">
+          <span className="block truncate font-mono text-sm font-bold tracking-wide text-axia-purple">
+            {chamado.protocolo}
+          </span>
+          <span className="mt-0.5 block truncate text-sm text-axia-grey/70">
+            {chamado.atividade}
+          </span>
+        </span>
+      </div>
+
+      <Coluna rotulo="Serviço">
+        <span className="block truncate font-bold text-axia-purple">
+          {chamado.servico}
+        </span>
+        <span className="mt-0.5 block truncate text-xs text-axia-grey/60">
+          {chamado.portfolio}
+        </span>
+      </Coluna>
+
+      <Coluna rotulo="Status">
+        <Badge status={chamado.status} />
+      </Coluna>
+
+      <Coluna rotulo="Última atualização">
+        <span className="block truncate font-bold text-axia-purple">
+          {dataCurta(atualizadoEm)}
+        </span>
+        <span className="mt-0.5 block truncate text-xs text-axia-grey/60">
+          por {autor}
+        </span>
+      </Coluna>
+
+      <Coluna rotulo="Prazo estimado">
+        <span
+          className={`block truncate font-bold ${
+            !encerrado && restam <= 0 ? 'text-axia-error' : 'text-axia-purple'
+          }`}
+        >
+          {prazoTexto}
+        </span>
+        {!encerrado && (
+          <span className="mt-0.5 block truncate text-xs text-axia-grey/60">
+            {new Date(prazo).toLocaleDateString('pt-BR')}
+          </span>
+        )}
       </Coluna>
 
       <span className="justify-self-end text-axia-grey/50">
@@ -2854,10 +2914,12 @@ function LinhaChamado({ chamado, onAbrir }) {
   )
 }
 
+// O rótulo só aparece no celular: no desktop quem nomeia a coluna é o cabeçalho
+// da tabela, e repetir em cada linha viraria ruído.
 const Coluna = ({ rotulo, children }) => (
   <div className="min-w-0">
-    <p className="text-xs text-axia-grey/60">{rotulo}</p>
-    <p className="mt-0.5 truncate text-sm text-axia-grey1">{children}</p>
+    <p className="text-xs text-axia-grey/60 lg:hidden">{rotulo}</p>
+    <div className="mt-0.5 text-sm lg:mt-0">{children}</div>
   </div>
 )
 
