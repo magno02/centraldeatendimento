@@ -1416,6 +1416,1422 @@
           ]
         }
       ]
+    },
+    {
+      "nome": "Gestão de Acesso",
+      "atividades": [
+        {
+          "nome": "Solicitar novo acesso",
+          "descricao": "Solicitar a concessão de acesso a sistema corporativo conforme o perfil necessário para o exercício da função.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Usuário beneficiário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Área",
+              "t": "texto"
+            },
+            {
+              "n": "Unidade",
+              "t": "texto"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Sistema",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Perfil ou funcionalidade",
+              "t": "texto"
+            },
+            {
+              "n": "Justificativa",
+              "t": "textarea"
+            },
+            {
+              "n": "Data necessária",
+              "t": "data"
+            },
+            {
+              "n": "Vigência",
+              "t": "texto"
+            },
+            {
+              "n": "Centro de custo",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de autorização ou documento de apoio",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Alterar perfil de acesso",
+          "descricao": "Solicitar alteração de perfil, grupo, função ou permissão de um usuário que já possui acesso ao sistema.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Sistema",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Perfil atual",
+              "t": "texto"
+            },
+            {
+              "n": "Perfil solicitado",
+              "t": "texto"
+            },
+            {
+              "n": "Permissões a incluir ou remover",
+              "t": "texto"
+            },
+            {
+              "n": "Justificativa",
+              "t": "textarea"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Data necessária",
+              "t": "data"
+            },
+            {
+              "n": "Anexo de autorização ou documento de apoio",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Revogar acesso",
+          "descricao": "Solicitar a remoção total ou parcial dos acessos de um usuário por desligamento, transferência, mudança de função ou término de vigência.",
+          "sla": "16h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Sistema",
+              "t": "texto"
+            },
+            {
+              "n": "Acessos a revogar",
+              "t": "texto"
+            },
+            {
+              "n": "Motivo",
+              "t": "textarea"
+            },
+            {
+              "n": "Data e horário necessários",
+              "t": "data"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Tipo de revogação",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de documento de desligamento, transferência ou autorização",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Desbloquear usuário",
+          "descricao": "Solicitar o desbloqueio de uma conta que foi bloqueada por tentativas inválidas, política de segurança ou inatividade.",
+          "sla": "8h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Login",
+              "t": "texto"
+            },
+            {
+              "n": "Sistema",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Telefone corporativo",
+              "t": "texto"
+            },
+            {
+              "n": "Horário aproximado do bloqueio",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de print ou foto da tela",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Redefinir senha",
+          "descricao": "Solicitar a redefinição da senha de acesso quando o usuário não consegue recuperá-la pelos canais de autoatendimento.",
+          "sla": "4h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Login",
+              "t": "texto"
+            },
+            {
+              "n": "Sistema",
+              "t": "texto"
+            },
+            {
+              "n": "Telefone corporativo",
+              "t": "texto"
+            },
+            {
+              "n": "Método de validação de identidade",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de print ou foto da tela",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Não consigo acessar o sistema",
+          "descricao": "Reportar falha inesperada de autenticação em sistema corporativo, mesmo utilizando credenciais consideradas válidas.",
+          "sla": "8h",
+          "campos": [
+            {
+              "n": "Sistema afetado",
+              "t": "texto"
+            },
+            {
+              "n": "Login",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Unidade",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Descrição do problema",
+              "t": "textarea"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Quantidade de usuários afetados",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de print, foto ou vídeo curto da tela de erro",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Conta bloqueada indevidamente",
+          "descricao": "Reportar bloqueio inesperado da conta sem tentativas inválidas conhecidas ou sem motivo aparente.",
+          "sla": "8h",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Login",
+              "t": "texto"
+            },
+            {
+              "n": "Sistema",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Equipamento utilizado",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Recorrência",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de print ou foto da mensagem de bloqueio",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Erro de permissão ou acesso negado",
+          "descricao": "Reportar acesso negado a uma funcionalidade, pasta, transação ou recurso que anteriormente estava disponível ao usuário.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Sistema",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo ou funcionalidade",
+              "t": "texto"
+            },
+            {
+              "n": "Login",
+              "t": "texto"
+            },
+            {
+              "n": "Perfil",
+              "t": "texto"
+            },
+            {
+              "n": "Atividade executada",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Último acesso bem-sucedido",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de print ou foto da tela de erro",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Lentidão durante a autenticação",
+          "descricao": "Reportar demora excessiva para concluir login ou autenticação em sistema corporativo.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Sistema",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Login",
+              "t": "texto"
+            },
+            {
+              "n": "Unidade",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Tempo aproximado de autenticação",
+              "t": "texto"
+            },
+            {
+              "n": "Frequência",
+              "t": "texto"
+            },
+            {
+              "n": "Quantidade de usuários afetados",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de print, foto ou vídeo curto demonstrando a lentidão",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Falha na autenticação integrada (SSO/AD/LDAP)",
+          "descricao": "Reportar falha na autenticação integrada entre sistemas corporativos, impedindo ou dificultando o acesso de um ou mais usuários.",
+          "sla": "8h",
+          "campos": [
+            {
+              "n": "Sistema",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Login",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Quantidade de usuários afetados",
+              "t": "texto"
+            },
+            {
+              "n": "Unidade",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Último acesso válido",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de print, foto ou evidência do erro",
+              "t": "texto"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "SAP",
+      "atividades": [
+        {
+          "nome": "Solicitar criação de usuário SAP",
+          "descricao": "Solicitar a criação de um usuário para acesso a um ou mais ambientes SAP.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Nome do usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Área",
+              "t": "texto"
+            },
+            {
+              "n": "Unidade",
+              "t": "texto"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Perfil necessário",
+              "t": "texto"
+            },
+            {
+              "n": "Justificativa",
+              "t": "textarea"
+            },
+            {
+              "n": "Data necessária",
+              "t": "data"
+            },
+            {
+              "n": "Vigência",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de autorização",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Solicitar novo acesso ao SAP",
+          "descricao": "Solicitar concessão de acesso ao SAP para usuário já cadastrado, conforme necessidade funcional.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Login SAP",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Empresa",
+              "t": "texto"
+            },
+            {
+              "n": "Perfil ou transações",
+              "t": "texto"
+            },
+            {
+              "n": "Justificativa",
+              "t": "textarea"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Data necessária",
+              "t": "data"
+            },
+            {
+              "n": "Anexo da autorização",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Solicitar alteração de perfil SAP",
+          "descricao": "Solicitar inclusão, retirada ou alteração das permissões de um usuário SAP.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Login SAP",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Perfil atual",
+              "t": "texto"
+            },
+            {
+              "n": "Perfil solicitado",
+              "t": "texto"
+            },
+            {
+              "n": "Transações",
+              "t": "texto"
+            },
+            {
+              "n": "Permissões a incluir ou retirar",
+              "t": "texto"
+            },
+            {
+              "n": "Justificativa",
+              "t": "textarea"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de autorização",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Solicitar revogação de acesso SAP",
+          "descricao": "Solicitar a retirada total ou parcial dos acessos SAP por desligamento, transferência ou mudança de função.",
+          "sla": "16h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Login SAP",
+              "t": "texto"
+            },
+            {
+              "n": "Ambientes",
+              "t": "texto"
+            },
+            {
+              "n": "Acessos a revogar",
+              "t": "texto"
+            },
+            {
+              "n": "Motivo",
+              "t": "textarea"
+            },
+            {
+              "n": "Data e horário necessários",
+              "t": "data"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de desligamento, transferência ou autorização",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Redefinir senha SAP",
+          "descricao": "Solicitar redefinição da senha quando o usuário não consegue recuperá-la pelos meios disponíveis.",
+          "sla": "8h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Login SAP",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Telefone corporativo",
+              "t": "texto"
+            },
+            {
+              "n": "Método de validação",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de print ou foto",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Desbloquear usuário SAP",
+          "descricao": "Solicitar desbloqueio de conta SAP bloqueada por tentativas inválidas, inatividade ou política de segurança.",
+          "sla": "8h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Login SAP",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Horário do bloqueio",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Telefone corporativo",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de print ou foto da tela",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Solicitar acesso a ambiente SAP",
+          "descricao": "Solicitar acesso específico aos ambientes de Desenvolvimento, Qualidade, Homologação ou Produção.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Login SAP",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente solicitado",
+              "t": "texto"
+            },
+            {
+              "n": "Período de vigência",
+              "t": "texto"
+            },
+            {
+              "n": "Perfil",
+              "t": "texto"
+            },
+            {
+              "n": "Justificativa",
+              "t": "textarea"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Projeto ou atividade relacionada",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de autorização",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Solicitar inclusão em Role ou grupo SAP",
+          "descricao": "Solicitar inclusão de usuário em uma Role, perfil composto ou grupo de autorização existente.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Login",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Nome da Role ou grupo",
+              "t": "texto"
+            },
+            {
+              "n": "Transações necessárias",
+              "t": "texto"
+            },
+            {
+              "n": "Justificativa",
+              "t": "textarea"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Período de vigência",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de autorização",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Solicitar alteração de parâmetros do usuário SAP",
+          "descricao": "Solicitar alteração de idioma, impressora padrão, formato de data, empresa, centro, parâmetros ou dados do usuário.",
+          "sla": "24h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Login SAP",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Parâmetro atual",
+              "t": "texto"
+            },
+            {
+              "n": "Parâmetro solicitado",
+              "t": "texto"
+            },
+            {
+              "n": "Valor esperado",
+              "t": "texto"
+            },
+            {
+              "n": "Justificativa",
+              "t": "textarea"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de evidência",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Solicitar desbloqueio ou liberação de transação SAP",
+          "descricao": "Solicitar liberação planejada de uma transação que não integra o perfil atual, desde que autorizada pela área responsável.",
+          "sla": "24h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Login SAP",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Código da transação",
+              "t": "texto"
+            },
+            {
+              "n": "Atividade que será executada",
+              "t": "texto"
+            },
+            {
+              "n": "Justificativa",
+              "t": "textarea"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Vigência",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de autorização",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar indisponibilidade do SAP",
+          "descricao": "Comunicar indisponibilidade total ou parcial do ambiente SAP que impeça a execução das atividades de negócio.",
+          "sla": "8h",
+          "campos": [
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Unidade",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Usuários afetados",
+              "t": "texto"
+            },
+            {
+              "n": "Processo de negócio impactado",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Contato",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de print ou foto",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar erro em transação SAP",
+          "descricao": "Comunicar erro inesperado durante a execução de uma transação que anteriormente funcionava corretamente.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Transação",
+              "t": "texto"
+            },
+            {
+              "n": "Empresa",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Etapa executada",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Mensagem de erro",
+              "t": "texto"
+            },
+            {
+              "n": "Resultado esperado",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de print ou foto",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar lentidão no SAP",
+          "descricao": "Comunicar degradação significativa de desempenho em uma transação, módulo ou ambiente SAP.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Transação",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Tempo aproximado de resposta",
+              "t": "texto"
+            },
+            {
+              "n": "Frequência",
+              "t": "texto"
+            },
+            {
+              "n": "Usuários afetados",
+              "t": "texto"
+            },
+            {
+              "n": "Volume processado",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de vídeo, print ou foto",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar erro de autorização inesperado",
+          "descricao": "Comunicar perda de acesso ou mensagem de falta de autorização para funcionalidade anteriormente disponível.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Matrícula",
+              "t": "texto"
+            },
+            {
+              "n": "Login SAP",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Transação",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Último acesso válido",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de print ou foto",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar inconsistência de dados no SAP",
+          "descricao": "Comunicar divergência em documentos, valores, cálculos ou registros apresentados pelo sistema.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Transação",
+              "t": "texto"
+            },
+            {
+              "n": "Empresa",
+              "t": "texto"
+            },
+            {
+              "n": "Tipo e número do documento",
+              "t": "texto"
+            },
+            {
+              "n": "Valor esperado",
+              "t": "texto"
+            },
+            {
+              "n": "Valor apresentado",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de print, relatório ou arquivo",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar erro na geração de documento SAP",
+          "descricao": "Comunicar falha na criação, contabilização, gravação ou emissão de documento no SAP.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Transação",
+              "t": "texto"
+            },
+            {
+              "n": "Tipo de documento",
+              "t": "texto"
+            },
+            {
+              "n": "Empresa",
+              "t": "texto"
+            },
+            {
+              "n": "Número do documento",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de print ou arquivo",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar falha em Job SAP",
+          "descricao": "Comunicar falha, cancelamento, atraso ou ausência de execução de um processamento em segundo plano.",
+          "sla": "24h úteis",
+          "campos": [
+            {
+              "n": "Nome do Job",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Data e horário previsto",
+              "t": "data"
+            },
+            {
+              "n": "Última execução",
+              "t": "texto"
+            },
+            {
+              "n": "Status",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Frequência",
+              "t": "texto"
+            },
+            {
+              "n": "Anexo de log ou print",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar falha em integração SAP",
+          "descricao": "Comunicar erro na troca de informações entre o SAP e outro sistema corporativo.",
+          "sla": "32h úteis",
+          "campos": [
+            {
+              "n": "Sistema de origem e destino",
+              "t": "texto"
+            },
+            {
+              "n": "Interface",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Módulo",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Documento ou mensagem",
+              "t": "texto"
+            },
+            {
+              "n": "Erro apresentado",
+              "t": "texto"
+            },
+            {
+              "n": "Volume afetado",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de print, log ou arquivo",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar erro de impressão ou Spool SAP",
+          "descricao": "Comunicar falha na geração, processamento ou impressão de documentos pelo SAP.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Transação",
+              "t": "texto"
+            },
+            {
+              "n": "Documento",
+              "t": "texto"
+            },
+            {
+              "n": "Número do Spool",
+              "t": "texto"
+            },
+            {
+              "n": "Impressora",
+              "t": "texto"
+            },
+            {
+              "n": "Unidade",
+              "t": "texto"
+            },
+            {
+              "n": "Mensagem",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Anexo de print ou foto",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Reportar erro no SAP Fiori",
+          "descricao": "Comunicar falha no acesso, carregamento ou execução de aplicativo disponibilizado pelo SAP Fiori.",
+          "sla": "24h úteis",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Login",
+              "t": "texto"
+            },
+            {
+              "n": "Ambiente",
+              "t": "texto"
+            },
+            {
+              "n": "Nome do aplicativo ou tile",
+              "t": "texto"
+            },
+            {
+              "n": "Navegador",
+              "t": "texto"
+            },
+            {
+              "n": "Data e hora",
+              "t": "data"
+            },
+            {
+              "n": "Mensagem apresentada",
+              "t": "texto"
+            },
+            {
+              "n": "Etapa executada",
+              "t": "texto"
+            },
+            {
+              "n": "Impacto",
+              "t": "textarea"
+            },
+            {
+              "n": "Anexo de print, foto ou vídeo curto",
+              "t": "texto"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

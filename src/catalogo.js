@@ -57,53 +57,47 @@ export const SERVICOS = PORTFOLIOS.flatMap((p) =>
   p.servicos.map((s) => ({ ...s, portfolio: p }))
 )
 
-// "Serviços de TI" vem da planilha (scripts/gerar-catalogo-ti.mjs), com atividade,
-// descrição, SLA e campos próprios de formulário — não do estrutura_axia.json.
-// Aqui a atividade já É o card: não há oferta de serviço neste portfólio.
+// Serviço vindo de planilha (scripts/gerar-catalogo.mjs), com atividade, descrição,
+// SLA e campos próprios de formulário — não do estrutura_axia.json. Aqui a atividade
+// já É o card: não há oferta de serviço.
+const servicoDaPlanilha = (s, portfolio) => {
+  const chave = `${portfolio}/${s.nome}`
+  return {
+    id: s.nome,
+    nome: s.nome,
+    chave,
+    atividades: s.atividades.map((a) => ({
+      id: a.nome,
+      nome: a.nome,
+      chave: `${chave}/${a.nome}`,
+      descricao: a.descricao,
+      sla: a.sla,
+      ofertas: [],
+      campos: a.campos,
+    })),
+  }
+}
+
 const AREA_TI = {
   id: TI.portfolio,
   nome: TI.portfolio,
-  servicos: TI.servicos
-    .map((s) => {
-      const chave = `${TI.portfolio}/${s.nome}`
-      return {
-        id: s.nome,
-        nome: s.nome,
-        chave,
-        atividades: s.atividades.map((a) => ({
-          id: a.nome,
-          nome: a.nome,
-          chave: `${chave}/${a.nome}`,
-          descricao: a.descricao,
-          sla: a.sla,
-          ofertas: [],
-          campos: a.campos,
-        })),
-      }
-    })
-    .sort(porNome),
+  servicos: TI.servicos.map((s) => servicoDaPlanilha(s, TI.portfolio)).sort(porNome),
 }
 
 // Abas do portal. As áreas do estrutura_axia.json são granulares demais para virar
 // aba sozinhas ("VID > SIP" tem 1 serviço), então esta tabela agrupa. Renomear uma
 // aba ou remanejar uma área é editar só aqui.
-// Área que não aparece em nenhum grupo fica fora do portal — foi assim que
-// "Suporte e Infraestrutura" e "Segurança" saíram, junto com as áreas delas.
+// Área que não aparece em nenhum grupo fica fora do portal — é assim que
+// "Suporte e Infraestrutura" e os sistemas corporativos do estrutura_axia (Benner,
+// Salesforce, SIP, V360, Intranet) continuam de fora, junto com as áreas deles.
 // ponytail: agrupamento fixo no código. Quando o catálogo tiver o campo de área-pai,
 // troque por leitura do JSON e apague esta tabela.
 const GRUPOS_AREAS = [
   { nome: AREA_TI.nome, icone: 'grade', areas: [AREA_TI.nome] },
   {
-    nome: 'Sistemas Corporativos',
-    icone: 'janela',
-    areas: [
-      'SAP',
-      'VID > Benner',
-      'VID > Salesforce',
-      'Salesforce',
-      'CSC > Sustentação de Aplicações',
-      'VID > SIP',
-    ],
+    nome: 'Segurança',
+    icone: 'escudo',
+    areas: ['Cibersegurança de TI', 'Segurança da Informação'],
   },
   {
     nome: 'Dados e Automação',

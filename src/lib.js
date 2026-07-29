@@ -101,10 +101,98 @@ export const alternarFavorito = (favoritos, chave) =>
 export const registrarRecente = (recentes, chave, max = 12) =>
   [chave, ...recentes.filter((c) => c !== chave)].slice(0, max)
 
+// O chat recebe frase ("resetar senha do SAP"), não palavra-chave, e o catálogo é
+// escrito em linguagem de TI. Estas duas tabelas fazem a ponte. A busca do portal
+// continua com `buscar`, que casa a frase inteira — lá quem digita já sabe o termo.
+// ponytail: listas escritas à mão. Cobrem os exemplos da saudação e os pedidos mais
+// comuns; palavra nova que errar entra aqui.
+const IRRELEVANTES = new Set(
+  `a o as os um uma uns umas de do da dos das em no na nos nas para pra por com que
+   e ou meu minha meus minhas eu me mim nao ao aos preciso precisava queria quero
+   gostaria favor solicitar solicito pedir peco pedido ajuda esta estao estou ser
+   fazer tem ter sobre onde como qual quais isso esse essa aqui
+   novo nova novos novas outro outra`.split(/\s+/)
+)
+
+const SINONIMOS = {
+  resetar: 'redefinir',
+  resetei: 'redefinir',
+  reset: 'redefinir',
+  trocaram: 'trocar',
+  quebrou: 'defeito',
+  quebrado: 'defeito',
+  quebrada: 'defeito',
+  estragou: 'defeito',
+  parou: 'defeito',
+  travou: 'lentidao',
+  travando: 'lentidao',
+  lento: 'lentidao',
+  devagar: 'lentidao',
+  // radical comum: casa tanto com "conta bloqueada" quanto com "desbloquear usuário"
+  bloqueou: 'bloque',
+  bloqueado: 'bloque',
+  bloqueada: 'bloque',
+  desbloquear: 'bloque',
+  liberar: 'acesso',
+  liberacao: 'acesso',
+  entrar: 'acesso',
+  logar: 'acesso',
+  login: 'acesso',
+  wifi: 'rede',
+  internet: 'rede',
+  vpn: 'rede',
+  ia: 'inteligencia', // "IA" tem 2 letras e seria descartado pelo piso abaixo
+}
+
+// Corta a terminação para "acessar" casar com "acesso" e "teclado" com "teclados".
+// Só de 6 letras para cima: abaixo disso o toco fica curto e casa com qualquer coisa.
+const raiz = (t) => (t.length >= 6 ? t.slice(0, -2) : t)
+
+// Uma pergunta em frase vira lista de radicais, e cada atividade é pontuada por
+// quantos deles aparecem nela. Sem isto "resetar senha do SAP" não achava nada: a
+// frase toda não é substring de nenhum nome do catálogo.
+export function buscarConversa(atividades, pergunta) {
+  const termos = [
+    ...new Set(
+      norm(pergunta)
+        .split(/[^\p{L}\p{N}]+/u)
+        .filter(Boolean)
+        .filter((p) => !IRRELEVANTES.has(p))
+        .map((p) => SINONIMOS[p] ?? p)
+        .map(raiz)
+        // piso de 3 letras: radical curto vira substring de qualquer palavra —
+        // "oi" casava com "apoio" e devolvia o catálogo inteiro
+        .filter((t) => t.length >= 3)
+    ),
+  ]
+  if (!termos.length) return []
+
+  return atividades
+    .map((a) => {
+      // três faixas de peso: o nome da atividade é o sinal mais forte, a oferta vem
+      // depois, e serviço/portfólio/descrição valem pouco — casar "acesso" no nome de
+      // uma oferta não pode empatar com casar no nome da atividade
+      const nome = norm(a.nome)
+      const ofertas = norm((a.ofertas ?? []).join(' '))
+      const resto = norm([a.servico.nome, a.portfolio.nome, a.descricao ?? ''].join(' '))
+      const pontos = termos.reduce(
+        (n, t) =>
+          n + (nome.includes(t) ? 3 : ofertas.includes(t) ? 2 : resto.includes(t) ? 1 : 0),
+        0
+      )
+      return { atividade: a, pontos }
+    })
+    .filter((x) => x.pontos > 0)
+    // empate desfeito pelo nome mais curto: parte do catálogo usa a descrição do
+    // serviço como nome da atividade, e essas frases longas casam por acidente
+    .sort((x, y) => y.pontos - x.pontos || x.atividade.nome.length - y.atividade.nome.length)
+    .map((x) => x.atividade)
+}
+
 // ponytail: "IA" é busca no catálogo, não modelo de linguagem — troque esta função
 // por chamada à API do assistente quando existir; a UI do chat não muda.
 export function responderIA(pergunta, atividades, max = 4) {
-  const achados = buscar(atividades, pergunta).slice(0, max)
+  const achados = buscarConversa(atividades, pergunta).slice(0, max)
   if (!achados.length) {
     return {
       texto:
@@ -165,6 +253,18 @@ export const ofertasDoServico = (servico) =>
       ? a.ofertas.map((oferta) => ({ atividade: a, oferta }))
       : [{ atividade: a, oferta: null }]
   )
+
+// Busca dentro do serviço aberto. Casa no texto que o card mostra (a oferta, quando
+// existe) e também no nome e na descrição da atividade, que o card não exibe inteiros.
+export function filtrarOfertas(cards, termo) {
+  const t = norm(termo.trim())
+  if (!t) return cards
+  return cards.filter(({ atividade, oferta }) =>
+    norm(
+      [oferta ?? '', atividade.nome, atividade.descricao ?? ''].join(' ')
+    ).includes(t)
+  )
+}
 
 // A planilha traz o SLA em horas úteis ("16h"), mas quem abre o chamado pensa em
 // dias: "16 horas" é lido como 16 horas corridas, e não como dois expedientes.
@@ -450,15 +550,53 @@ export function paginar(lista, pagina, porPagina) {
 
 export const podeInteragir = (t) => t.status !== 'Fechado' && t.status !== CANCELADO
 
-export function comInteracao(ticket, autor, texto, em = new Date()) {
+export function comInteracao(ticket, autor, texto, em = new Date(), extras = {}) {
   return {
     ...ticket,
     interacoes: [
       ...ticket.interacoes,
-      { autor, texto, em: em.toISOString() },
+      { autor, texto, em: em.toISOString(), ...extras },
     ],
   }
 }
+
+// Resposta definitiva do atendente. A marca fica na interação e não no ticket:
+// qualquer mensagem posterior já derruba a pergunta "foi resolvida?" sozinha.
+export const TEXTO_CONCLUSAO =
+  'Concluímos o atendimento da sua solicitação. Verifique se está tudo certo do seu lado.'
+
+export const concluirAtendimento = (ticket, em = new Date()) =>
+  comInteracao(ticket, 'Atendente', TEXTO_CONCLUSAO, em, { conclusao: true })
+
+export const aguardandoConfirmacao = (t) =>
+  podeInteragir(t) && !!t.interacoes.at(-1)?.conclusao
+
+export function resolver(ticket, em = new Date()) {
+  if (!aguardandoConfirmacao(ticket)) return ticket
+  return {
+    ...comInteracao(ticket, 'Solicitante', 'Solicitação confirmada como resolvida.', em),
+    status: 'Fechado',
+  }
+}
+
+export function reabrir(ticket, em = new Date()) {
+  if (!aguardandoConfirmacao(ticket)) return ticket
+  return {
+    ...comInteracao(
+      ticket,
+      'Solicitante',
+      'A solicitação ainda não foi resolvida — preciso de mais ajuda.',
+      em
+    ),
+    status: 'Andamento',
+  }
+}
+
+// Pesquisa de satisfação: uma avaliação por chamado, gravada no próprio ticket.
+export const avaliar = (ticket, nota, comentario = '', em = new Date()) => ({
+  ...ticket,
+  avaliacao: { nota, comentario: comentario.trim(), em: em.toISOString() },
+})
 
 export function cancelar(ticket, motivo, em = new Date()) {
   if (!podeInteragir(ticket)) return ticket

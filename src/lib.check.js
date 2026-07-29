@@ -27,6 +27,8 @@ import {
   contarPorStatus,
   doUsuario,
   ofertasDoServico,
+  filtrarOfertas,
+  buscarConversa,
   chaveOferta,
   registrarAcesso,
   maisAcessadas,
@@ -49,6 +51,11 @@ import {
   comInteracao,
   cancelar,
   podeInteragir,
+  concluirAtendimento,
+  aguardandoConfirmacao,
+  resolver,
+  reabrir,
+  avaliar,
   CANCELADO,
   STATUS,
   STATUS_PAINEL,
@@ -210,18 +217,50 @@ assert.equal(
 const chaves = [...SERVICOS_EM_ABA, ...ATIVIDADES_VISIVEIS].map((i) => i.chave)
 assert.equal(new Set(chaves).size, chaves.length)
 
-// as abas removidas não podem voltar por nenhum caminho
+// as três abas do portal, e as removidas que não podem voltar por nenhum caminho
 const nomesAbas = GRUPOS.map((g) => g.nome)
-assert.ok(nomesAbas.includes('Serviços de TI'))
+assert.deepEqual(nomesAbas, ['Serviços de TI', 'Segurança', 'Dados e Automação'])
 assert.ok(!nomesAbas.includes('Suporte e Infraestrutura'))
-assert.ok(!nomesAbas.includes('Segurança'))
+assert.ok(!nomesAbas.includes('Sistemas Corporativos')) // virou parte de Serviços de TI
 
-// catálogo da planilha: atividade é o card, com descrição, SLA e campos próprios
+// os 10 itens de configuração da planilha Top 10, que têm 3 atividades cada
+const HARDWARE = [
+  'Notebook',
+  'Desktop',
+  'Monitor',
+  'Headset',
+  'Webcam',
+  'Teclado',
+  'Mouse',
+  'Docking Station',
+  'Impressora',
+  'Celular Corporativo',
+]
+
+// catálogo de planilha: atividade é o card, com descrição, SLA e campos próprios
 {
   const ti = GRUPOS.find((g) => g.nome === 'Serviços de TI')
-  assert.equal(ti.servicos.length, 10)
-  for (const s of ti.servicos) {
-    assert.equal(s.atividades.length, 3) // solicitar / trocar / devolver
+  const daPlanilha = ti.servicos.filter((s) =>
+    ['SAP', 'Gestão de Acesso'].includes(s.nome) || HARDWARE.includes(s.nome)
+  )
+
+  // toda a aba vem de planilha: 10 de hardware + Gestão de Acesso + SAP
+  assert.equal(ti.servicos.length, 12)
+  assert.equal(ti.servicos.length, daPlanilha.length)
+  for (const s of ti.servicos.filter((s) => HARDWARE.includes(s.nome)))
+    assert.equal(s.atividades.length, 3, s.nome) // solicitar / trocar / devolver
+
+  // Gestão de Acesso só pode ter o que veio da planilha: 10 atividades, e nenhuma
+  // com a assinatura do estrutura_axia (ofertas + campo "Oferta de Serviço").
+  const acesso = ti.servicos.find((s) => s.nome === 'Gestão de Acesso')
+  assert.equal(acesso.atividades.length, 10)
+  for (const a of acesso.atividades) {
+    assert.deepEqual(a.ofertas, [], a.nome)
+    assert.ok(!a.campos.some((c) => c.n === 'Oferta de Serviço'), a.nome)
+    assert.ok(a.chave.startsWith('Serviços de TI/Gestão de Acesso/'), a.chave)
+  }
+
+  for (const s of daPlanilha) {
     for (const a of s.atividades) {
       assert.ok(a.descricao, a.nome)
       assert.ok(a.sla, a.nome)
@@ -231,6 +270,72 @@ assert.ok(!nomesAbas.includes('Segurança'))
       for (const c of a.campos) assert.ok(c.n?.trim(), `${a.nome}: campo sem nome`)
     }
   }
+}
+
+// SLA do catálogo sai da coluna "SLA de Resolução", nunca da de resposta. Na planilha
+// de Gestão de Acesso o par Resposta/Resolução vem duplicado e vale o segundo, o prazo
+// ampliado — se o gerador voltar a ler a coluna errada, estes valores caem.
+{
+  const ti = GRUPOS.find((g) => g.nome === 'Serviços de TI')
+  const acesso = ti.servicos.find((s) => s.nome === 'Gestão de Acesso')
+  const sla = (nome) => acesso.atividades.find((a) => a.nome === nome).sla
+  assert.equal(sla('Solicitar novo acesso'), '32h úteis') // 1º par: 16h, resposta: 8h
+  assert.equal(sla('Redefinir senha'), '4h úteis') // 1º par: 2h, resposta: 2h
+
+  const sap = ti.servicos.find((s) => s.nome === 'SAP')
+  const slaSap = (nome) => sap.atividades.find((a) => a.nome === nome).sla
+  assert.equal(slaSap('Reportar indisponibilidade do SAP'), '8h') // resposta: 30 min
+  assert.equal(slaSap('Solicitar criação de usuário SAP'), '32h úteis') // resposta: 8h úteis
+}
+
+// A aba de TI é 100% planilha: nada do estrutura_axia entra nela, e os sistemas
+// corporativos de lá (Benner, Salesforce, SIP, V360, Intranet) não têm mais card.
+{
+  const ti = GRUPOS.find((g) => g.nome === 'Serviços de TI')
+  // ordem da aba é alfabética, sem card fixado na frente
+  const nomes = ti.servicos.map((s) => s.nome)
+  assert.deepEqual(nomes, [...nomes].sort((a, b) => a.localeCompare(b, 'pt-BR')))
+  for (const s of ti.servicos) {
+    const atividades = s.atividades.map((a) => a.nome)
+    assert.equal(new Set(atividades).size, atividades.length, s.nome)
+    assert.ok(s.chave.startsWith('Serviços de TI/'), s.chave)
+  }
+
+  // SAP só pode ter o que veio da planilha: 20 atividades. Nenhuma pode ter vindo do
+  // estrutura_axia, onde a atividade traz "Oferta de Serviço" e ofertas — era assim
+  // que os cards antigos de SAP eram montados.
+  const sap = ti.servicos.find((s) => s.nome === 'SAP')
+  assert.equal(sap.atividades.length, 20)
+  for (const a of sap.atividades) {
+    assert.deepEqual(a.ofertas, [], a.nome)
+    assert.ok(!a.campos.some((c) => c.n === 'Oferta de Serviço'), a.nome)
+    assert.ok(a.chave.startsWith('Serviços de TI/SAP/'), a.chave)
+  }
+
+  // as áreas de sistema corporativo saíram do portal por completo
+  const areas = GRUPOS.flatMap((g) => g.servicos.map((s) => s.portfolio.nome))
+  for (const fora of [
+    'SAP',
+    'Sistemas Corporativos',
+    'VID > Benner',
+    'VID > Salesforce',
+    'Salesforce',
+    'VID > SIP',
+    'CSC > Sustentação de Aplicações',
+  ])
+    assert.ok(!areas.includes(fora), fora)
+  // e nenhuma chave delas resolve mais: um favorito antigo não pode reabrir o card.
+  // "VID > Governança" fica de fora da lista — essa área continua na aba de Dados.
+  for (const prefixo of [
+    'SAP/',
+    'Sistemas Corporativos/',
+    'VID > Benner/',
+    'VID > Salesforce/',
+    'VID > SIP/',
+    'Salesforce/',
+    'CSC > Sustentação de Aplicações/',
+  ])
+    assert.equal([...POR_CHAVE.keys()].filter((k) => k.startsWith(prefixo)).length, 0)
 }
 
 // iniciais do avatar
@@ -388,6 +493,42 @@ assert.ok(!STATUS_PAINEL.includes('Aberto'))
   for (const s of SERVICOS) assert.ok(ofertasDoServico(s).length, s.nome)
 }
 
+// Busca do chat: a saudação promete entender frase, então as frases dela e os pedidos
+// mais comuns têm que devolver a atividade certa em primeiro lugar. `buscar`, que casa
+// a frase inteira como substring, devolvia zero para todas estas.
+{
+  const primeira = (p) => buscarConversa(ATIVIDADES_VISIVEIS, p)[0]?.nome
+  assert.equal(primeira('resetar senha do SAP'), 'Redefinir senha SAP')
+  assert.equal(primeira('preciso de um monitor novo'), 'Trocar Monitor')
+  assert.equal(primeira('meu teclado quebrou'), 'Trocar Teclado')
+  assert.equal(primeira('SAP está lento'), 'Reportar lentidão no SAP')
+  assert.equal(primeira('minha conta está bloqueada'), 'Conta bloqueada indevidamente')
+  assert.equal(primeira('quero devolver o notebook'), 'Devolver Notebook')
+  assert.match(primeira('solicitar acesso à rede'), /rede/i)
+  // só palavra vazia ou radical curto: melhor não sugerir do que despejar o catálogo
+  assert.deepEqual(buscarConversa(ATIVIDADES_VISIVEIS, 'oi'), [])
+  assert.deepEqual(buscarConversa(ATIVIDADES_VISIVEIS, 'por favor'), [])
+  assert.deepEqual(buscarConversa(ATIVIDADES_VISIVEIS, 'xyzabc'), [])
+}
+
+// busca dentro do serviço: casa na oferta, no nome e na descrição da atividade
+{
+  const cards = [
+    { atividade: { nome: 'Gestão de acessos', descricao: 'Perfis do sistema' }, oferta: 'Conceder acesso' },
+    { atividade: { nome: 'Gestão de acessos', descricao: 'Perfis do sistema' }, oferta: 'Revogar acesso' },
+    { atividade: { nome: 'Redefinir senha', descricao: 'Quando o usuário não recupera' }, oferta: null },
+  ]
+  assert.equal(filtrarOfertas(cards, '').length, 3) // sem termo, lista inteira
+  assert.equal(filtrarOfertas(cards, '   ').length, 3) // só espaço também
+  assert.equal(filtrarOfertas(cards, 'revogar').length, 1) // casa na oferta
+  assert.equal(filtrarOfertas(cards, 'senha').length, 1) // casa no nome da atividade
+  assert.equal(filtrarOfertas(cards, 'perfis').length, 2) // casa na descrição
+  assert.equal(filtrarOfertas(cards, 'GESTAO').length, 2) // ignora acento e caixa
+  assert.equal(filtrarOfertas(cards, 'inexistente').length, 0)
+  // card sem oferta não pode estourar por causa do null
+  assert.equal(filtrarOfertas([cards[2]], 'redefinir').length, 1)
+}
+
 // mais acessadas: frequência por card, e não por atividade
 {
   const a1 = { chave: 'Area/Serv/Ativ', nome: 'Ativ' }
@@ -453,6 +594,39 @@ assert.equal(cancelar(t2, 'de novo'), t2) // já cancelado: nada muda
 assert.equal(podeInteragir({ status: 'Fechado' }), false)
 assert.equal(podeInteragir({ status: 'Pendente' }), true)
 assert.equal(podeInteragir({ status: 'Aguardando aprovação' }), true)
+
+// conclusão do atendente -> confirmação do solicitante -> pesquisa
+const c0 = { protocolo: 'TK-2026-00002', status: 'Andamento', interacoes: [] }
+assert.equal(aguardandoConfirmacao(c0), false)
+
+const c1 = concluirAtendimento(c0)
+assert.equal(aguardandoConfirmacao(c1), true)
+assert.equal(c1.interacoes.at(-1).conclusao, true)
+assert.deepEqual(c0.interacoes, []) // imutável
+
+// mensagem posterior derruba a pergunta sem precisar limpar nada
+assert.equal(aguardandoConfirmacao(comInteracao(c1, 'Solicitante', 'e o anexo?')), false)
+
+const fechado = resolver(c1)
+assert.equal(fechado.status, 'Fechado')
+assert.equal(podeInteragir(fechado), false)
+assert.equal(aguardandoConfirmacao(fechado), false)
+assert.equal(resolver(fechado), fechado) // sem pergunta aberta: nada muda
+assert.equal(reabrir(fechado), fechado)
+
+const ajuda = reabrir(c1)
+assert.equal(ajuda.status, 'Andamento')
+assert.equal(aguardandoConfirmacao(ajuda), false)
+assert.equal(ajuda.interacoes.at(-1).autor, 'Solicitante')
+
+const avaliado = avaliar(fechado, 5, '  ótimo atendimento  ')
+assert.equal(avaliado.avaliacao.nota, 5)
+assert.equal(avaliado.avaliacao.comentario, 'ótimo atendimento')
+assert.equal(fechado.avaliacao, undefined) // imutável
+assert.equal(avaliar(fechado, 3).avaliacao.comentario, '')
+
+// conclusão não vira notificação duplicada nem some da lista: é do atendente
+assert.equal(notificacoes([c1]).length, 1)
 
 // todo select/combo tem opções; toda atividade tem o campo de Oferta de Serviço
 for (const a of ATIVIDADES) {

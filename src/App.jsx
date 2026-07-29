@@ -9,7 +9,7 @@ import {
 } from './catalogo'
 import { IconeServico } from './icones'
 import Login from './Login'
-import { ATENDENTES } from './organizacao'
+import { ATENDENTES, EMPRESAS, ESTADOS, AREAS, USUARIOS, GESTOR_DE } from './organizacao'
 import {
   STATUS,
   STATUS_PAINEL,
@@ -26,6 +26,7 @@ import {
   prazoLegivel,
   doUsuario,
   ofertasDoServico,
+  filtrarOfertas,
   chaveOferta,
   registrarAcesso,
   maisAcessadas,
@@ -50,6 +51,11 @@ import {
   podeInteragir,
   comInteracao,
   cancelar,
+  concluirAtendimento,
+  aguardandoConfirmacao,
+  resolver,
+  reabrir,
+  avaliar,
 } from './lib'
 
 const campoNome = (c) => (typeof c === 'string' ? c : c.n)
@@ -80,6 +86,8 @@ export default function App() {
   const [aba, setAba] = useState(GRUPOS[0].id)
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('')
+  // busca da tela de serviço: separada de `filtro`, que é o filtro de serviços da aba
+  const [buscaAtividade, setBuscaAtividade] = useState('')
   const [lidas, setLidas] = useState(() =>
     JSON.parse(localStorage.getItem('notificacoesLidas') || '[]')
   )
@@ -137,6 +145,7 @@ export default function App() {
 
   function abrirServico(servico, portfolio) {
     setRecentes((r) => registrarRecente(r, servico.chave))
+    setBuscaAtividade('')
     setView({ tela: 'servico', servico, portfolio })
   }
 
@@ -164,23 +173,30 @@ export default function App() {
     setView({ tela: 'portal' })
   }
 
-  // o formulário não pergunta mais para quem é a solicitação: quem abre é o solicitante
-  function enviar(e, atividade, { anexos }) {
+  // "Outra pessoa": o solicitante é quem recebe o atendimento, e quem preencheu fica
+  // em `abertoPor` — é por ele que a visibilidade dos chamados continua passando.
+  function enviar(e, atividade, { anexos, para }) {
     e.preventDefault()
     const f = new FormData(e.target)
+    const outra = para === 'Outra pessoa'
+    const protocolo = novoProtocolo(tickets)
     const ticket = {
-      protocolo: novoProtocolo(tickets),
+      protocolo,
       atividade: atividade.nome,
       servico: atividade.servico.nome,
       portfolio: atividade.portfolio.nome,
-      solicitante: usuario.nome,
+      solicitante: outra ? f.get(nomeTerceiro('Usuário')) : usuario.nome,
       abertoPor: usuario.nome,
       abertoPorEmail: usuario.email,
-      responsavel: atendenteDe(novoProtocolo(tickets), ATENDENTES),
+      responsavel: atendenteDe(protocolo, ATENDENTES),
       anexos,
       status: 'Aberto',
       criadoEm: new Date().toISOString(),
-      dados: atividade.campos.map((c) => [campoNome(c), f.get(campoNome(c))]),
+      // FormData vem na ordem do DOM: gravar por ela deixa o detalhe do chamado na
+      // mesma sequência em que o formulário perguntou, sem repetir a lista de campos
+      dados: [...f.entries()]
+        .filter(([k]) => !FORA_DOS_DADOS.has(k))
+        .map(([k, v]) => [ROTULO_DADO[k] ?? k, v]),
       interacoes: [
         {
           autor: 'Sistema',
@@ -370,10 +386,28 @@ export default function App() {
               // sem título próprio: o nome do serviço passou para o título da seção
               // de atividades, e repetir os dois seria o mesmo texto duas vezes
               onVoltar={irAoPortal}
+              // `extra` e não `acao`: esta tela não tem título, então a busca fica
+              // sozinha na coluna da esquerda e o Voltar continua na ponta direita
+              extra={
+                <label className="relative block w-full sm:w-80">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
+                    <IconeLupa />
+                  </span>
+                  <input
+                    value={buscaAtividade}
+                    onChange={(e) => setBuscaAtividade(e.target.value)}
+                    placeholder={`Buscar em ${view.servico.nome}...`}
+                    className="w-full rounded-full border border-axia-neutral bg-white py-2 pl-11 pr-5 text-sm outline-none focus:border-axia-blue"
+                  />
+                </label>
+              }
             />
 
             {(() => {
-              const todas = ofertasDoServico(view.servico)
+              const todas = filtrarOfertas(
+                ofertasDoServico(view.servico),
+                buscaAtividade
+              )
               const topo = maisAcessadas(todas, acessos)
               const chavesTopo = new Set(
                 topo.map((t) => chaveOferta(t.atividade, t.oferta))
@@ -390,6 +424,27 @@ export default function App() {
                   servico: view.servico,
                   portfolio: view.portfolio,
                 })
+
+              // buscando, a divisão mais/menos acessadas não ajuda: o que importa é o
+              // resultado, e "mais acessadas" quase sempre viria vazia com um aviso falso
+              if (buscaAtividade.trim())
+                return (
+                  <Secao titulo={`Resultados para "${buscaAtividade}"`}>
+                    {todas.length ? (
+                      <Grade>
+                        {todas.map(({ atividade, oferta }) => (
+                          <CardAtividade
+                            key={chaveOferta(atividade, oferta)}
+                            atividade={{ ...atividade, oferta }}
+                            onClick={() => abrir({ atividade, oferta })}
+                          />
+                        ))}
+                      </Grade>
+                    ) : (
+                      <Vazio>Nenhuma atividade encontrada neste serviço.</Vazio>
+                    )}
+                  </Secao>
+                )
 
               return (
                 <>
@@ -418,6 +473,7 @@ export default function App() {
         {view.tela === 'form' && (
           <Formulario
             atividade={view.atividade}
+            usuario={usuario}
             onSubmit={enviar}
             trilha={[
               { label: 'Portal', onClick: irAoPortal },
@@ -479,6 +535,14 @@ export default function App() {
                   status: t.status === 'Aberto' ? 'Andamento' : t.status,
                 }))
               }
+              onSimularConclusao={() =>
+                atualizar(ticketAtual.protocolo, concluirAtendimento)
+              }
+              onResolver={() => atualizar(ticketAtual.protocolo, resolver)}
+              onReabrir={() => atualizar(ticketAtual.protocolo, reabrir)}
+              onAvaliar={(nota, comentario) =>
+                atualizar(ticketAtual.protocolo, (t) => avaliar(t, nota, comentario))
+              }
               onCancelar={(motivo) =>
                 atualizar(ticketAtual.protocolo, (t) => cancelar(t, motivo))
               }
@@ -497,7 +561,7 @@ export default function App() {
             tickets={meusTickets}
             statusInicial={view.status}
             onAbrir={(protocolo) => setView({ tela: 'ticket', protocolo })}
-            onNova={irAoPortal}
+            onVoltar={irAoPortal}
             trilha={[
               { label: 'Portal', onClick: irAoPortal },
               { label: 'Meus chamados' },
@@ -551,15 +615,23 @@ export default function App() {
 }
 
 // Assistente flutuante: responde buscando no catálogo e sugere a atividade certa.
+const saudacao = (usuario) => [
+  {
+    de: 'ia',
+    texto: `Olá, ${usuario.nome.split(' ')[0]}! Bem-vindo(a) ao portal de serviços da AXIA. Me diga o que você precisa — por exemplo "resetar senha do SAP" ou "solicitar acesso à rede" — que eu encontro o serviço e já abro o formulário para você.`,
+  },
+]
+
 function ChatIA({ usuario, onAtividade }) {
   const [aberto, setAberto] = useState(false)
-  const [mensagens, setMensagens] = useState([
-    {
-      de: 'ia',
-      texto: `Olá, ${usuario.nome.split(' ')[0]}! Bem-vindo(a) ao portal de serviços da AXIA. Me diga o que você precisa — por exemplo "resetar senha do SAP" ou "solicitar acesso à rede" — que eu encontro o serviço e já abro o formulário para você.`,
-    },
-  ])
+  const [mensagens, setMensagens] = useState(() => saudacao(usuario))
   const fim = useRef(null)
+
+  // sair do chat descarta a conversa: a próxima abertura começa na saudação
+  function fechar() {
+    setAberto(false)
+    setMensagens(saudacao(usuario))
+  }
 
   useEffect(() => {
     fim.current?.scrollIntoView({ block: 'end' })
@@ -581,9 +653,9 @@ function ChatIA({ usuario, onAtividade }) {
   return (
     <>
       <button
-        onClick={() => setAberto((v) => !v)}
-        title={aberto ? 'Fechar chat' : 'Falar com nossa IA Electra'}
-        aria-label={aberto ? 'Fechar assistente Electra' : 'Abrir assistente Electra'}
+        onClick={() => (aberto ? fechar() : setAberto(true))}
+        title={aberto ? 'Fechar chat' : 'Falar com nossa IA Eletra'}
+        aria-label={aberto ? 'Fechar assistente Eletra' : 'Abrir assistente Eletra'}
         className="fixed bottom-8 right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-axia-blue text-white shadow-lg shadow-axia-purple/30 transition hover:bg-axia-blue2"
       >
         {aberto ? <span className="text-xl leading-none">×</span> : <IconeBrilho />}
@@ -597,11 +669,11 @@ function ChatIA({ usuario, onAtividade }) {
               <IconeBrilho />
             </span>
             <div>
-              <p className="font-bold leading-tight">Electra</p>
+              <p className="font-bold leading-tight">Eletra</p>
               <p className="text-xs text-axia-sky">Assistente do portal</p>
             </div>
             <button
-              onClick={() => setAberto(false)}
+              onClick={fechar}
               aria-label="Fechar"
               className="ml-auto rounded-full p-1 text-xl leading-none hover:bg-white/10"
             >
@@ -625,7 +697,7 @@ function ChatIA({ usuario, onAtividade }) {
                   <button
                     key={s.chave}
                     onClick={() => {
-                      setAberto(false)
+                      fechar()
                       onAtividade(s)
                     }}
                     className="mr-4 mt-2 block w-full rounded-chip border border-axia-neutral px-4 py-2.5 text-left text-sm transition hover:border-axia-blue hover:bg-axia-blue/5"
@@ -1173,13 +1245,13 @@ function Trilha({ itens }) {
   )
 }
 
-function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
+function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra }) {
   return (
     <div className="py-8">
       {/* a trilha fica fora da linha abaixo: dentro dela o items-center centraria
           a ação no conjunto trilha+texto, e o botão subia acima do título */}
       <Trilha itens={trilha} />
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-9 flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0 flex-1">
           {titulo && (
             <h2 className="text-3xl font-bold text-axia-purple">{titulo}</h2>
@@ -1187,21 +1259,16 @@ function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra, acao }) {
           {subtitulo && <p className="mt-1.5 text-base text-axia-grey">{subtitulo}</p>}
           {extra}
         </div>
-        {/* no celular ocupa a linha inteira e joga um botão para cada ponta;
-            de sm para cima volta a ser um par agrupado à direita do título */}
-        <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:shrink-0 sm:justify-end">
-          {/* telas que não passam onVoltar não mostram o botão: em "Meus chamados"
-              a volta já existe na trilha, e sobrava um botão sem função clara */}
-          {onVoltar && (
-            <button
-              onClick={onVoltar}
-              className="rounded-full border border-axia-blue px-6 py-1.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white"
-            >
-              Voltar
-            </button>
-          )}
-          {acao}
-        </div>
+        {/* telas que não passam onVoltar não mostram o botão: no formulário e no
+            detalhe do chamado a volta já existe na trilha */}
+        {onVoltar && (
+          <button
+            onClick={onVoltar}
+            className="shrink-0 rounded-full border border-axia-blue px-6 py-1.5 text-sm font-bold text-axia-blue hover:bg-axia-blue hover:text-white"
+          >
+            Voltar
+          </button>
+        )}
       </div>
     </div>
   )
@@ -1244,40 +1311,27 @@ function IconeTendencia({ subindo }) {
   )
 }
 
-// Bloco de atividades com cabeçalho e recolhimento. Mostra 3 por padrão porque a
-// lista inteira de um serviço grande empurraria a segunda seção para fora da tela.
-const VISIVEIS_POR_SECAO = 3
-
+// Sem "ver todas": a tela do serviço mostra o catálogo inteiro, e quem procura algo
+// específico usa a busca do cabeçalho.
 function SecaoAtividades({ titulo, subtitulo, subindo, itens, aoAbrir, vazio }) {
-  const [tudo, setTudo] = useState(false)
-  const mostrando = tudo ? itens : itens.slice(0, VISIVEIS_POR_SECAO)
-
   return (
-    <section className="py-6">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <span className="mt-0.5 shrink-0 text-axia-blue">
-            <IconeTendencia subindo={subindo} />
-          </span>
-          <div>
-            <h2 className="text-lg font-bold text-axia-purple">{titulo}</h2>
-            <p className="mt-0.5 text-sm text-axia-grey/70">{subtitulo}</p>
-          </div>
+    // sem padding no topo: o respiro antes do título vem do `pb` do cabeçalho na
+    // primeira seção e do `pb` da seção anterior na segunda — somar os dois abria
+    // um vão grande logo abaixo da busca, que nesta tela é a única coisa no cabeçalho
+    <section className="pb-8">
+      <div className="mb-5 flex items-start gap-3">
+        <span className="mt-0.5 shrink-0 text-axia-blue">
+          <IconeTendencia subindo={subindo} />
+        </span>
+        <div>
+          <h2 className="text-lg font-bold text-axia-purple">{titulo}</h2>
+          <p className="mt-0.5 text-sm text-axia-grey/70">{subtitulo}</p>
         </div>
-
-        {itens.length > VISIVEIS_POR_SECAO && (
-          <button
-            onClick={() => setTudo((v) => !v)}
-            className="shrink-0 rounded-full bg-axia-blue/10 px-4 py-1.5 text-sm font-bold text-axia-blue transition hover:bg-axia-blue hover:text-white"
-          >
-            {tudo ? 'Ver menos' : 'Ver todas'}
-          </button>
-        )}
       </div>
 
-      {mostrando.length ? (
+      {itens.length ? (
         <Grade>
-          {mostrando.map(({ atividade, oferta }) => (
+          {itens.map(({ atividade, oferta }) => (
             <CardAtividade
               key={chaveOferta(atividade, oferta)}
               atividade={{ ...atividade, oferta }}
@@ -1578,11 +1632,54 @@ const PLACEHOLDERS = {
 // Campo de evidência/anexo vira a área de upload, não um input de texto.
 const ehAnexo = (nome) => /anexo|evid[êe]ncia/i.test(nome)
 
-function Formulario({ atividade, onSubmit, trilha, onVoltar }) {
+// Solicitar para outra pessoa. O `name` vai prefixado para nunca colidir com um
+// campo do catálogo de mesmo rótulo — "Área" e "Usuário" são nomes que se repetem.
+const nomeTerceiro = (label) => `solicitante:${label}`
+
+// Rótulo gravado no ticket: o prefixo sai e o sufixo entra, para o detalhe não
+// mostrar "Área" duas vezes quando a atividade também pedir uma.
+const ROTULO_DADO = {
+  [nomeTerceiro('Empresa')]: 'Empresa do solicitante',
+  [nomeTerceiro('Estado')]: 'Estado do solicitante',
+  [nomeTerceiro('Área')]: 'Área do solicitante',
+  [nomeTerceiro('Gestor imediato')]: 'Gestor imediato',
+}
+
+// Fora do detalhe: o radio é controle de tela, o usuário escolhido vira o
+// solicitante do chamado e os arquivos têm bloco próprio.
+const FORA_DOS_DADOS = new Set(['__para', 'anexos', nomeTerceiro('Usuário')])
+
+const CAMPOS_TERCEIRO = [
+  { label: 'Empresa', opcoes: EMPRESAS, sessao: 'empresa' },
+  { label: 'Estado', opcoes: ESTADOS, sessao: 'estado' },
+  { label: 'Área', opcoes: AREAS, sessao: 'area' },
+]
+
+// Quem recebe o atendimento nunca é pedido em texto livre: em "Eu mesmo(a)" já está
+// logado, em "Outra pessoa" vem do bloco de solicitante acima. Nomes exatos, não
+// regex: "Usuários" (a lista de quem entra num grupo) é outro campo e continua.
+const CAMPOS_DO_SOLICITANTE = new Set([
+  'Usuário',
+  'Nome do usuário',
+  'Usuário beneficiário',
+  'Usuário responsável',
+  'Gestor',
+  'Matrícula',
+  'Cargo',
+  'Área',
+  'Unidade',
+])
+
+function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
   const [anexos, setAnexos] = useState([])
+  const [para, setPara] = useState('Eu mesmo(a)')
+  const [alvo, setAlvo] = useState('')
+  const outraPessoa = para === 'Outra pessoa'
 
   const visiveis = atividade.campos.filter(
-    (c) => !(atividade.oferta && campoNome(c) === 'Oferta de Serviço')
+    (c) =>
+      !(atividade.oferta && campoNome(c) === 'Oferta de Serviço') &&
+      !CAMPOS_DO_SOLICITANTE.has(campoNome(c))
   )
   const pedeAnexo = visiveis.some((c) => ehAnexo(campoNome(c)))
 
@@ -1601,7 +1698,7 @@ function Formulario({ atividade, onSubmit, trilha, onVoltar }) {
       <Cabecalho trilha={trilha} onVoltar={onVoltar} />
 
       <form
-        onSubmit={(e) => onSubmit(e, atividade, { anexos })}
+        onSubmit={(e) => onSubmit(e, atividade, { anexos, para })}
         className="space-y-6 overflow-hidden rounded-card border border-axia-neutral bg-white p-5 shadow-card sm:p-8"
       >
         {/* Cabeçalho no formato do print: ícone, nome, descrição e prazo numa faixa,
@@ -1646,6 +1743,33 @@ function Formulario({ atividade, onSubmit, trilha, onVoltar }) {
           Campos marcados com <Obrigatorio /> são de preenchimento obrigatório.
         </p>
 
+        <fieldset>
+          <legend className="mb-2 text-sm font-bold text-axia-purple">
+            Solicitante <Obrigatorio />
+          </legend>
+          <div className="flex flex-wrap gap-3">
+            {['Eu mesmo(a)', 'Outra pessoa'].map((op) => (
+              <label
+                key={op}
+                className={`flex cursor-pointer items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-bold transition ${
+                  para === op
+                    ? 'border-axia-blue bg-axia-blue/10 text-axia-blue'
+                    : 'border-slate-300 bg-slate-100 text-axia-sky2 hover:bg-slate-200'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="__para"
+                  value={op}
+                  checked={para === op}
+                  onChange={() => setPara(op)}
+                  className="accent-axia-blue"
+                />
+                {op}
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         {/* a oferta veio do card: campo escondido em vez de select, para o ticket
             continuar gravando "Oferta de Serviço" sem pedir de novo ao usuário */}
@@ -1656,6 +1780,46 @@ function Formulario({ atividade, onSubmit, trilha, onVoltar }) {
         {/* três por linha; o textarea ocupa a linha inteira, porque texto longo numa
             coluna de um terço vira uma caixa estreita e alta */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {/* quem recebe o atendimento entra no mesmo grid, e não numa seção à parte:
+              é a mesma solicitação, só com o solicitante trocado */}
+          {outraPessoa && (
+            <>
+              {CAMPOS_TERCEIRO.map((c) => (
+                <Campo
+                  key={c.label}
+                  label={c.label}
+                  nome={nomeTerceiro(c.label)}
+                  tipo="combo"
+                  opcoes={c.opcoes}
+                  inicial={usuario[c.sessao]}
+                  placeholder={`Digite para filtrar ${artigoDe(c.label)} ${c.label.toLowerCase()}`}
+                />
+              ))}
+              <Campo
+                label="Usuário"
+                nome={nomeTerceiro('Usuário')}
+                tipo="combo"
+                opcoes={USUARIOS}
+                placeholder="Digite o nome do usuário"
+                onChange={setAlvo}
+              />
+              {/* gestor não é escolhido: vem do cadastro do usuário selecionado */}
+              <div>
+                <span className="mb-1.5 block text-sm font-bold text-axia-purple">
+                  Gestor imediato <Obrigatorio />
+                </span>
+                <input
+                  name={nomeTerceiro('Gestor imediato')}
+                  value={GESTOR_DE[alvo] || ''}
+                  readOnly
+                  required
+                  placeholder="Selecione o usuário para carregar o gestor"
+                  className={`${inputBase} cursor-not-allowed text-axia-grey/80`}
+                />
+              </div>
+            </>
+          )}
+
           {campos.map((c) => (
             <div
               key={campoNome(c)}
@@ -1946,11 +2110,19 @@ function DetalheTicket({
   trilha,
   onResponder,
   onSimularAtendente,
+  onSimularConclusao,
+  onResolver,
+  onReabrir,
+  onAvaliar,
   onCancelar,
   onVoltar,
 }) {
   const [confirmando, setConfirmando] = useState(false)
   const aberto = podeInteragir(ticket)
+  const aguardando = aguardandoConfirmacao(ticket)
+  const concluido = ticket.status === 'Fechado'
+  // pesquisa só em chamado concluído: cancelado não teve atendimento a avaliar
+  const pesquisaPendente = concluido && !ticket.avaliacao
 
   return (
     <>
@@ -2010,14 +2182,24 @@ function DetalheTicket({
           <div className="flex items-center justify-between gap-4">
             <h3 className="font-bold text-axia-purple">Atividade do chamado</h3>
             {aberto && (
-              // ponytail: sem backend não há atendente de verdade — troque este botão
+              // ponytail: sem backend não há atendente de verdade — troque estes botões
               // por polling/websocket da fila de atendimento quando a API existir.
-              <button
-                onClick={onSimularAtendente}
-                className="text-xs text-axia-grey/60 underline"
-              >
-                simular resposta do atendente
-              </button>
+              <div className="flex flex-wrap justify-end gap-x-4 gap-y-1">
+                <button
+                  onClick={onSimularAtendente}
+                  className="text-xs text-axia-grey/60 underline"
+                >
+                  simular resposta do atendente
+                </button>
+                {!aguardando && (
+                  <button
+                    onClick={onSimularConclusao}
+                    className="text-xs text-axia-grey/60 underline"
+                  >
+                    simular resposta definitiva
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
@@ -2046,7 +2228,36 @@ function DetalheTicket({
             )}
           </ol>
 
-          {aberto ? (
+          {/* resposta definitiva do atendente: quem confirma o encerramento é o
+              solicitante, e o "sim" já fecha o chamado e abre a pesquisa */}
+          {aguardando && (
+            <div className="mt-6 rounded-chip border border-axia-blue/40 bg-axia-blue/5 p-5">
+              <p className="font-bold text-axia-purple">A solicitação foi resolvida?</p>
+              <p className="mt-1 text-sm text-axia-grey">
+                Confirmando, o chamado é concluído e você avalia o atendimento.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={onResolver}
+                  className="rounded-full bg-axia-blue px-7 py-2 text-sm font-bold text-white hover:bg-axia-blue2"
+                >
+                  Sim
+                </button>
+                <button
+                  type="button"
+                  onClick={onReabrir}
+                  className="rounded-full border border-axia-neutral bg-white px-7 py-2 text-sm font-bold text-axia-grey hover:bg-axia-neutral/50"
+                >
+                  Não, ainda preciso de ajuda
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* com a pergunta aberta a resposta é o próprio "sim"/"não": a caixa de
+              mensagem só volta se o solicitante disser que ainda precisa de ajuda */}
+          {aberto && !aguardando && (
             <form
               onSubmit={(e) => {
                 e.preventDefault()
@@ -2066,7 +2277,17 @@ function DetalheTicket({
                 Enviar
               </button>
             </form>
-          ) : (
+          )}
+
+          {/* a pesquisa entra no lugar da caixa de mensagem: é o último passo do
+              atendimento, e responder ali mantém tudo na mesma coluna */}
+          {pesquisaPendente && (
+            <div className="mt-6 rounded-chip border border-axia-neutral bg-white p-5">
+              <PesquisaSatisfacao onEnviar={onAvaliar} />
+            </div>
+          )}
+
+          {!aberto && !pesquisaPendente && (
             <p className="mt-6 rounded-chip bg-axia-neutral/50 p-4 text-sm text-axia-grey">
               Chamado {ticket.status.toLowerCase()} — não aceita novas interações.
             </p>
@@ -2081,11 +2302,11 @@ function DetalheTicket({
               {ticket.abertoPor && ticket.abertoPor !== ticket.solicitante && (
                 <Linha rotulo="Aberto por" valor={ticket.abertoPor} />
               )}
-              {ticket.dados
-                .filter(([k]) => !['Descrição da necessidade', 'Anexos'].includes(k))
-                .map(([k, v]) => (
-                  <Linha key={k} rotulo={k} valor={v} />
-                ))}
+              {/* sem filtro: os campos saem na ordem em que o formulário perguntou,
+                  e a descrição é mais uma linha — não tem mais bloco só dela */}
+              {ticket.dados.map(([k, v]) => (
+                <Linha key={k} rotulo={k} valor={v} />
+              ))}
               <Linha
                 rotulo="Criado em"
                 valor={new Date(ticket.criadoEm).toLocaleString('pt-BR')}
@@ -2101,14 +2322,7 @@ function DetalheTicket({
             )}
           </Bloco>
 
-          <section className="rounded-card border border-axia-neutral bg-white shadow-card p-6">
-            <h3 className="font-bold text-axia-purple">Descrição da necessidade</h3>
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-axia-grey">
-              {Object.fromEntries(ticket.dados)['Descrição da necessidade'] || '—'}
-            </p>
-          </section>
-
-          <Bloco titulo={`Anexos (${ticket.anexos?.length || 0})`}>
+          <Bloco titulo={`Anexos (${ticket.anexos?.length || 0})`} aberto={!concluido}>
             {ticket.anexos?.length ? (
               <ul className="space-y-2">
                 {ticket.anexos.map((a) => (
@@ -2121,6 +2335,31 @@ function DetalheTicket({
               </p>
             )}
           </Bloco>
+
+          {/* fecha a coluna: num chamado concluído é a informação nova da tela */}
+          {ticket.avaliacao && (
+            <Bloco titulo="Avaliação do atendimento">
+              <div className="flex items-center gap-3">
+                <Carinha
+                  nota={NOTA_DE[ticket.avaliacao.nota]}
+                  className="h-11 w-11 shrink-0"
+                />
+                <div>
+                  <p className="font-bold text-axia-purple">
+                    {NOTA_DE[ticket.avaliacao.nota].rotulo}
+                  </p>
+                  <p className="text-xs text-axia-grey/70">
+                    Nota {ticket.avaliacao.nota} de 5
+                  </p>
+                </div>
+              </div>
+              {ticket.avaliacao.comentario && (
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-axia-grey">
+                  {ticket.avaliacao.comentario}
+                </p>
+              )}
+            </Bloco>
+          )}
         </div>
       </div>
 
@@ -2166,6 +2405,133 @@ function DetalheTicket({
   )
 }
 
+// Uma SVG só para as cinco notas: muda a cor do círculo, a curva da boca e as
+// sobrancelhas. Emoji ficava com o desenho de cada sistema operacional.
+const NOTAS = [
+  {
+    n: 1,
+    rotulo: 'Muito ruim',
+    cor: '#f59a95',
+    boca: 'M15.5 33.5q8.5-8 17 0',
+    // duas retas inclinadas para o centro — o "V" da cara fechada
+    sobrancelhas: 'M11.5 11l7 4M36.5 11l-7 4',
+  },
+  { n: 2, rotulo: 'Ruim', cor: '#eeb287', boca: 'M16 32q8-6 16 0' },
+  { n: 3, rotulo: 'Regular', cor: '#f7d46b', boca: 'M16 30.5h16' },
+  { n: 4, rotulo: 'Boa', cor: '#a3dc9b', boca: 'M16 28.5q8 6 16 0' },
+  { n: 5, rotulo: 'Ótima', cor: '#68cd7c', boca: 'M14 27q10 12 20 0z', aberta: true },
+]
+
+const NOTA_DE = Object.fromEntries(NOTAS.map((o) => [o.n, o]))
+
+function Carinha({ nota, className = 'h-12 w-12' }) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
+      <circle cx="24" cy="24" r="24" fill={nota.cor} />
+      <g stroke="#3a3f46" strokeWidth="2.6" strokeLinecap="round" fill="none">
+        {nota.sobrancelhas && <path d={nota.sobrancelhas} />}
+        <ellipse cx="17" cy="21" rx="2.4" ry="3.1" fill="#3a3f46" stroke="none" />
+        <ellipse cx="31" cy="21" rx="2.4" ry="3.1" fill="#3a3f46" stroke="none" />
+        <path d={nota.boca} fill={nota.aberta ? '#3a3f46' : 'none'} />
+      </g>
+    </svg>
+  )
+}
+
+const MAX_COMENTARIO = 500
+
+function PesquisaSatisfacao({ onEnviar }) {
+  const [nota, setNota] = useState(0)
+  const [comentario, setComentario] = useState('')
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        onEnviar(nota, comentario)
+      }}
+      // largura presa: dentro da coluna do chat as carinhas se espalhariam
+      className="mx-auto max-w-xl"
+    >
+      <div className="text-center">
+        {/* balão: o canto inferior esquerdo reto faz a ponta apontar para o texto */}
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl rounded-bl-md bg-axia-blue text-white">
+          <IconeEstrela preenchida />
+        </span>
+        <h3 className="mt-4 text-xl font-bold text-axia-purple">
+          Como foi sua experiência?
+        </h3>
+        <p className="mt-1 text-sm text-axia-grey">
+          Sua opinião é muito importante para melhorarmos nosso atendimento.
+        </p>
+      </div>
+
+      <div className="mt-6 flex justify-center gap-1 sm:gap-3">
+        {NOTAS.map((o) => (
+          <button
+            key={o.n}
+            type="button"
+            aria-pressed={nota === o.n}
+            onClick={() => setNota(o.n)}
+            className={`group flex flex-col items-center gap-1.5 rounded-chip px-1 py-2 transition ${
+              nota === o.n ? 'bg-axia-blue/10' : 'hover:bg-slate-100'
+            }`}
+          >
+            <span
+              className={`block rounded-full transition ${
+                nota === o.n
+                  ? 'scale-110 ring-2 ring-axia-blue ring-offset-2'
+                  : 'group-hover:scale-105'
+              }`}
+            >
+              <Carinha nota={o} />
+            </span>
+            {/* rótulo e número acompanham a seleção: só a cor muda, o peso é fixo */}
+            <span
+              className={`text-center text-xs font-bold leading-tight ${
+                nota === o.n ? 'text-axia-blue' : 'text-axia-grey'
+              }`}
+            >
+              {o.rotulo}
+            </span>
+            <span
+              className={`text-xs font-bold ${
+                nota === o.n ? 'text-axia-blue' : 'text-axia-grey/60'
+              }`}
+            >
+              {o.n}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <label className="mt-6 block">
+        <span className="mb-1.5 block text-sm font-bold text-axia-purple">
+          Comentário <span className="font-normal text-axia-grey/70">(opcional)</span>
+        </span>
+        <textarea
+          value={comentario}
+          onChange={(e) => setComentario(e.target.value)}
+          maxLength={MAX_COMENTARIO}
+          rows={3}
+          placeholder="Conte-nos mais sobre sua experiência..."
+          className={inputBase}
+        />
+        <span className="mt-1 block text-right text-xs text-axia-grey/50">
+          {comentario.length}/{MAX_COMENTARIO}
+        </span>
+      </label>
+
+      <button
+        disabled={!nota}
+        className="mt-4 w-full rounded-full bg-axia-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Enviar avaliação
+      </button>
+    </form>
+  )
+}
+
 // <dialog> nativo: backdrop, Esc e foco preso vêm de graça.
 function Modal({ aberto, titulo, onFechar, children }) {
   const ref = useRef(null)
@@ -2204,8 +2570,12 @@ const Resumo = ({ icone, rotulo, children }) => (
 )
 
 // Bloco recolhível da coluna direita: <details> nativo, aberto por padrão.
-const Bloco = ({ titulo, children }) => (
-  <details open className="group rounded-card border border-axia-neutral bg-white shadow-card">
+// `aberto` só define o estado inicial — depois quem manda é o clique do usuário.
+const Bloco = ({ titulo, aberto = true, children }) => (
+  <details
+    open={aberto}
+    className="group rounded-card border border-axia-neutral bg-white shadow-card"
+  >
     <summary className="flex cursor-pointer list-none items-center gap-2 p-6 font-bold text-axia-purple [&::-webkit-details-marker]:hidden">
       {titulo}
       <span className="ml-auto text-axia-grey/60 transition group-open:rotate-180">
@@ -2465,7 +2835,11 @@ function IconeArquivo() {
 const Linha = ({ rotulo, valor }) => (
   <div className="flex gap-3 border-b border-axia-neutral/70 pb-2 last:border-0">
     <dt className="w-36 shrink-0 text-axia-grey/70">{rotulo}</dt>
-    <dd className="font-medium text-axia-grey1">{valor}</dd>
+    {/* pre-wrap: a descrição da necessidade agora é uma linha daqui e pode ter
+        quebras de parágrafo */}
+    <dd className="min-w-0 whitespace-pre-wrap break-words font-medium text-axia-grey1">
+      {valor}
+    </dd>
   </div>
 )
 
@@ -2542,7 +2916,7 @@ const ESTATISTICAS = [
   { status: CANCELADO, titulo: 'Cancelados', nota: 'Encerrados', cor: 'bg-axia-error/10 text-axia-error' },
 ]
 
-function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onNova }) {
+function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onVoltar }) {
   const [termo, setTermo] = useState('')
   // texto só entra no filtro ao clicar em Pesquisar (ou Enter); os seletores valem na hora
   const [termoAplicado, setTermoAplicado] = useState('')
@@ -2583,23 +2957,13 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onNova }) {
   const primeiro = visiveis.length ? (paginaAtual - 1) * porPagina + 1 : 0
   const ultimo = (paginaAtual - 1) * porPagina + daPagina.length
 
-  const botaoNova = (
-    <button
-      onClick={onNova}
-      className="flex items-center gap-2 rounded-full bg-axia-blue px-6 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2"
-    >
-      <span className="text-lg leading-none">+</span> Nova solicitação
-    </button>
-  )
-
   return (
     <>
       <Cabecalho
         trilha={trilha}
         titulo="Meus chamados"
         subtitulo="Acompanhe o andamento das suas solicitações e interaja com a equipe responsável."
-        // sem onVoltar: a trilha já leva de volta ao portal
-        acao={botaoNova}
+        onVoltar={onVoltar}
       />
 
       {/* 190px é o menor card que ainda cabe "Aguardando aprovação" em duas linhas:
