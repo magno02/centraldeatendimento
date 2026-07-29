@@ -2781,17 +2781,6 @@ function MeusTickets({ tickets, statusInicial, trilha, onAbrir, onNova }) {
         </div>
       )}
 
-      {/* saída para o catálogo no pé da lista, no lugar do botão no topo: quem
-          chega aqui e não acha o chamado normalmente quer abrir um novo */}
-      <p className="mt-10 text-center text-sm text-axia-grey/70">
-        Não encontrou o que precisa?{' '}
-        <button
-          onClick={onNova}
-          className="font-bold text-axia-blue hover:underline"
-        >
-          Acesse nosso Catálogo de Serviços →
-        </button>
-      </p>
     </>
   )
 }
