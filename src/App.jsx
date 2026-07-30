@@ -2166,8 +2166,7 @@ function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
         <input
           name={nome}
           required
-          // "data" é o tipo que a planilha gera; "date" veio do catálogo antigo
-          type={tipo === 'date' || tipo === 'data' ? 'date' : 'text'}
+          type="text"
           placeholder={placeholder || dica}
           className={inputBase}
         />

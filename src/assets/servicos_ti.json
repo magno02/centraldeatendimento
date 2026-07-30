@@ -50,10 +50,6 @@
               "t": "texto"
             },
             {
-              "n": "Data necessária",
-              "t": "data"
-            },
-            {
               "n": "Local de entrega",
               "t": "texto"
             }
@@ -107,10 +103,6 @@
             {
               "n": "Softwares utilizados",
               "t": "texto"
-            },
-            {
-              "n": "Data preferencial",
-              "t": "data"
             }
           ]
         },
@@ -417,10 +409,6 @@
             {
               "n": "Ponto de rede",
               "t": "texto"
-            },
-            {
-              "n": "Data necessária",
-              "t": "data"
             }
           ]
         },
@@ -560,10 +548,6 @@
               "t": "texto"
             },
             {
-              "n": "Data necessária",
-              "t": "data"
-            },
-            {
               "n": "Serial do Equipamento",
               "t": "texto"
             }
@@ -613,10 +597,6 @@
             {
               "n": "Ponto de rede",
               "t": "texto"
-            },
-            {
-              "n": "Data necessária",
-              "t": "data"
             },
             {
               "n": "Serial do Equipamento",
@@ -878,10 +858,6 @@
               "t": "textarea"
             },
             {
-              "n": "Data necessária",
-              "t": "data"
-            },
-            {
               "n": "Anexo de autorização ou documento de apoio",
               "t": "texto"
             }
@@ -934,10 +910,6 @@
               "t": "texto"
             },
             {
-              "n": "Data necessária",
-              "t": "data"
-            },
-            {
               "n": "Anexo de autorização ou documento de apoio",
               "t": "texto"
             }
@@ -967,10 +939,6 @@
             {
               "n": "Motivo",
               "t": "textarea"
-            },
-            {
-              "n": "Data e horário necessários",
-              "t": "data"
             },
             {
               "n": "Gestor",
@@ -1104,10 +1072,6 @@
               ]
             },
             {
-              "n": "Data e hora",
-              "t": "data"
-            },
-            {
               "n": "Mensagem apresentada",
               "t": "texto"
             },
@@ -1154,10 +1118,6 @@
                 "Homologação",
                 "Produção"
               ]
-            },
-            {
-              "n": "Data e hora",
-              "t": "data"
             },
             {
               "n": "Equipamento utilizado",
@@ -1207,10 +1167,6 @@
               "t": "texto"
             },
             {
-              "n": "Data e hora",
-              "t": "data"
-            },
-            {
               "n": "Mensagem apresentada",
               "t": "texto"
             },
@@ -1255,10 +1211,6 @@
               "t": "texto"
             },
             {
-              "n": "Data e hora",
-              "t": "data"
-            },
-            {
               "n": "Tempo aproximado de autenticação",
               "t": "texto"
             },
@@ -1301,10 +1253,6 @@
             {
               "n": "Login",
               "t": "texto"
-            },
-            {
-              "n": "Data e hora",
-              "t": "data"
             },
             {
               "n": "Mensagem apresentada",
@@ -1379,10 +1327,6 @@
               "t": "textarea"
             },
             {
-              "n": "Data necessária",
-              "t": "data"
-            },
-            {
               "n": "Vigência",
               "t": "texto"
             },
@@ -1432,10 +1376,6 @@
             {
               "n": "Gestor",
               "t": "texto"
-            },
-            {
-              "n": "Data necessária",
-              "t": "data"
             },
             {
               "n": "Anexo da autorização",
@@ -1522,10 +1462,6 @@
             {
               "n": "Motivo",
               "t": "textarea"
-            },
-            {
-              "n": "Data e horário necessários",
-              "t": "data"
             },
             {
               "n": "Gestor",
@@ -1817,10 +1753,6 @@
               "t": "texto"
             },
             {
-              "n": "Data e hora",
-              "t": "data"
-            },
-            {
               "n": "Usuários afetados",
               "t": "texto"
             },
@@ -1872,10 +1804,6 @@
               "t": "texto"
             },
             {
-              "n": "Data e hora",
-              "t": "data"
-            },
-            {
               "n": "Mensagem de erro",
               "t": "texto"
             },
@@ -1909,10 +1837,6 @@
             {
               "n": "Ambiente",
               "t": "texto"
-            },
-            {
-              "n": "Data e hora",
-              "t": "data"
             },
             {
               "n": "Tempo aproximado de resposta",
@@ -1974,10 +1898,6 @@
               "t": "texto"
             },
             {
-              "n": "Data e hora",
-              "t": "data"
-            },
-            {
               "n": "Último acesso válido",
               "t": "texto"
             },
@@ -2019,10 +1939,6 @@
             {
               "n": "Valor apresentado",
               "t": "texto"
-            },
-            {
-              "n": "Data e hora",
-              "t": "data"
             },
             {
               "n": "Usuário",
@@ -2068,10 +1984,6 @@
               "t": "texto"
             },
             {
-              "n": "Data e hora",
-              "t": "data"
-            },
-            {
               "n": "Impacto",
               "t": "textarea"
             },
@@ -2097,10 +2009,6 @@
             {
               "n": "Módulo",
               "t": "texto"
-            },
-            {
-              "n": "Data e horário previsto",
-              "t": "data"
             },
             {
               "n": "Última execução",
@@ -2148,10 +2056,6 @@
             {
               "n": "Módulo",
               "t": "texto"
-            },
-            {
-              "n": "Data e hora",
-              "t": "data"
             },
             {
               "n": "Documento ou mensagem",
@@ -2213,10 +2117,6 @@
               "t": "texto"
             },
             {
-              "n": "Data e hora",
-              "t": "data"
-            },
-            {
               "n": "Anexo de print ou foto",
               "t": "texto"
             }
@@ -2246,10 +2146,6 @@
             {
               "n": "Navegador",
               "t": "texto"
-            },
-            {
-              "n": "Data e hora",
-              "t": "data"
             },
             {
               "n": "Mensagem apresentada",

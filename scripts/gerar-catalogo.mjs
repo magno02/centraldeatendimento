@@ -34,14 +34,12 @@ const COLUNAS = {
 
 const maiuscula = (s) => s.charAt(0).toUpperCase() + s.slice(1)
 
-// Tipo do campo pelo nome: o que é texto livre vira textarea e o que é data vira date.
-// Sem isso todo campo virava input de uma linha, inclusive "justificativa".
-const tipoDoCampo = (nome) => {
-  const n = nome.toLowerCase()
-  if (/^data\b/.test(n)) return 'data'
-  if (/justificativa|descrição|motivo|impacto|condição/.test(n)) return 'textarea'
-  return 'texto'
-}
+// Tipo do campo pelo nome: o que é texto livre vira textarea. Sem isso todo campo
+// virava input de uma linha, inclusive "justificativa".
+const tipoDoCampo = (nome) =>
+  /justificativa|descrição|motivo|impacto|condição/.test(nome.toLowerCase())
+    ? 'textarea'
+    : 'texto'
 
 // "centro de custo, quando aplicável" é um campo só, com uma ressalva colada no fim.
 // A ressalva não cabe num rótulo de formulário e some aqui.
@@ -63,14 +61,13 @@ const SERVICOS_FORA = [
   /^dock(ing)? station$/i,
 ]
 
-// Campos que a planilha traz mas o formulário não pede. "Data prevista" sai de todo
-// o catálogo; o resto é por atividade ou por serviço, com a chave em minúsculas.
-const CAMPOS_FORA = [/^data prevista$/i]
+// Campos que a planilha traz mas o formulário não pede. Todo campo de data sai do
+// catálogo inteiro; o resto é por atividade ou por serviço, com a chave em minúsculas.
+const CAMPOS_FORA = [/^data\b/i]
 const CAMPOS_FORA_DE = {
-  'solicitar celular corporativo':
-    /^(centro de custo|linha|aplicativos|data necess[áa]ria)$/i,
+  'solicitar celular corporativo': /^(centro de custo|linha|aplicativos)$/i,
   'solicitar monitor':
-    /^(centro de custo|quantidade|tamanho|conex[ãa]o|equipamento de destino|data necess[áa]ria)$/i,
+    /^(centro de custo|quantidade|tamanho|conex[ãa]o|equipamento de destino)$/i,
 }
 const CAMPOS_FORA_DO_SERVICO = {
   'gestão de acesso': /^(perfil ou funcionalidade|vig[êe]ncia|centro de custo)$/i,
