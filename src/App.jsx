@@ -20,6 +20,7 @@ import {
   filtrarOpcoes,
   responderIA,
   alternarFavorito,
+  iconeAtividade,
   registrarRecente,
   contarPorStatus,
   artigoDe,
@@ -1143,9 +1144,10 @@ const MAIS_CATEGORIAS = [
 
 function Abas({ ativa, onSelect, secao, onSecao, qtdFavoritos }) {
   return (
-    // rolagem lateral em vez de quebra: numa linha só as pílulas mantêm a leitura
-    // de barra de navegação, que empilhadas se perde
-    <div className="flex items-center gap-2 overflow-x-auto py-1 [scrollbar-width:none]">
+    // rolagem lateral a partir do sm: numa linha só as pílulas mantêm a leitura de
+    // barra de navegação. No celular elas quebram em linhas — rolagem sem barra
+    // visível só escondia metade da última pílula na borda da tela.
+    <div className="flex flex-wrap items-center gap-2 py-1 sm:flex-nowrap sm:overflow-x-auto sm:[scrollbar-width:none]">
       {GRUPOS.map((g) => (
         <button
           key={g.id}
@@ -1365,15 +1367,6 @@ const Badge = ({ status }) => (
   </span>
 )
 
-const Icone = () => (
-  <svg viewBox="0 0 24 24" className="mx-auto h-12 w-12 text-axia-blue" aria-hidden="true">
-    <rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor" opacity=".9" />
-    <rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor" opacity=".45" />
-    <rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor" opacity=".45" />
-    <rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor" opacity=".9" />
-  </svg>
-)
-
 // function (não const): Abas referencia estes ícones antes deste ponto do arquivo.
 function IconeEstrela({ preenchida }) {
   return (
@@ -1543,8 +1536,8 @@ function CardAtividade({ atividade, rodape, onClick }) {
       <div className="flex items-start gap-3">
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-chip bg-axia-blue/10">
           <IconeServico
-            nome={atividade.servico?.nome ?? atividade.nome}
-            className="h-7 w-7 text-axia-blue"
+            {...iconeAtividade(atividade.nome, atividade.servico?.nome)}
+            className="h-9 w-9 text-axia-blue"
           />
         </span>
 
@@ -1707,8 +1700,13 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
             ela passava por cima do raio e o canto superior ficava quadrado. */}
         <div className="-mx-5 -mt-5 border-b border-axia-neutral bg-white px-5 pt-5 sm:-mx-8 sm:-mt-8 sm:px-8 sm:pt-8">
           <div className="flex items-start gap-4">
-            <span className="shrink-0 text-axia-blue">
-              <IconeServico nome={atividade.servico.nome} />
+            {/* mesmo chip do card de atividade: no branco puro o ícone se perdia
+                e o disco do selo de verbo ficava invisível */}
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-chip bg-axia-blue/10">
+              <IconeServico
+                {...iconeAtividade(atividade.nome, atividade.servico.nome)}
+                className="h-9 w-9 text-axia-blue"
+              />
             </span>
             <div className="min-w-0">
               <h2 className="text-xl font-bold leading-snug text-axia-purple">
@@ -2236,18 +2234,20 @@ function DetalheTicket({
               <p className="mt-1 text-sm text-axia-grey">
                 Confirmando, o chamado é concluído e você avalia o atendimento.
               </p>
-              <div className="mt-4 flex flex-wrap gap-3">
+              {/* grid de 2 no celular: em flex-wrap o "não" caía sozinho numa
+                  segunda linha e a dupla perdia o ar de par de opções */}
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
                 <button
                   type="button"
                   onClick={onResolver}
-                  className="rounded-full bg-axia-blue px-7 py-2 text-sm font-bold text-white hover:bg-axia-blue2"
+                  className="rounded-full bg-axia-blue px-4 py-2 text-sm font-bold text-white hover:bg-axia-blue2 sm:px-7"
                 >
                   Sim
                 </button>
                 <button
                   type="button"
                   onClick={onReabrir}
-                  className="rounded-full border border-axia-neutral bg-white px-7 py-2 text-sm font-bold text-axia-grey hover:bg-axia-neutral/50"
+                  className="rounded-full border border-axia-neutral bg-white px-4 py-2 text-sm font-bold text-axia-grey hover:bg-axia-neutral/50 sm:px-7"
                 >
                   Não, ainda preciso de ajuda
                 </button>
@@ -2494,8 +2494,10 @@ function PesquisaSatisfacao({ onEnviar }) {
             >
               {o.rotulo}
             </span>
+            {/* mt-auto: "Muito ruim" ocupa duas linhas e desalinhava o número
+                em relação aos vizinhos de rótulo curto */}
             <span
-              className={`text-xs font-bold ${
+              className={`mt-auto text-xs font-bold ${
                 nota === o.n ? 'text-axia-blue' : 'text-axia-grey/60'
               }`}
             >
@@ -3204,12 +3206,14 @@ function LinhaChamado({ chamado, onAbrir }) {
         : `${restam} ${restam === 1 ? 'dia útil' : 'dias úteis'}`
 
   return (
-    // colunas fixas no desktop para tudo alinhar entre as linhas; empilha no mobile
+    // colunas fixas no desktop para tudo alinhar entre as linhas; no celular vira
+    // grade de 2 com o protocolo ocupando a linha inteira — em flex-wrap os campos
+    // encavalavam e cada card quebrava num ponto diferente
     <button
       onClick={onAbrir}
-      className="flex w-full flex-wrap items-center gap-6 rounded-card border border-axia-neutral bg-white p-5 text-left shadow-card transition hover:border-axia-blue hover:shadow-card-hover lg:grid lg:grid-cols-[minmax(0,1fr)_180px_180px_170px_150px_20px] lg:gap-8"
+      className="grid w-full grid-cols-2 items-start gap-x-4 gap-y-4 rounded-card border border-axia-neutral bg-white p-5 text-left shadow-card transition hover:border-axia-blue hover:shadow-card-hover lg:grid-cols-[minmax(0,1fr)_180px_180px_170px_150px_20px] lg:items-center lg:gap-8"
     >
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="col-span-2 flex min-w-0 items-center gap-3 lg:col-span-1">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-chip bg-axia-blue/10">
           <IconeServico nome={chamado.servico} className="h-5 w-5 text-axia-blue" />
         </span>
@@ -3260,7 +3264,9 @@ function LinhaChamado({ chamado, onAbrir }) {
         )}
       </Coluna>
 
-      <span className="justify-self-end text-axia-grey/50">
+      {/* no celular o card inteiro é o alvo do toque: a seta sozinha só criava
+          uma última linha torta */}
+      <span className="hidden justify-self-end text-axia-grey/50 lg:block">
         <ChevronDireita />
       </span>
     </button>

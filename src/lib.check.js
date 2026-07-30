@@ -17,6 +17,7 @@ import {
   filtrarOpcoes,
   responderIA,
   chaveIcone,
+  iconeAtividade,
   CHAVES_ICONE,
   artigoDe,
   prazoLegivel,
@@ -97,7 +98,7 @@ assert.equal(validarLogin('', ''), null)
 assert.equal(new Set(CONTAS.map((c) => c.email)).size, CONTAS.length) // sem e-mail repetido
 
 // ícones: toda regra devolve chave existente e os exemplos batem com o esperado
-assert.equal(chaveIcone('Reset de senha'), 'chave')
+assert.equal(chaveIcone('Reset de senha'), 'senha')
 assert.equal(chaveIcone('Cibersegurança de TI'), 'escudo')
 assert.equal(chaveIcone('Correio Eletrônico'), 'email')
 assert.equal(chaveIcone('Infraestrutura SAP'), 'servidor') // infraestrutura vence SAP
@@ -109,6 +110,34 @@ for (const s of SERVICOS) assert.ok(CHAVES_ICONE.includes(chaveIcone(s.nome)), s
 for (const g of GRUPOS)
   for (const s of g.servicos)
     assert.ok(CHAVES_ICONE.includes(chaveIcone(s.nome)), s.nome)
+
+// atividade tem ícone próprio: o card usava o nome do serviço e as 20 do SAP
+// saíam todas com o mesmo desenho
+{
+  const sap = ATIVIDADES_VISIVEIS.filter((a) => a.servico.nome === 'SAP')
+  const chaves = sap.map((a) => iconeAtividade(a.nome, a.servico.nome).chave)
+  for (const c of chaves) assert.ok(CHAVES_ICONE.includes(c), c)
+  assert.ok(new Set(chaves).size >= sap.length - 4, [...new Set(chaves)].join())
+  assert.deepEqual(iconeAtividade('Reportar lentidão no SAP', 'SAP'), {
+    chave: 'velocimetro',
+    selo: null, // atividade com desenho próprio não ganha selo
+  })
+  // ícone composto: a regra manda o selo e o verbo "Solicitar" não sobrepõe
+  assert.deepEqual(iconeAtividade('Solicitar revogação de acesso SAP', 'SAP'), {
+    chave: 'cadeado',
+    selo: 'x',
+  })
+  // atividade genérica sem palavra-chave herda o ícone do serviço
+  assert.equal(iconeAtividade('Solicitar análise', 'Backup e Restore').chave, 'backup')
+
+  // mesmo objeto, verbos diferentes: o selo é o que separa os três cards
+  const impressora = ['Solicitar', 'Trocar', 'Devolver'].map(
+    (v) => iconeAtividade(`${v} Impressora`, 'Impressora').selo
+  )
+  assert.deepEqual(impressora, ['mais', 'troca', 'devolucao'])
+  for (const c of ATIVIDADES_VISIVEIS.map((a) => iconeAtividade(a.nome, a.servico.nome)))
+    assert.ok(CHAVES_ICONE.includes(c.chave), c.chave)
+}
 
 // data curta da lista de chamados: hora só nos últimos dois dias
 {

@@ -428,6 +428,7 @@ export function artigoDe(rotulo) {
 
 // Ícone do serviço por palavra-chave do nome: 196 serviços não comportam escolha
 // manual. A ordem importa — a primeira regra que casar vence.
+const ATIVIDADE = true
 const REGRAS_ICONE = [
   // Periféricos primeiro: os nomes do catálogo de TI ("Monitor", "Mouse", "Teclado")
   // casavam com regras genéricas mais abaixo e todos viravam o ícone de notebook.
@@ -438,7 +439,36 @@ const REGRAS_ICONE = [
   [/teclado/, 'teclado'],
   [/\bmonitor(es)?\b/, 'monitor'], // "monitoramento" continua caindo em pulso
   [/desktop|torre|gabinete|workstation/, 'desktop'],
-  [/senha|acesso|permiss|perfil|credencial|login|autentic/, 'chave'],
+  // Atividades (verbo + objeto) antes das regras por sistema: sem este bloco todo
+  // nome com "SAP" casava com a regra do cubo e as 20 atividades ficavam iguais.
+  // 3º campo: nome do selo do canto (cadeado + 'x' = revogar), ou ATIVIDADE para
+  // "o desenho já é a atividade, não cole selo de verbo".
+  [/indisponibilidade|fora do ar|inoperante/, 'alerta', ATIVIDADE],
+  [/lentidao|lento|desempenho/, 'velocimetro', ATIVIDADE],
+  [/criacao de usuario|criar usuario|novo usuario/, 'pessoa', 'mais'],
+  [/perfil/, 'pessoa', 'lapis'],
+  [/revoga|remover acesso|exclusao de usuario/, 'cadeado', 'x'],
+  [/senha/, 'senha', ATIVIDADE],
+  [/erro.*transacao/, 'documento', 'x'],
+  [/transacao/, 'documento', 'check'],
+  [/desbloqu/, 'cadeadoAberto', ATIVIDADE],
+  // incidentes de acesso: sem estas quatro, tudo caía no 'chave' genérico da regra
+  // de acesso lá embaixo e os cards do serviço ficavam com o mesmo desenho
+  [/conta bloqueada|bloqueada indevidamente|bloqueio inesperado/, 'cadeado', 'alerta'],
+  [/nao consigo acessar|nao consigo entrar/, 'chave', 'x'],
+  [/acesso negado|erro de permissao/, 'escudo', 'x'],
+  [/autenticacao integrada|\bsso\b|\bldap\b/, 'elo', ATIVIDADE],
+  [/\brole\b|grupo de acesso|inclusao em/, 'pessoas', 'mais'],
+  [/parametro/, 'pessoaEngrenagem', ATIVIDADE],
+  [/ambiente/, 'monitor', 'globo'],
+  [/integracao/, 'elo', ATIVIDADE],
+  [/\bjob\b/, 'engrenagem', 'x'],
+  // só o erro leva o X: "Solicitar Impressora" continua com o selo do verbo
+  [/(erro|falha).*(impress|spool)|spool/, 'impressora', 'x'],
+  [/fiori/, 'janela', 'alerta'],
+  [/autoriza/, 'escudo', 'cadeado'],
+  [/documento/, 'documento', ATIVIDADE],
+  [/acesso|permiss|credencial|login|autentic/, 'chave', ATIVIDADE],
   [/ciberseguran|seguranca da informacao|vulnerab|antiv|firewall|phishing/, 'escudo'],
   [/rede|wi-?fi|internet|vpn|conectividade|conexao|link de dados/, 'rede'],
   [/e-?mail|correio|caixa postal|outlook|exchange|distribuicao/, 'email'],
@@ -485,10 +515,36 @@ export const CHAVES_ICONE = [...new Set(REGRAS_ICONE.map(([, c]) => c)), 'grade'
 
 // Padrão é "janela" (aplicativo): a maior parte do catálogo sem palavra-chave são
 // nomes de software — 7 Zip, Autocad, Python, Photoshop.
-export function chaveIcone(nome) {
+export function chaveIcone(nome, padrao = 'janela') {
   const n = norm(nome)
   for (const [regra, chave] of REGRAS_ICONE) if (regra.test(n)) return chave
-  return 'janela'
+  return padrao
+}
+
+// "Solicitar/Trocar/Devolver Impressora" compartilham o objeto: o verbo vira um
+// selo no canto do ícone, senão os três cards ficam idênticos.
+const VERBOS = [
+  [/^(solicitar|pedir|contratar|criar|incluir)\b/, 'mais'],
+  [/^(trocar|substituir|alterar|atualizar)\b/, 'troca'],
+  [/^(devolver|cancelar|encerrar|remover|excluir)\b/, 'devolucao'],
+]
+
+const seloDoVerbo = (n) => VERBOS.find(([r]) => r.test(n))?.[1] ?? null
+
+// Card de atividade: o desenho vem do nome da atividade. Quando ele não casa com
+// regra nenhuma, o nome do serviço é a melhor pista que sobra — é o caso das
+// atividades genéricas do estrutura_axia ("Solicitar análise"). O `null` como
+// padrão separa "nenhuma regra casou" de "casou na regra de janela" (SAP Fiori).
+export function iconeAtividade(nomeAtividade, nomeServico) {
+  const n = norm(nomeAtividade)
+  for (const [regra, chave, selo] of REGRAS_ICONE)
+    if (regra.test(n))
+      return {
+        chave,
+        // selo da regra vence o do verbo; ATIVIDADE (true) recusa os dois
+        selo: typeof selo === 'string' ? selo : selo ? null : seloDoVerbo(n),
+      }
+  return { chave: chaveIcone(nomeServico ?? nomeAtividade), selo: seloDoVerbo(n) }
 }
 
 // ponytail: contas simuladas com senha em claro — trocar por SSO/AD (Entra ID).
