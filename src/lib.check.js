@@ -252,37 +252,75 @@ assert.deepEqual(nomesAbas, ['Serviços de TI', 'Segurança', 'Dados e Automaç�
 assert.ok(!nomesAbas.includes('Suporte e Infraestrutura'))
 assert.ok(!nomesAbas.includes('Sistemas Corporativos')) // virou parte de Serviços de TI
 
-// os 10 itens de configuração da planilha Top 10, que têm 3 atividades cada
-const HARDWARE = [
-  'Notebook',
-  'Desktop',
-  'Monitor',
-  'Headset',
-  'Webcam',
-  'Teclado',
-  'Mouse',
-  'Docking Station',
-  'Impressora',
-  'Celular Corporativo',
-]
+// os itens de configuração da planilha Top 10 que sobraram como card próprio: os
+// periféricos viraram opção do combo em "Periféricos" e o Desktop saiu do portal,
+// os dois pelo SERVICOS_FORA do gerador.
+const HARDWARE = ['Notebook', 'Monitor', 'Impressora', 'Celular Corporativo']
 
 // catálogo de planilha: atividade é o card, com descrição, SLA e campos próprios
 {
   const ti = GRUPOS.find((g) => g.nome === 'Serviços de TI')
-  const daPlanilha = ti.servicos.filter((s) =>
-    ['SAP', 'Gestão de Acesso'].includes(s.nome) || HARDWARE.includes(s.nome)
+  const daPlanilha = ti.servicos.filter(
+    (s) =>
+      ['SAP', 'Gestão de Acesso', 'Periféricos'].includes(s.nome) ||
+      HARDWARE.includes(s.nome)
   )
 
-  // toda a aba vem de planilha: 10 de hardware + Gestão de Acesso + SAP
-  assert.equal(ti.servicos.length, 12)
+  // 4 de hardware + Periféricos + Gestão de Acesso + SAP
+  assert.equal(ti.servicos.length, 7)
   assert.equal(ti.servicos.length, daPlanilha.length)
+
+  // Periféricos não vem de planilha: é o combo que diz qual equipamento é
+  {
+    const p = ti.servicos.find((s) => s.nome === 'Periféricos')
+    assert.equal(p.atividades.length, 3)
+    for (const a of p.atividades) {
+      const combo = a.campos.find((c) => c.n === 'Periférico')
+      assert.equal(combo.t, 'combo')
+      assert.equal(combo.opcoes.length, 7)
+      assert.ok(a.campos.some((c) => c.n === 'Descrição da Solicitação'), a.nome)
+    }
+    // os cards que viraram opção do combo não podem ter sobrado no portal
+    for (const nome of ['Mouse', 'Teclado', 'Webcam', 'Headset', 'Docking Station'])
+      assert.ok(!ti.servicos.some((s) => s.nome === nome), nome)
+  }
+  // solicitar / trocar / devolver, mais o que o atividadesExtras do gerador acrescenta
+  const EXTRAS = { 'Celular Corporativo': 1, Monitor: 2, Impressora: 2 }
   for (const s of ti.servicos.filter((s) => HARDWARE.includes(s.nome)))
-    assert.equal(s.atividades.length, 3, s.nome) // solicitar / trocar / devolver
+    assert.equal(s.atividades.length, 3 + (EXTRAS[s.nome] ?? 0), s.nome)
+
+  // o combo de motivo é o que separa "Problemas com" de "Trocar", que herda o resto
+  {
+    const problemas = ti.servicos
+      .find((s) => s.nome === 'Celular Corporativo')
+      .atividades.find((a) => a.nome === 'Problemas com Celular Corporativo')
+    const motivo = problemas.campos.find((c) => c.n === 'Motivo')
+    assert.equal(motivo.t, 'combo')
+    assert.equal(motivo.opcoes.length, 11)
+    assert.equal(motivo.opcoes.at(-1), 'Outro')
+  }
 
   // Gestão de Acesso só pode ter o que veio da planilha: 10 atividades, e nenhuma
   // com a assinatura do estrutura_axia (ofertas + campo "Oferta de Serviço").
+  assert.ok(!ti.servicos.some((s) => s.nome === 'Desktop'))
+
   const acesso = ti.servicos.find((s) => s.nome === 'Gestão de Acesso')
   assert.equal(acesso.atividades.length, 10)
+
+  // Ambiente é marcação múltipla, e os três campos abaixo saíram do formulário
+  for (const a of acesso.atividades) {
+    const ambiente = a.campos.find((c) => c.n === 'Ambiente')
+    if (ambiente)
+      assert.deepEqual(ambiente, {
+        n: 'Ambiente',
+        t: 'checkbox',
+        opcoes: ['Desenvolvimento', 'Homologação', 'Produção'],
+      })
+    assert.ok(
+      !a.campos.some((c) => /perfil ou funcionalidade|vigência|centro de custo/i.test(c.n)),
+      a.nome
+    )
+  }
   for (const a of acesso.atividades) {
     assert.deepEqual(a.ofertas, [], a.nome)
     assert.ok(!a.campos.some((c) => c.n === 'Oferta de Serviço'), a.nome)
@@ -529,7 +567,10 @@ assert.ok(!STATUS_PAINEL.includes('Aberto'))
   const primeira = (p) => buscarConversa(ATIVIDADES_VISIVEIS, p)[0]?.nome
   assert.equal(primeira('resetar senha do SAP'), 'Redefinir senha SAP')
   assert.equal(primeira('preciso de um monitor novo'), 'Trocar Monitor')
-  assert.equal(primeira('meu teclado quebrou'), 'Trocar Teclado')
+  // teclado virou opção do combo de "Periférico" e a busca acha por ela
+  assert.equal(primeira('meu teclado quebrou'), 'Trocar Periférico')
+  // sem verbo na frase os três empatam: basta cair no serviço certo
+  assert.match(primeira('preciso de um mouse'), /Periférico/)
   assert.equal(primeira('SAP está lento'), 'Reportar lentidão no SAP')
   assert.equal(primeira('minha conta está bloqueada'), 'Conta bloqueada indevidamente')
   assert.equal(primeira('quero devolver o notebook'), 'Devolver Notebook')

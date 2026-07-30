@@ -195,9 +195,17 @@ export default function App() {
       criadoEm: new Date().toISOString(),
       // FormData vem na ordem do DOM: gravar por ela deixa o detalhe do chamado na
       // mesma sequência em que o formulário perguntou, sem repetir a lista de campos
+      // grupo de checkbox manda uma entrada por marcado: junta na mesma linha em
+      // vez de repetir o rótulo no detalhe do chamado
       dados: [...f.entries()]
         .filter(([k]) => !FORA_DOS_DADOS.has(k))
-        .map(([k, v]) => [ROTULO_DADO[k] ?? k, v]),
+        .map(([k, v]) => [ROTULO_DADO[k] ?? k, v])
+        .reduce((acc, [k, v]) => {
+          const anterior = acc.find(([rotulo]) => rotulo === k)
+          if (anterior) anterior[1] += `, ${v}`
+          else acc.push([k, v])
+          return acc
+        }, []),
       interacoes: [
         {
           autor: 'Sistema',
@@ -1674,7 +1682,6 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
       !(atividade.oferta && campoNome(c) === 'Oferta de Serviço') &&
       !CAMPOS_DO_SOLICITANTE.has(campoNome(c))
   )
-  const pedeAnexo = visiveis.some((c) => ehAnexo(campoNome(c)))
 
   // Textos longos vão para o fim: como cada um ocupa a linha inteira, no meio da
   // lista eles quebram o empacotamento e deixam buracos na grade de 3 colunas.
@@ -1836,8 +1843,9 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
           ))}
         </div>
 
-        {/* upload só quando a planilha pede evidência/anexo nesta atividade */}
-        {pedeAnexo && <Anexos arquivos={anexos} onChange={setAnexos} />}
+        {/* uma área de upload em todo formulário: os campos de anexo da planilha
+            já foram filtrados acima, então nunca sai em duplicidade */}
+        <Anexos arquivos={anexos} onChange={setAnexos} />
 
         <button className="rounded-full bg-axia-blue px-7 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2">
           Enviar solicitação
@@ -2031,6 +2039,54 @@ function Combobox({
   )
 }
 
+// Lista suspensa de marcar vários. O painel do Popover desmonta ao fechar, então
+// quem leva os valores para o FormData são os inputs escondidos aqui fora — um por
+// marcado, que o `enviar` junta numa linha só no detalhe do chamado.
+function ListaMarcavel({ nome, opcoes, placeholder }) {
+  const [marcados, setMarcados] = useState([])
+  const alternar = (o) =>
+    setMarcados((m) => (m.includes(o) ? m.filter((x) => x !== o) : [...m, o]))
+
+  return (
+    <>
+      <Popover
+        type="button"
+        largura="w-full"
+        classeBotao={`${inputBase} flex cursor-pointer items-center justify-between gap-2 text-left`}
+        rotulo={
+          <>
+            <span className={`truncate ${marcados.length ? '' : 'text-axia-grey/50'}`}>
+              {marcados.join(', ') || placeholder}
+            </span>
+            <Chevron />
+          </>
+        }
+      >
+        {() => (
+          <ul className="max-h-60 overflow-y-auto p-1">
+            {opcoes.map((o) => (
+              <li key={o}>
+                <label className="flex cursor-pointer items-center gap-2.5 rounded-chip px-3 py-2 text-sm hover:bg-axia-blue/5">
+                  <input
+                    type="checkbox"
+                    checked={marcados.includes(o)}
+                    onChange={() => alternar(o)}
+                    className="h-4 w-4 rounded border-axia-neutral accent-axia-blue"
+                  />
+                  {o}
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Popover>
+      {marcados.map((o) => (
+        <input key={o} type="hidden" name={nome} value={o} />
+      ))}
+    </>
+  )
+}
+
 function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
   // "Informe o gestor" / "Informe a matrícula": o artigo vem do gênero do rótulo
   const dica = `Informe ${artigoDe(label)} ${label.toLowerCase()}`
@@ -2047,9 +2103,27 @@ function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
         <Combobox
           nome={nome}
           opcoes={opcoes}
-          placeholder={placeholder}
+          // "Selecione o motivo": sem isto o combo do catálogo abria vazio e sem
+          // dica do que escolher
+          placeholder={placeholder ?? `Selecione ${artigoDe(label)} ${label.toLowerCase()}`}
           inicial={inicial}
           onChange={onChange}
+        />
+      </div>
+    )
+  }
+
+  // marcação múltipla — e sempre opcional: o grupo não tem "nenhuma" para exigir
+  if (tipo === 'checkbox') {
+    return (
+      <div>
+        <span className="mb-1.5 block text-sm font-bold text-axia-purple">
+          {label} <span className="font-normal text-axia-grey/70">(opcional)</span>
+        </span>
+        <ListaMarcavel
+          nome={nome}
+          opcoes={opcoes}
+          placeholder={placeholder ?? `Selecione ${artigoDe(label)} ${label.toLowerCase()}`}
         />
       </div>
     )
@@ -2410,16 +2484,18 @@ function DetalheTicket({
 const NOTAS = [
   {
     n: 1,
-    rotulo: 'Muito ruim',
+    rotulo: 'Muito insatisfeito',
     cor: '#f59a95',
     boca: 'M15.5 33.5q8.5-8 17 0',
     // duas retas inclinadas para o centro — o "V" da cara fechada
     sobrancelhas: 'M11.5 11l7 4M36.5 11l-7 4',
   },
-  { n: 2, rotulo: 'Ruim', cor: '#eeb287', boca: 'M16 32q8-6 16 0' },
-  { n: 3, rotulo: 'Regular', cor: '#f7d46b', boca: 'M16 30.5h16' },
-  { n: 4, rotulo: 'Boa', cor: '#a3dc9b', boca: 'M16 28.5q8 6 16 0' },
-  { n: 5, rotulo: 'Ótima', cor: '#68cd7c', boca: 'M14 27q10 12 20 0z', aberta: true },
+  { n: 2, rotulo: 'Insatisfeito', cor: '#eeb287', boca: 'M16 32q8-6 16 0' },
+  { n: 3, rotulo: 'Neutro', cor: '#f7d46b', boca: 'M16 30.5h16' },
+  { n: 4, rotulo: 'Satisfeito', cor: '#a3dc9b', boca: 'M16 28.5q8 6 16 0' },
+  // mesma curva do "satisfeito", só mais larga e funda: a boca preenchida saía
+  // como uma mancha escura no lugar do sorriso
+  { n: 5, rotulo: 'Muito satisfeito', cor: '#68cd7c', boca: 'M14 27.5q10 9.5 20 0' },
 ]
 
 const NOTA_DE = Object.fromEntries(NOTAS.map((o) => [o.n, o]))
@@ -2432,7 +2508,7 @@ function Carinha({ nota, className = 'h-12 w-12' }) {
         {nota.sobrancelhas && <path d={nota.sobrancelhas} />}
         <ellipse cx="17" cy="21" rx="2.4" ry="3.1" fill="#3a3f46" stroke="none" />
         <ellipse cx="31" cy="21" rx="2.4" ry="3.1" fill="#3a3f46" stroke="none" />
-        <path d={nota.boca} fill={nota.aberta ? '#3a3f46' : 'none'} />
+        <path d={nota.boca} />
       </g>
     </svg>
   )
@@ -2466,7 +2542,9 @@ function PesquisaSatisfacao({ onEnviar }) {
         </p>
       </div>
 
-      <div className="mt-6 flex justify-center gap-1 sm:gap-3">
+      {/* colunas iguais: em flex a largura de cada botão vinha do rótulo, e as
+          carinhas ficavam com espaçamento irregular entre si */}
+      <div className="mt-6 grid grid-cols-5 gap-1 sm:gap-2">
         {NOTAS.map((o) => (
           <button
             key={o.n}
@@ -2488,20 +2566,11 @@ function PesquisaSatisfacao({ onEnviar }) {
             </span>
             {/* rótulo e número acompanham a seleção: só a cor muda, o peso é fixo */}
             <span
-              className={`text-center text-xs font-bold leading-tight ${
+              className={`text-center text-[11px] font-bold leading-tight sm:text-xs ${
                 nota === o.n ? 'text-axia-blue' : 'text-axia-grey'
               }`}
             >
               {o.rotulo}
-            </span>
-            {/* mt-auto: "Muito ruim" ocupa duas linhas e desalinhava o número
-                em relação aos vizinhos de rótulo curto */}
-            <span
-              className={`mt-auto text-xs font-bold ${
-                nota === o.n ? 'text-axia-blue' : 'text-axia-grey/60'
-              }`}
-            >
-              {o.n}
             </span>
           </button>
         ))}

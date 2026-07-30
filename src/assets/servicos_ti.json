@@ -34,7 +34,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -140,177 +140,11 @@
               "t": "textarea"
             },
             {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
               "n": "Local de entrega ou retirada",
               "t": "texto"
             },
             {
               "n": "Condição do equipamento",
-              "t": "textarea"
-            },
-            {
-              "n": "Acessórios",
-              "t": "texto"
-            },
-            {
-              "n": "Necessidade de backup",
-              "t": "texto"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "nome": "Desktop",
-      "atividades": [
-        {
-          "nome": "Solicitar Desktop",
-          "descricao": "Disponibilização de desktop para novo posto de trabalho ou necessidade operacional autorizada.",
-          "sla": "Sem SLA definido",
-          "campos": [
-            {
-              "n": "Usuário beneficiário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Área",
-              "t": "texto"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Centro de custo",
-              "t": "texto"
-            },
-            {
-              "n": "Justificativa",
-              "t": "textarea"
-            },
-            {
-              "n": "Perfil de uso",
-              "t": "texto"
-            },
-            {
-              "n": "Configuração necessária",
-              "t": "texto"
-            },
-            {
-              "n": "Softwares",
-              "t": "texto"
-            },
-            {
-              "n": "Local de instalação",
-              "t": "texto"
-            },
-            {
-              "n": "Ponto de rede",
-              "t": "texto"
-            },
-            {
-              "n": "Data necessária",
-              "t": "data"
-            }
-          ]
-        },
-        {
-          "nome": "Trocar Desktop",
-          "descricao": "Substituição de desktop por defeito, obsolescência ou incompatibilidade com a necessidade operacional.",
-          "sla": "16h",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Patrimônio atual",
-              "t": "texto"
-            },
-            {
-              "n": "Número de série",
-              "t": "texto"
-            },
-            {
-              "n": "Motivo da troca",
-              "t": "textarea"
-            },
-            {
-              "n": "Defeito apresentado",
-              "t": "texto"
-            },
-            {
-              "n": "Impacto operacional",
-              "t": "textarea"
-            },
-            {
-              "n": "Configuração necessária",
-              "t": "texto"
-            },
-            {
-              "n": "Softwares",
-              "t": "texto"
-            },
-            {
-              "n": "Necessidade de migração",
-              "t": "texto"
-            },
-            {
-              "n": "Localidade",
-              "t": "texto"
-            }
-          ]
-        },
-        {
-          "nome": "Devolver Desktop",
-          "descricao": "Devolução de desktop por desligamento, substituição, transferência ou desmobilização do posto de trabalho.",
-          "sla": "16h",
-          "campos": [
-            {
-              "n": "Usuário responsável",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Patrimônio",
-              "t": "texto"
-            },
-            {
-              "n": "Número de série",
-              "t": "texto"
-            },
-            {
-              "n": "Motivo",
-              "t": "textarea"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Localização",
-              "t": "texto"
-            },
-            {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
-              "n": "Condição",
               "t": "textarea"
             },
             {
@@ -346,28 +180,8 @@
               "t": "texto"
             },
             {
-              "n": "Centro de custo",
-              "t": "texto"
-            },
-            {
-              "n": "Quantidade",
-              "t": "texto"
-            },
-            {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
-            },
-            {
-              "n": "Tamanho",
-              "t": "texto"
-            },
-            {
-              "n": "Conexão",
-              "t": "texto"
-            },
-            {
-              "n": "Equipamento de destino",
-              "t": "texto"
             },
             {
               "n": "Unidade",
@@ -376,10 +190,6 @@
             {
               "n": "Local de instalação",
               "t": "texto"
-            },
-            {
-              "n": "Data necessária",
-              "t": "data"
             }
           ]
         },
@@ -460,10 +270,6 @@
               "t": "texto"
             },
             {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
               "n": "Condição",
               "t": "textarea"
             },
@@ -472,15 +278,10 @@
               "t": "texto"
             }
           ]
-        }
-      ]
-    },
-    {
-      "nome": "Headset",
-      "atividades": [
+        },
         {
-          "nome": "Solicitar Headset",
-          "descricao": "Disponibilização de headset corporativo para comunicação, atendimento ou reuniões.",
+          "nome": "Empréstimo do Monitor",
+          "descricao": "Cessão temporária de monitor para uso em atividade específica, com devolução prevista.",
           "sla": "16h",
           "campos": [
             {
@@ -496,42 +297,26 @@
               "t": "texto"
             },
             {
-              "n": "Centro de custo",
-              "t": "texto"
-            },
-            {
-              "n": "Justificativa",
-              "t": "textarea"
-            },
-            {
-              "n": "Tipo de uso",
-              "t": "texto"
-            },
-            {
-              "n": "Modelo",
-              "t": "texto"
-            },
-            {
-              "n": "Conexão",
-              "t": "texto"
-            },
-            {
               "n": "Unidade",
               "t": "texto"
             },
             {
-              "n": "Local de entrega",
+              "n": "Local de instalação",
               "t": "texto"
             },
             {
-              "n": "Data necessária",
-              "t": "data"
+              "n": "Matrícula do Principal usuário do equipamento",
+              "t": "texto"
+            },
+            {
+              "n": "Motivo",
+              "t": "textarea"
             }
           ]
         },
         {
-          "nome": "Trocar Headset",
-          "descricao": "Substituição de headset com defeito, avaria ou incompatibilidade técnica.",
+          "nome": "Mau Funcionamento do Monitor",
+          "descricao": "Reportar falha no monitor em uso — imagem, energia, conexão ou defeito físico.",
           "sla": "16h",
           "campos": [
             {
@@ -543,16 +328,31 @@
               "t": "texto"
             },
             {
-              "n": "Patrimônio ou número de série",
+              "n": "Patrimônio",
               "t": "texto"
             },
             {
-              "n": "Modelo atual",
+              "n": "Número de série",
               "t": "texto"
+            },
+            {
+              "n": "Motivo da troca",
+              "t": "textarea"
             },
             {
               "n": "Defeito",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "Aparelho não liga",
+                "Sem imagem ou sem sinal",
+                "Tela quebrada ou trincada",
+                "Manchas ou pixels queimados",
+                "Imagem piscando ou tremendo",
+                "Cores distorcidas",
+                "Falha no cabo ou conector",
+                "Botões não respondem",
+                "Outro"
+              ]
             },
             {
               "n": "Evidência",
@@ -567,541 +367,6 @@
               "t": "texto"
             }
           ]
-        },
-        {
-          "nome": "Devolver Headset",
-          "descricao": "Devolução de headset por desligamento, substituição ou encerramento da necessidade.",
-          "sla": "Não identificado",
-          "campos": [
-            {
-              "n": "Usuário responsável",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Patrimônio ou número de série",
-              "t": "texto"
-            },
-            {
-              "n": "Motivo",
-              "t": "textarea"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
-              "n": "Condição",
-              "t": "textarea"
-            },
-            {
-              "n": "Acessórios",
-              "t": "texto"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "nome": "Webcam",
-      "atividades": [
-        {
-          "nome": "Solicitar Webcam",
-          "descricao": "Disponibilização de webcam corporativa para reuniões, capacitações ou atividades remotas.",
-          "sla": "Não identificado",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Área",
-              "t": "texto"
-            },
-            {
-              "n": "Justificativa",
-              "t": "textarea"
-            },
-            {
-              "n": "Tipo de uso",
-              "t": "texto"
-            },
-            {
-              "n": "Modelo",
-              "t": "texto"
-            },
-            {
-              "n": "Equipamento de destino",
-              "t": "texto"
-            },
-            {
-              "n": "Conexão",
-              "t": "texto"
-            },
-            {
-              "n": "Localidade",
-              "t": "texto"
-            },
-            {
-              "n": "Data necessária",
-              "t": "data"
-            }
-          ]
-        },
-        {
-          "nome": "Trocar Webcam",
-          "descricao": "Substituição de webcam com defeito, avaria ou incompatibilidade técnica.",
-          "sla": "Não identificado",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Patrimônio ou número de série",
-              "t": "texto"
-            },
-            {
-              "n": "Modelo",
-              "t": "texto"
-            },
-            {
-              "n": "Defeito",
-              "t": "texto"
-            },
-            {
-              "n": "Equipamento conectado",
-              "t": "texto"
-            },
-            {
-              "n": "Sistema operacional",
-              "t": "texto"
-            },
-            {
-              "n": "Localidade",
-              "t": "texto"
-            }
-          ]
-        },
-        {
-          "nome": "Devolver Webcam",
-          "descricao": "Devolução de webcam por desligamento, substituição ou encerramento da necessidade.",
-          "sla": "Não identificado",
-          "campos": [
-            {
-              "n": "Usuário responsável",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Patrimônio ou número de série",
-              "t": "texto"
-            },
-            {
-              "n": "Motivo",
-              "t": "textarea"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
-              "n": "Condição",
-              "t": "textarea"
-            },
-            {
-              "n": "Acessórios",
-              "t": "texto"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "nome": "Teclado",
-      "atividades": [
-        {
-          "nome": "Solicitar Teclado",
-          "descricao": "Disponibilização de teclado para composição ou adequação do posto de trabalho.",
-          "sla": "16h",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Área",
-              "t": "texto"
-            },
-            {
-              "n": "Justificativa",
-              "t": "textarea"
-            },
-            {
-              "n": "Tipo de teclado",
-              "t": "texto"
-            },
-            {
-              "n": "Padrão de idioma",
-              "t": "texto"
-            },
-            {
-              "n": "Conexão",
-              "t": "texto"
-            },
-            {
-              "n": "Acessibilidade",
-              "t": "texto"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            }
-          ]
-        },
-        {
-          "nome": "Trocar Teclado",
-          "descricao": "Substituição de teclado com falha, dano ou incompatibilidade.",
-          "sla": "16h",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Modelo atual",
-              "t": "texto"
-            },
-            {
-              "n": "Defeito",
-              "t": "texto"
-            },
-            {
-              "n": "Conexão",
-              "t": "texto"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Localização",
-              "t": "texto"
-            },
-            {
-              "n": "Acessibilidade",
-              "t": "texto"
-            }
-          ]
-        },
-        {
-          "nome": "Devolver Teclado",
-          "descricao": "Devolução de teclado por desligamento, substituição ou desmobilização do posto.",
-          "sla": "16h",
-          "campos": [
-            {
-              "n": "Usuário responsável",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Motivo",
-              "t": "textarea"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Localização",
-              "t": "texto"
-            },
-            {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
-              "n": "Condição",
-              "t": "textarea"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "nome": "Mouse",
-      "atividades": [
-        {
-          "nome": "Solicitar Mouse",
-          "descricao": "Disponibilização de mouse para utilização no posto de trabalho.",
-          "sla": "16h",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Área",
-              "t": "texto"
-            },
-            {
-              "n": "Justificativa",
-              "t": "textarea"
-            },
-            {
-              "n": "Tipo de mouse",
-              "t": "texto"
-            },
-            {
-              "n": "Conexão",
-              "t": "texto"
-            },
-            {
-              "n": "Acessibilidade",
-              "t": "texto"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Local de entrega",
-              "t": "texto"
-            }
-          ]
-        },
-        {
-          "nome": "Trocar Mouse",
-          "descricao": "Substituição de mouse com defeito, dano ou incompatibilidade.",
-          "sla": "16h",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Modelo atual",
-              "t": "texto"
-            },
-            {
-              "n": "Defeito",
-              "t": "texto"
-            },
-            {
-              "n": "Conexão",
-              "t": "texto"
-            },
-            {
-              "n": "Localidade",
-              "t": "texto"
-            },
-            {
-              "n": "Acessibilidade",
-              "t": "texto"
-            }
-          ]
-        },
-        {
-          "nome": "Devolver Mouse",
-          "descricao": "Devolução de mouse por desligamento, substituição ou desmobilização do posto.",
-          "sla": "16h",
-          "campos": [
-            {
-              "n": "Usuário responsável",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Motivo",
-              "t": "textarea"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Localização",
-              "t": "texto"
-            },
-            {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
-              "n": "Condição",
-              "t": "textarea"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "nome": "Docking Station",
-      "atividades": [
-        {
-          "nome": "Solicitar Docking Station",
-          "descricao": "Disponibilização de estação de acoplamento para conexão do notebook aos periféricos.",
-          "sla": "Não identificado",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Modelo e patrimônio do notebook",
-              "t": "texto"
-            },
-            {
-              "n": "Justificativa",
-              "t": "textarea"
-            },
-            {
-              "n": "Monitores",
-              "t": "texto"
-            },
-            {
-              "n": "Conexões necessárias",
-              "t": "texto"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Local de instalação",
-              "t": "texto"
-            }
-          ]
-        },
-        {
-          "nome": "Trocar Docking Station",
-          "descricao": "Substituição de docking station com defeito ou incompatibilidade técnica.",
-          "sla": "Não identificado",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Modelo atual",
-              "t": "texto"
-            },
-            {
-              "n": "Número de série",
-              "t": "texto"
-            },
-            {
-              "n": "Modelo do notebook",
-              "t": "texto"
-            },
-            {
-              "n": "Defeito",
-              "t": "texto"
-            },
-            {
-              "n": "Conexões",
-              "t": "texto"
-            },
-            {
-              "n": "Localidade",
-              "t": "texto"
-            }
-          ]
-        },
-        {
-          "nome": "Devolver Docking Station",
-          "descricao": "Devolução da estação por desligamento, substituição ou encerramento da necessidade.",
-          "sla": "Não identificado",
-          "campos": [
-            {
-              "n": "Usuário",
-              "t": "texto"
-            },
-            {
-              "n": "Gestor",
-              "t": "texto"
-            },
-            {
-              "n": "Número de série ou patrimônio",
-              "t": "texto"
-            },
-            {
-              "n": "Motivo",
-              "t": "textarea"
-            },
-            {
-              "n": "Unidade",
-              "t": "texto"
-            },
-            {
-              "n": "Localização",
-              "t": "texto"
-            },
-            {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
-              "n": "Condição",
-              "t": "textarea"
-            },
-            {
-              "n": "Fonte e cabos",
-              "t": "texto"
-            }
-          ]
         }
       ]
     },
@@ -1109,7 +374,7 @@
       "nome": "Impressora",
       "atividades": [
         {
-          "nome": "Solicitar Impressora",
+          "nome": "Configurar Impressora",
           "descricao": "Disponibilização de impressora para área, unidade ou necessidade operacional autorizada.",
           "sla": "16h",
           "campos": [
@@ -1130,7 +395,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -1240,15 +505,121 @@
               "t": "texto"
             },
             {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
               "n": "Condição",
               "t": "textarea"
             },
             {
               "n": "Acessórios",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Trocar Tonner",
+          "descricao": "Substituição de toner ou cartucho da impressora.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Área",
+              "t": "texto"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Unidade",
+              "t": "texto"
+            },
+            {
+              "n": "Centro de custo",
+              "t": "texto"
+            },
+            {
+              "n": "Descrição da Solicitação",
+              "t": "textarea"
+            },
+            {
+              "n": "Usuários",
+              "t": "texto"
+            },
+            {
+              "n": "Volume estimado",
+              "t": "texto"
+            },
+            {
+              "n": "Tipo de impressão",
+              "t": "texto"
+            },
+            {
+              "n": "Local",
+              "t": "texto"
+            },
+            {
+              "n": "Ponto de rede",
+              "t": "texto"
+            },
+            {
+              "n": "Data necessária",
+              "t": "data"
+            },
+            {
+              "n": "Serial do Equipamento",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Remanejar Impressora",
+          "descricao": "Mudança de impressora para outra sala, andar ou unidade.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Área",
+              "t": "texto"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Unidade",
+              "t": "texto"
+            },
+            {
+              "n": "Centro de custo",
+              "t": "texto"
+            },
+            {
+              "n": "Descrição da Solicitação",
+              "t": "textarea"
+            },
+            {
+              "n": "Usuários",
+              "t": "texto"
+            },
+            {
+              "n": "Volume estimado",
+              "t": "texto"
+            },
+            {
+              "n": "Tipo de impressão",
+              "t": "texto"
+            },
+            {
+              "n": "Local",
+              "t": "texto"
+            },
+            {
+              "n": "Ponto de rede",
+              "t": "texto"
+            },
+            {
+              "n": "Data necessária",
+              "t": "data"
+            },
+            {
+              "n": "Serial do Equipamento",
               "t": "texto"
             }
           ]
@@ -1288,28 +659,12 @@
               "t": "texto"
             },
             {
-              "n": "Centro de custo",
-              "t": "texto"
-            },
-            {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
               "n": "Perfil do aparelho",
               "t": "texto"
-            },
-            {
-              "n": "Linha",
-              "t": "texto"
-            },
-            {
-              "n": "Aplicativos",
-              "t": "texto"
-            },
-            {
-              "n": "Data necessária",
-              "t": "data"
             }
           ]
         },
@@ -1398,10 +753,6 @@
               "t": "textarea"
             },
             {
-              "n": "Data prevista",
-              "t": "data"
-            },
-            {
               "n": "Local",
               "t": "texto"
             },
@@ -1411,6 +762,70 @@
             },
             {
               "n": "Carregador e acessórios",
+              "t": "texto"
+            }
+          ]
+        },
+        {
+          "nome": "Problemas com Celular Corporativo",
+          "descricao": "Reportar falha no celular corporativo em uso — aparelho, bateria, conectividade, aplicativo ou perda do equipamento.",
+          "sla": "40h",
+          "campos": [
+            {
+              "n": "Usuário",
+              "t": "texto"
+            },
+            {
+              "n": "Gestor",
+              "t": "texto"
+            },
+            {
+              "n": "Patrimônio",
+              "t": "texto"
+            },
+            {
+              "n": "IMEI",
+              "t": "texto"
+            },
+            {
+              "n": "Modelo",
+              "t": "texto"
+            },
+            {
+              "n": "Motivo",
+              "t": "combo",
+              "opcoes": [
+                "Aparelho não liga",
+                "Tela quebrada",
+                "Bateria com defeito",
+                "Problema de carregamento",
+                "Sem sinal",
+                "Problema com chip/SIM",
+                "Internet móvel não funciona",
+                "Aplicativo corporativo com erro",
+                "Bloqueio de acesso",
+                "Perda ou roubo",
+                "Outro"
+              ]
+            },
+            {
+              "n": "Defeito ou avaria",
+              "t": "texto"
+            },
+            {
+              "n": "Backup",
+              "t": "texto"
+            },
+            {
+              "n": "Linha associada",
+              "t": "texto"
+            },
+            {
+              "n": "Aplicativos",
+              "t": "texto"
+            },
+            {
+              "n": "Localidade",
               "t": "texto"
             }
           ]
@@ -1451,27 +866,20 @@
             },
             {
               "n": "Ambiente",
-              "t": "texto"
+              "t": "checkbox",
+              "opcoes": [
+                "Desenvolvimento",
+                "Homologação",
+                "Produção"
+              ]
             },
             {
-              "n": "Perfil ou funcionalidade",
-              "t": "texto"
-            },
-            {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
               "n": "Data necessária",
               "t": "data"
-            },
-            {
-              "n": "Vigência",
-              "t": "texto"
-            },
-            {
-              "n": "Centro de custo",
-              "t": "texto"
             },
             {
               "n": "Anexo de autorização ou documento de apoio",
@@ -1498,7 +906,12 @@
             },
             {
               "n": "Ambiente",
-              "t": "texto"
+              "t": "checkbox",
+              "opcoes": [
+                "Desenvolvimento",
+                "Homologação",
+                "Produção"
+              ]
             },
             {
               "n": "Perfil atual",
@@ -1513,7 +926,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -1596,7 +1009,12 @@
             },
             {
               "n": "Ambiente",
-              "t": "texto"
+              "t": "checkbox",
+              "opcoes": [
+                "Desenvolvimento",
+                "Homologação",
+                "Produção"
+              ]
             },
             {
               "n": "Telefone corporativo",
@@ -1678,7 +1096,12 @@
             },
             {
               "n": "Ambiente",
-              "t": "texto"
+              "t": "checkbox",
+              "opcoes": [
+                "Desenvolvimento",
+                "Homologação",
+                "Produção"
+              ]
             },
             {
               "n": "Data e hora",
@@ -1725,7 +1148,12 @@
             },
             {
               "n": "Ambiente",
-              "t": "texto"
+              "t": "checkbox",
+              "opcoes": [
+                "Desenvolvimento",
+                "Homologação",
+                "Produção"
+              ]
             },
             {
               "n": "Data e hora",
@@ -1811,7 +1239,12 @@
             },
             {
               "n": "Ambiente",
-              "t": "texto"
+              "t": "checkbox",
+              "opcoes": [
+                "Desenvolvimento",
+                "Homologação",
+                "Produção"
+              ]
             },
             {
               "n": "Login",
@@ -1858,7 +1291,12 @@
             },
             {
               "n": "Ambiente",
-              "t": "texto"
+              "t": "checkbox",
+              "opcoes": [
+                "Desenvolvimento",
+                "Homologação",
+                "Produção"
+              ]
             },
             {
               "n": "Login",
@@ -1937,7 +1375,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -1988,7 +1426,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -2043,7 +1481,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -2207,7 +1645,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -2254,7 +1692,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -2301,7 +1739,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -2344,7 +1782,7 @@
               "t": "texto"
             },
             {
-              "n": "Justificativa",
+              "n": "Descrição da Solicitação",
               "t": "textarea"
             },
             {
@@ -2828,6 +2266,83 @@
             {
               "n": "Anexo de print, foto ou vídeo curto",
               "t": "texto"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Periféricos",
+      "atividades": [
+        {
+          "nome": "Solicitar Periférico",
+          "descricao": "Disponibilização de periférico para composição ou adequação do posto de trabalho.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Periférico",
+              "t": "combo",
+              "opcoes": [
+                "Mouse",
+                "Teclado",
+                "Webcam",
+                "Headset",
+                "Microfone",
+                "Dock Station",
+                "Apresentador Laser"
+              ]
+            },
+            {
+              "n": "Descrição da Solicitação",
+              "t": "textarea"
+            }
+          ]
+        },
+        {
+          "nome": "Trocar Periférico",
+          "descricao": "Substituição de periférico por defeito, avaria ou obsolescência.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Periférico",
+              "t": "combo",
+              "opcoes": [
+                "Mouse",
+                "Teclado",
+                "Webcam",
+                "Headset",
+                "Microfone",
+                "Dock Station",
+                "Apresentador Laser"
+              ]
+            },
+            {
+              "n": "Descrição da Solicitação",
+              "t": "textarea"
+            }
+          ]
+        },
+        {
+          "nome": "Devolver Periférico",
+          "descricao": "Devolução de periférico por desligamento, substituição ou reorganização do posto de trabalho.",
+          "sla": "16h",
+          "campos": [
+            {
+              "n": "Periférico",
+              "t": "combo",
+              "opcoes": [
+                "Mouse",
+                "Teclado",
+                "Webcam",
+                "Headset",
+                "Microfone",
+                "Dock Station",
+                "Apresentador Laser"
+              ]
+            },
+            {
+              "n": "Descrição da Solicitação",
+              "t": "textarea"
             }
           ]
         }

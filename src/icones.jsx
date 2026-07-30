@@ -5,11 +5,14 @@ import {
   CalendarDots,
   ChartBar,
   Check,
+  Clock,
   ClipboardText,
   Cube,
   Database,
   Desktop,
   DeviceMobile,
+  Devices,
+  Drop,
   Envelope,
   FileText,
   FlowArrow,
@@ -26,6 +29,7 @@ import {
   LinkBreak,
   LockKey,
   LockKeyOpen,
+  MapPin,
   Monitor,
   Mouse,
   Password,
@@ -64,6 +68,7 @@ const ICONES = {
   headset: Headset,
   docking: Plugs,
   mouse: Mouse,
+  perifericos: Devices, // conjunto de equipamentos, não um mouse específico
   teclado: Keyboard,
   monitor: Monitor,
   desktop: Desktop,
@@ -86,6 +91,7 @@ const ICONES = {
   rede: WifiHigh,
   email: Envelope,
   impressora: Printer,
+  tinta: Drop,
   pulso: Pulse,
   backup: Database,
   grafico: ChartBar,
@@ -118,6 +124,9 @@ const SELOS = {
   globo: Globe,
   alerta: Warning,
   cadeado: LockKey,
+  prazo: Clock, // empréstimo: o equipamento volta
+  engrenagem: Gear,
+  local: MapPin,
 }
 
 // `chave` tem prioridade sobre `nome`: as abas do portal trazem a chave pronta,

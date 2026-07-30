@@ -173,7 +173,14 @@ export function buscarConversa(atividades, pergunta) {
       // depois, e serviço/portfólio/descrição valem pouco — casar "acesso" no nome de
       // uma oferta não pode empatar com casar no nome da atividade
       const nome = norm(a.nome)
-      const ofertas = norm((a.ofertas ?? []).join(' '))
+      // opções de combo entram junto com as ofertas: "teclado" e "mouse" deixaram de
+      // ser card e viraram item da lista de "Periférico" — sem isto a busca do chat
+      // não acha nada para eles
+      const ofertas = norm(
+        [...(a.ofertas ?? []), ...(a.campos ?? []).flatMap((c) => c.opcoes ?? [])].join(
+          ' '
+        )
+      )
       const resto = norm([a.servico.nome, a.portfolio.nome, a.descricao ?? ''].join(' '))
       const pontos = termos.reduce(
         (n, t) =>
@@ -432,6 +439,7 @@ const ATIVIDADE = true
 const REGRAS_ICONE = [
   // Periféricos primeiro: os nomes do catálogo de TI ("Monitor", "Mouse", "Teclado")
   // casavam com regras genéricas mais abaixo e todos viravam o ícone de notebook.
+  [/perif[ée]rico/, 'perifericos'], // antes de "equipamento", que levaria ao notebook
   [/webcam|c[âa]mera/, 'webcam'],
   [/headset|fone de ouvido/, 'headset'],
   [/docking|dock station/, 'docking'],
@@ -463,8 +471,9 @@ const REGRAS_ICONE = [
   [/ambiente/, 'monitor', 'globo'],
   [/integracao/, 'elo', ATIVIDADE],
   [/\bjob\b/, 'engrenagem', 'x'],
-  // só o erro leva o X: "Solicitar Impressora" continua com o selo do verbo
+  // só o erro leva o X: "Configurar Impressora" continua com o selo do verbo
   [/(erro|falha).*(impress|spool)|spool/, 'impressora', 'x'],
+  [/t[oô]n+er|cartucho/, 'tinta'], // senão "Trocar Tonner" repetia "Trocar Impressora"
   [/fiori/, 'janela', 'alerta'],
   [/autoriza/, 'escudo', 'cadeado'],
   [/documento/, 'documento', ATIVIDADE],
@@ -527,6 +536,10 @@ const VERBOS = [
   [/^(solicitar|pedir|contratar|criar|incluir)\b/, 'mais'],
   [/^(trocar|substituir|alterar|atualizar)\b/, 'troca'],
   [/^(devolver|cancelar|encerrar|remover|excluir)\b/, 'devolucao'],
+  [/^(problema|falha|erro|defeito)s?\b|^mau funcionamento/, 'alerta'],
+  [/^empr[ée]stimo|^emprestar/, 'prazo'],
+  [/^(configurar|ajustar|parametrizar)\b/, 'engrenagem'],
+  [/^(remanejar|transferir|mover|realocar)\b/, 'local'],
 ]
 
 const seloDoVerbo = (n) => VERBOS.find(([r]) => r.test(n))?.[1] ?? null
