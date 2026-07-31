@@ -243,10 +243,6 @@
               "t": "texto"
             },
             {
-              "n": "Conexão",
-              "t": "texto"
-            },
-            {
               "n": "Localidade",
               "t": "texto"
             }
@@ -390,10 +386,6 @@
             },
             {
               "n": "Evidência",
-              "t": "texto"
-            },
-            {
-              "n": "Conexão",
               "t": "texto"
             },
             {
@@ -901,7 +893,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {
@@ -949,7 +942,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {
@@ -1013,7 +1007,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {
@@ -1068,7 +1063,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {
@@ -1128,7 +1124,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {
@@ -1167,7 +1164,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {
@@ -1239,7 +1237,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {
@@ -1291,7 +1290,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {
@@ -1346,7 +1346,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {
@@ -1406,7 +1407,8 @@
                 "Jira",
                 "Confluence",
                 "Salesforce",
-                "Oracle Database"
+                "Oracle Database",
+                "Outros"
               ]
             },
             {

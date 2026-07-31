@@ -324,8 +324,10 @@ const HARDWARE = ['Notebook', 'Monitor', 'Impressora', 'Celular Corporativo']
     // "Sistema afetado" — que é o mesmo campo com outro rótulo
     const sistema = a.campos.find((c) => /^sistema/i.test(c.n))
     assert.equal(sistema.t, 'combo', a.nome)
-    assert.equal(sistema.opcoes.length, 10, a.nome)
+    assert.equal(sistema.opcoes.length, 11, a.nome)
     assert.equal(sistema.opcoes[0], 'SAP ECC / S/4HANA', a.nome)
+    // sem a saída no fim, sistema fora da lista trava a abertura do chamado
+    assert.equal(sistema.opcoes.at(-1), 'Outros', a.nome)
   }
 
   // prazo por localidade: as cinco de Monitor e as três de Notebook, para os cards

@@ -71,11 +71,15 @@ const CAMPOS_FORA_DE = {
 }
 const CAMPOS_FORA_DO_SERVICO = {
   'gestão de acesso': /^(perfil ou funcionalidade|vig[êe]ncia|centro de custo)$/i,
+  // no serviço e não na atividade: "Conexão" está em "Trocar Monitor", e
+  // "Mau Funcionamento do Monitor" copia dela em ATIVIDADES_EXTRAS
+  monitor: /^conex[ãa]o$/i,
 }
 
 // Campo que troca de tipo no portal: a planilha traz "Ambiente" e "Sistema" como
 // texto livre; o formulário precisa dos três ambientes marcáveis juntos e do
-// sistema escolhido numa lista fechada.
+// sistema escolhido numa lista. "Outros" fecha a lista sem trancá-la: sistema fora
+// dos dez existe, e sem a saída o chamado não teria como ser aberto.
 const SISTEMAS = [
   'SAP ECC / S/4HANA',
   'ServiceNow',
@@ -87,6 +91,7 @@ const SISTEMAS = [
   'Confluence',
   'Salesforce',
   'Oracle Database',
+  'Outros',
 ]
 
 const comboSistema = { t: 'combo', opcoes: SISTEMAS }
