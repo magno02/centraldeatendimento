@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import logo from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_HORIZONTAL_AZUL_RBG.png'
+import logoVertical from './assets/AF_ELETROBRAS_PRIMARIA_LOGO_AXIA_ENERGIA_VERTICAL_AZUL_RBG.png'
 import fundoHero from './assets/UHE_Luiz_Gonzaga_Banner.webp'
 import {
   GRUPOS,
@@ -7,7 +8,14 @@ import {
   POR_CHAVE,
   grupoDoPortfolio,
 } from './catalogo'
-import { IconeServico } from './icones'
+import {
+  IconeServico,
+  IconeGlobo,
+  IconeLocal,
+  IconeCheckCirculo,
+  IconeInfoCirculo,
+  IconeMenu,
+} from './icones'
 import Login from './Login'
 import { ATENDENTES, EMPRESAS, ESTADOS, AREAS, USUARIOS, GESTOR_DE } from './organizacao'
 import {
@@ -25,6 +33,7 @@ import {
   contarPorStatus,
   artigoDe,
   prazoLegivel,
+  emDiasUteis,
   doUsuario,
   ofertasDoServico,
   filtrarOfertas,
@@ -318,7 +327,9 @@ export default function App() {
 
             {secao === 'Portfólios' && (
               <>
-                <label className="relative mt-8 block w-full max-w-xl">
+                {/* mt menor no celular: lá "Favoritos/Recentes" ficam numa linha
+                    própria logo acima, e 32px abriam um vão no meio da tela */}
+                <label className="relative mt-3 block w-full max-w-xl sm:mt-8">
                   <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-axia-grey/50">
                     <IconeLupa />
                   </span>
@@ -799,27 +810,72 @@ function Topo({
 }) {
   return (
     <header className="border-b border-axia-neutral bg-white text-axia-purple">
-      {/* barra fina: só logo e conta, uma linha em qualquer largura. A busca saiu
-          daqui — quem busca é o hero do portal. */}
+      {/* barra fina: só logo e conta. A busca saiu daqui — quem busca é o hero do
+          portal. No celular são três blocos: hambúrguer à esquerda, logo no meio e
+          notificações à direita. */}
       <div className="mx-auto flex max-w-[1440px] items-center gap-4 px-4 py-2 sm:px-8">
+        {/* só no celular: na barra larga os mesmos destinos estão no <nav>. O
+            sm:hidden vai no invólucro, não no botão: o <div relative> do Popover
+            continuaria ocupando um item do flex e comendo um gap à esquerda */}
+        <div className="sm:hidden">
+          <Popover
+            ancorado
+            largura="w-64"
+            aria-label="Abrir menu"
+            classeBotao="shrink-0 rounded-full p-2 text-axia-grey hover:bg-axia-bg hover:text-axia-blue"
+            rotulo={<IconeMenu className="h-6 w-6" />}
+          >
+            {(fechar) => (
+              <MenuUsuario
+                usuario={usuario}
+                onInicio={() => {
+                  fechar()
+                  onInicio()
+                }}
+                onMeusTickets={() => {
+                  fechar()
+                  onMeusTickets()
+                }}
+                onAprovacoes={() => {
+                  fechar()
+                  onAprovacoes()
+                }}
+                onSair={() => {
+                  fechar()
+                  onSair()
+                }}
+              />
+            )}
+          </Popover>
+        </div>
+
+        {/* mx-auto centra o logo entre o hambúrguer e o sino, que têm larguras
+            parecidas; no sm: ele volta a encostar na borda esquerda */}
+        {/* no celular entra a versão vertical da marca, sem o "Portal de Serviços"
+            ao lado: entre o ☰ e o sino não sobra largura para logo deitado mais
+            texto, e a vertical ocupa o espaço em altura, que aí existe */}
         <button
           onClick={onInicio}
-          className="flex min-w-0 shrink-0 cursor-pointer items-center gap-3"
+          className="mx-auto flex min-w-0 shrink-0 cursor-pointer items-center gap-3 sm:mx-0"
           aria-label="Ir para o portal"
         >
           <img
+            src={logoVertical}
+            alt="AXIA Energia"
+            className="h-20 w-auto shrink-0 object-contain sm:hidden"
+          />
+          <img
             src={logo}
             alt="AXIA Energia"
-            className="h-10 w-auto shrink-0 object-contain sm:h-12"
+            className="hidden h-12 w-auto shrink-0 object-contain sm:block"
           />
-          {/* some no celular: com os links ocultos lá, o espaço é para logo e conta */}
           <span className="hidden text-[13px] font-semibold uppercase tracking-wide text-axia-blue sm:block">
             Portal de Serviços
           </span>
         </button>
 
         {/* oculto no celular: três links + logo + conta não cabem numa barra fina.
-            No dropdown do usuário os mesmos destinos continuam acessíveis. */}
+            Lá os mesmos destinos estão no menu hambúrguer. */}
         <nav className="mx-auto hidden items-center gap-2 sm:flex">
           {[
             { rotulo: 'Portal', onClick: onInicio },
@@ -885,11 +941,16 @@ function Topo({
             )}
           </Popover>
 
-          <span className="h-6 w-px bg-axia-neutral" aria-hidden="true" />
+          <span
+            className="hidden h-6 w-px bg-axia-neutral sm:block"
+            aria-hidden="true"
+          />
 
+          {/* o perfil só aparece na barra larga: no celular ele é a última seção
+              do menu hambúrguer, para o sino ficar sozinho nesta ponta */}
           <Popover
-            largura="w-64"
-            classeBotao="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 hover:bg-axia-bg"
+            largura="sm:w-64"
+            classeBotao="hidden items-center gap-2.5 rounded-full py-1 pl-1 pr-3 hover:bg-axia-bg sm:flex"
             rotulo={
               <>
                 {/* invertido junto com o header: no fundo branco quem colore é o avatar */}
@@ -939,8 +1000,25 @@ const Chevron = () => (
   </svg>
 )
 
+// Posição do painel no celular. O padrão é folha no rodapé: ancorado no gatilho, um
+// painel largo sempre vazava da tela. `ancorado` volta ao dropdown preso ao botão e
+// só serve para gatilho encostado na margem esquerda, como o hambúrguer — daí o
+// left-0, que no sm: cede lugar ao right-0 de sempre.
+const PAINEL_FOLHA =
+  'fixed inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-b-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-3 sm:max-h-none sm:overflow-hidden sm:rounded-b-card'
+const PAINEL_ANCORADO =
+  'absolute left-0 top-full mt-2 max-w-[calc(100vw-2rem)] overflow-hidden sm:left-auto sm:right-0 sm:mt-3'
+
 // Popover do header: fecha ao clicar fora ou com Esc. children é função que recebe fechar().
-function Popover({ rotulo, classeBotao, largura = 'w-96', children, ...props }) {
+// `largura` vem com o prefixo sm: porque no celular a folha ocupa a tela inteira.
+function Popover({
+  rotulo,
+  classeBotao,
+  largura = 'sm:w-96',
+  ancorado = false,
+  children,
+  ...props
+}) {
   const [aberto, setAberto] = useState(false)
 
   useEffect(() => {
@@ -968,7 +1046,9 @@ function Popover({ rotulo, classeBotao, largura = 'w-96', children, ...props }) 
             className="fixed inset-0 z-40 cursor-default"
           />
           <div
-            className={`absolute right-0 top-full z-50 mt-3 overflow-hidden rounded-card border border-axia-neutral bg-white text-axia-grey1 shadow-xl ${largura}`}
+            className={`z-50 rounded-card border border-axia-neutral bg-white text-axia-grey1 shadow-xl ${
+              ancorado ? PAINEL_ANCORADO : PAINEL_FOLHA
+            } ${largura}`}
           >
             {children(() => setAberto(false))}
           </div>
@@ -978,26 +1058,43 @@ function Popover({ rotulo, classeBotao, largura = 'w-96', children, ...props }) 
   )
 }
 
-function MenuUsuario({ usuario, onMeusTickets, onAprovacoes, onSair }) {
+// Um menu só, aberto por dois gatilhos: o avatar na barra larga e o hambúrguer no
+// celular. "Portal" e "Aprovações" ficam sm:hidden porque na barra larga eles já
+// estão no <nav> — no celular o <nav> não existe e é por aqui que se chega.
+// `onInicio` só é passado pelo hambúrguer; sem ele o item some.
+function MenuUsuario({ usuario, onInicio, onMeusTickets, onAprovacoes, onSair }) {
   return (
     <div className="p-2">
-      <div className="px-3 py-2">
-        <p className="text-sm font-bold text-axia-purple">{usuario.nome}</p>
+      <div className="flex items-center gap-3 px-3 py-2">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-axia-blue text-xs font-bold text-white">
+          {iniciais(usuario.nome)}
+        </span>
+        <p className="min-w-0 truncate text-sm font-bold text-axia-purple">
+          {usuario.nome}
+        </p>
       </div>
       <hr className="my-1 border-axia-neutral" />
+      {onInicio && (
+        <button
+          onClick={onInicio}
+          className="w-full rounded-chip px-3 py-2.5 text-left text-sm hover:bg-axia-blue/5 hover:text-axia-blue sm:hidden"
+        >
+          Portal
+        </button>
+      )}
       <button
         onClick={onMeusTickets}
         className="w-full rounded-chip px-3 py-2.5 text-left text-sm hover:bg-axia-blue/5 hover:text-axia-blue"
       >
         Meus chamados
       </button>
-      {/* no celular a barra de navegação está oculta: é por aqui que se chega */}
       <button
         onClick={onAprovacoes}
         className="w-full rounded-chip px-3 py-2.5 text-left text-sm hover:bg-axia-blue/5 hover:text-axia-blue sm:hidden"
       >
         Aprovações
       </button>
+      <hr className="my-1 border-axia-neutral" />
       <button
         onClick={onSair}
         className="w-full rounded-chip px-3 py-2.5 text-left text-sm font-bold text-axia-error hover:bg-axia-error/10"
@@ -1103,15 +1200,26 @@ function Hero({ usuario, busca, setBusca, contagem, onIndicador }) {
         </div>
 
         {/* Painel translúcido único, com divisórias no lugar de cards soltos.
-            overflow-hidden é o que faz o divide-x respeitar o arredondamento. */}
-        <div className="flex w-full shrink-0 overflow-hidden rounded-card border border-white/20 bg-white/5 backdrop-blur-[2px] sm:w-auto">
+            overflow-hidden é o que faz o divide-x respeitar o arredondamento.
+            No celular vira 2x2: em linha, "AGUARDANDO" não deixa a coluna encolher
+            (min-width auto do flex) e o quarto indicador saía da tela. O grid do
+            Tailwind usa minmax(0,1fr), que encolhe. */}
+        <div className="grid w-full shrink-0 grid-cols-2 overflow-hidden rounded-card border border-white/20 bg-white/5 backdrop-blur-[2px] sm:flex sm:w-auto">
           {STATUS_PAINEL.map((s, i) => (
             <button
               key={s}
               onClick={() => onIndicador(s)}
               title={`Ver chamados com status ${s}`}
-              className={`flex flex-1 flex-col items-center gap-1 px-3 py-3.5 text-center transition hover:bg-white/10 sm:w-24 sm:flex-none ${
-                i > 0 ? 'border-l border-white/25' : ''
+              // divisória por posição: 2x2 no celular precisa de linha em cima na
+              // segunda fila e de linha à esquerda só na coluna da direita; em
+              // linha única (sm) volta a ser só a borda esquerda de quem não é o 1º
+              className={`flex flex-1 flex-col items-center gap-1 border-white/25 px-3 py-3.5 text-center transition hover:bg-white/10 sm:w-24 sm:flex-none ${
+                [
+                  '',
+                  'border-l',
+                  'border-t sm:border-t-0 sm:border-l',
+                  'border-l border-t sm:border-t-0',
+                ][i] ?? 'border-l'
               }`}
             >
               <span className="text-2xl font-bold leading-none">{contagem[s]}</span>
@@ -1173,7 +1281,7 @@ function Abas({ ativa, onSelect, secao, onSecao, qtdFavoritos }) {
 
       {/* lista suspensa ancorada no botão, não modal centralizado */}
       <Popover
-        largura="w-72"
+        largura="sm:w-72"
         classeBotao={`${PILULA} text-axia-grey/70 hover:text-axia-blue`}
         rotulo={
           <>
@@ -1207,8 +1315,10 @@ function Abas({ ativa, onSelect, secao, onSecao, qtdFavoritos }) {
       </Popover>
 
       {/* favoritos e recentes são recortes do catálogo, não um grupo de serviços:
-          ficam separados do bloco de abas, à direita */}
-      <div className="ml-auto flex shrink-0 items-center gap-2 pl-6">
+          ficam separados do bloco de abas, à direita. No celular o ml-auto os
+          empurrava para o meio da linha quebrada — lá eles tomam a linha inteira
+          e começam na mesma margem da barra de filtro logo abaixo. */}
+      <div className="flex w-full shrink-0 items-center gap-2 sm:ml-auto sm:w-auto sm:pl-6">
         {[
           { nome: 'Favoritos', icone: IconeEstrela },
           { nome: 'Recentes', icone: IconeRelogio },
@@ -1289,7 +1399,9 @@ function Cabecalho({ trilha, titulo, subtitulo, onVoltar, extra }) {
 // O piso de 300px é o que limita a 4 colunas nos ~1376px úteis — com 240px entravam 5.
 const Grade = ({ children }) => (
   // min(100%,300px): sem isso a coluna nunca desce de 300px e estoura a tela do celular
-  <div className="grid items-stretch justify-start gap-5 grid-cols-[repeat(auto-fit,minmax(min(100%,300px),320px))]">
+  // justify-center no celular: a coluna para em 320px e sobrava um vão só do lado
+  // direito, com o card colado na margem esquerda
+  <div className="grid items-stretch justify-center gap-5 grid-cols-[repeat(auto-fit,minmax(min(100%,300px),320px))] sm:justify-start">
     {children}
   </div>
 )
@@ -1537,6 +1649,21 @@ function CardAtividade({ atividade, rodape, onClick }) {
         ? `${atividade.ofertas.length} ofertas de serviço disponíveis`
         : null
 
+  // after:inset-0 estica a área clicável deste botão por cima do card inteiro: o
+  // card fica clicável sem virar um segundo elemento interativo, que duplicaria o
+  // alvo para leitor de tela e teclado. Fora do JSX porque os dois rodapés (prazo
+  // único e prazo por localidade) terminam na mesma seta.
+  const seta = (
+    <button
+      onClick={onClick}
+      title="Acessar formulário"
+      aria-label={`Acessar formulário: ${titulo}`}
+      className="ml-auto flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-axia-blue/10 text-axia-blue transition after:absolute after:inset-0 after:content-[''] hover:bg-axia-blue hover:text-white"
+    >
+      <IconeSeta />
+    </button>
+  )
+
   return (
     // div e não button: o card tem ações próprias dentro (favoritar, "sobre" e
     // acessar), e botão dentro de botão é HTML inválido
@@ -1549,7 +1676,10 @@ function CardAtividade({ atividade, rodape, onClick }) {
           />
         </span>
 
-        <h3 className="flex-1 pt-1 text-base font-semibold leading-snug text-axia-purple">
+        {/* min-h de duas linhas: sem ele "Trocar Monitor" (uma linha) subia a
+            divisória e o bloco de prazo em relação a "Empréstimo do Monitor"
+            (duas), e os cards da mesma fileira ficavam desalinhados entre si */}
+        <h3 className="min-h-[2.75rem] flex-1 pt-1 text-base font-semibold leading-snug text-axia-purple">
           {titulo}
         </h3>
 
@@ -1584,40 +1714,65 @@ function CardAtividade({ atividade, rodape, onClick }) {
       {rodape && <p className="mt-2 text-xs text-axia-grey/60">{rodape}</p>}
 
       {/* rodapé: prazo à esquerda e a seta de abrir à direita. A divisória só
-          aparece com SLA — sem ele sobraria uma linha sem conteúdo abaixo */}
-      <div
-        className={`mt-auto flex items-end justify-between gap-3 ${
-          atividade.sla ? 'border-t border-axia-neutral/70 pt-3' : ''
-        }`}
-      >
-        {atividade.sla && (
-          // relógio fora do texto e centrado nas duas linhas: inline com o rótulo
-          // ele ficava pequeno e preso na primeira linha
-          <div className="flex min-w-0 items-center gap-3">
-            <IconeRelogio className="h-6 w-6 shrink-0 text-axia-blue" />
-            <span className="min-w-0">
-              <span className="block text-xs text-axia-grey/70">
-                Prazo de atendimento
+          aparece com prazo — sem ele sobraria uma linha sem conteúdo abaixo.
+          Atividade com prazo por localidade troca a linha única pelas duas
+          localidades; o resto do card não muda. */}
+      {atividade.prazos ? (
+        // dois níveis por causa do mt-auto: ele prende o rodapé no fim do card e
+        // não deixa reservar espaço acima da divisória. O pt de fora abre esse
+        // espaço; a borda e o pt de dentro afastam o "Prazo previsto" da linha.
+        <div className="mt-auto pt-5">
+          <div className="border-t border-axia-neutral/70 pt-4">
+            <p className="text-sm font-bold text-axia-blue">Prazo previsto</p>
+            <dl className="mt-3 space-y-3">
+              {[
+                [IconeLocal, 'Recife', atividade.prazos.recife],
+                [IconeGlobo, 'Demais localidades', atividade.prazos.demais],
+              ].map(([Ic, local, dias]) => (
+                <div key={local} className="flex items-center gap-3">
+                  <Ic className="h-6 w-6 shrink-0 text-axia-blue" />
+                  <div className="min-w-0">
+                    <dt className="text-xs text-axia-grey/70">{local}</dt>
+                    <dd className="text-[15px] font-semibold text-axia-purple">
+                      Até {emDiasUteis(dias)}
+                    </dd>
+                  </div>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-5 flex items-end justify-between gap-3">
+              <span className="flex min-w-0 items-center gap-2 text-xs text-axia-grey/70">
+                <IconeRelogio className="h-4 w-4 shrink-0" />
+                Consulte detalhes ao abrir a solicitação.
               </span>
-              <span className="block text-[15px] font-semibold text-axia-purple">
-                {prazoLegivel(atividade.sla)}
-              </span>
-            </span>
+              {seta}
+            </div>
           </div>
-        )}
-
-        {/* after:inset-0 estica a área clicável deste botão por cima do card
-            inteiro: o card fica clicável sem virar um segundo elemento interativo,
-            que duplicaria o alvo para leitor de tela e teclado */}
-        <button
-          onClick={onClick}
-          title="Acessar formulário"
-          aria-label={`Acessar formulário: ${titulo}`}
-          className="ml-auto flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-axia-blue/10 text-axia-blue transition after:absolute after:inset-0 after:content-[''] hover:bg-axia-blue hover:text-white"
+        </div>
+      ) : (
+        <div
+          className={`mt-auto flex items-end justify-between gap-3 ${
+            atividade.sla ? 'border-t border-axia-neutral/70 pt-3' : ''
+          }`}
         >
-          <IconeSeta />
-        </button>
-      </div>
+          {atividade.sla && (
+            // relógio fora do texto e centrado nas duas linhas: inline com o rótulo
+            // ele ficava pequeno e preso na primeira linha
+            <div className="flex min-w-0 items-center gap-3">
+              <IconeRelogio className="h-6 w-6 shrink-0 text-axia-blue" />
+              <span className="min-w-0">
+                <span className="block text-xs text-axia-grey/70">
+                  Prazo de atendimento
+                </span>
+                <span className="block text-[15px] font-semibold text-axia-purple">
+                  {prazoLegivel(atividade.sla)}
+                </span>
+              </span>
+            </div>
+          )}
+          {seta}
+        </div>
+      )}
 
     </div>
   )
@@ -1675,6 +1830,7 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
   const [anexos, setAnexos] = useState([])
   const [para, setPara] = useState('Eu mesmo(a)')
   const [alvo, setAlvo] = useState('')
+  const [prazoAberto, setPrazoAberto] = useState(false)
   const outraPessoa = para === 'Outra pessoa'
 
   const visiveis = atividade.campos.filter(
@@ -1706,7 +1862,10 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
             O overflow-hidden do <form> apara a faixa nos cantos arredondados: sem ele
             ela passava por cima do raio e o canto superior ficava quadrado. */}
         <div className="-mx-5 -mt-5 border-b border-axia-neutral bg-white px-5 pt-5 sm:-mx-8 sm:-mt-8 sm:px-8 sm:pt-8">
-          <div className="flex items-start gap-4">
+          {/* empilhado no celular: em linha, o chip de 56px mais o gap tiravam um
+              quarto da largura do cartão e a descrição quebrava de duas em duas
+              palavras. Do sm: para cima continua ícone à esquerda do texto. */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
             {/* mesmo chip do card de atividade: no branco puro o ícone se perdia
                 e o disco do selo de verbo ficava invisível */}
             <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-chip bg-axia-blue/10">
@@ -1723,14 +1882,44 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
                 {atividade.descricao ??
                   'Use este formulário para registrar esta solicitação. Ao enviar, você recebe um número de protocolo para acompanhar o atendimento em "Meus chamados".'}
               </p>
-              {atividade.sla && (
-                <p className="mt-2 text-sm font-bold text-axia-purple">
-                  Tempo de atendimento da solicitação:{' '}
-                  <span className="text-axia-blue">
-                    {prazoLegivel(atividade.sla)}
-                  </span>
-                </p>
+              {/* com prazo por localidade o SLA único da planilha some: manter os
+                  dois deixaria um "Tempo de atendimento: 2 dias úteis" logo acima
+                  das notas que explicam Recife e as demais localidades */}
+              {atividade.prazos ? (
+                <>
+                  <p className="mt-2 text-sm font-bold text-axia-purple">
+                    Prazo previsto:{' '}
+                    <span className="text-axia-blue">
+                      Recife até {emDiasUteis(atividade.prazos.recife)} · demais
+                      localidades até {emDiasUteis(atividade.prazos.demais)}
+                    </span>
+                  </p>
+                  {/* o porquê da diferença sai do topo e vai para o modal: como
+                      texto corrido ele empurrava o formulário para baixo da dobra */}
+                  {atividade.prazos.porqueRecife && (
+                    <button
+                      type="button"
+                      onClick={() => setPrazoAberto(true)}
+                      // items-start + text-left: quando o rótulo quebra em duas
+                      // linhas, o items-center deslocava o ícone para o meio delas
+                      className="mt-2 flex cursor-pointer items-start gap-2 text-left text-sm text-axia-blue transition hover:underline"
+                    >
+                      <IconeInfoCirculo className="mt-0.5 h-4 w-4 shrink-0" />
+                      Como os prazos são calculados?
+                    </button>
+                  )}
+                </>
+              ) : (
+                atividade.sla && (
+                  <p className="mt-2 text-sm font-bold text-axia-purple">
+                    Tempo de atendimento da solicitação:{' '}
+                    <span className="text-axia-blue">
+                      {prazoLegivel(atividade.sla)}
+                    </span>
+                  </p>
+                )
               )}
+
             </div>
           </div>
 
@@ -1851,6 +2040,48 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
           Enviar solicitação
         </button>
       </form>
+
+      {/* fora do <form>: dentro dele o Esc do <dialog> fecharia o modal e o botão
+          de fechar contaria como submit */}
+      <Modal
+        aberto={prazoAberto}
+        titulo="Prazo previsto"
+        onFechar={() => setPrazoAberto(false)}
+      >
+        <div className="space-y-5">
+          {[
+            [
+              IconeCheckCirculo,
+              'text-axia-blue',
+              'Por que o prazo é menor em Recife?',
+              atividade.prazos?.porqueRecife,
+            ],
+            [
+              IconeInfoCirculo,
+              'text-amber-500',
+              'Por que o prazo é maior nas demais localidades?',
+              atividade.prazos?.porqueDemais,
+            ],
+          ].map(([Ic, cor, pergunta, resposta]) => (
+            <div key={pergunta}>
+              <h4 className="flex items-center gap-2 text-sm font-bold text-axia-blue">
+                <Ic className={`h-5 w-5 shrink-0 ${cor}`} />
+                {pergunta}
+              </h4>
+              <p className="mt-2 pl-7 text-sm leading-relaxed text-axia-grey">
+                {resposta}
+              </p>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setPrazoAberto(false)}
+            className="rounded-full bg-axia-blue px-7 py-2.5 text-sm font-bold text-white hover:bg-axia-blue2"
+          >
+            Entendi
+          </button>
+        </div>
+      </Modal>
     </>
   )
 }
@@ -2051,7 +2282,7 @@ function ListaMarcavel({ nome, opcoes, placeholder }) {
     <>
       <Popover
         type="button"
-        largura="w-full"
+        largura="sm:w-full"
         classeBotao={`${inputBase} flex cursor-pointer items-center justify-between gap-2 text-left`}
         rotulo={
           <>

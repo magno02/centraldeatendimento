@@ -56,6 +56,16 @@ import {
 } from '@phosphor-icons/react'
 import { chaveIcone } from './lib'
 
+// Fora do mapa de serviços: são ícones de rótulo, usados direto no card de prazo
+// e nas notas de prazo do formulário.
+export {
+  Globe as IconeGlobo,
+  MapPin as IconeLocal,
+  CheckCircle as IconeCheckCirculo,
+  Info as IconeInfoCirculo,
+  List as IconeMenu,
+} from '@phosphor-icons/react'
+
 // Família única: Phosphor. Mudar PESO ('fill' | 'duotone' | 'bold' | 'regular')
 // troca o visual de todos os ícones do portal de uma vez.
 // Só contorno, sem preenchimento. Phosphor não tem "medium": a escala é

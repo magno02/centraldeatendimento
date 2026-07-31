@@ -320,6 +320,40 @@ const HARDWARE = ['Notebook', 'Monitor', 'Impressora', 'Celular Corporativo']
       !a.campos.some((c) => /perfil ou funcionalidade|vigência|centro de custo/i.test(c.n)),
       a.nome
     )
+    // Sistema é lista fechada nas dez, inclusive onde a planilha chama de
+    // "Sistema afetado" — que é o mesmo campo com outro rótulo
+    const sistema = a.campos.find((c) => /^sistema/i.test(c.n))
+    assert.equal(sistema.t, 'combo', a.nome)
+    assert.equal(sistema.opcoes.length, 10, a.nome)
+    assert.equal(sistema.opcoes[0], 'SAP ECC / S/4HANA', a.nome)
+  }
+
+  // prazo por localidade: as cinco de Monitor e as três de Notebook, para os cards
+  // ficarem iguais na fileira. Nenhum outro serviço tem, senão o card muda sozinho.
+  {
+    const COM_PRAZO = ['Monitor', 'Notebook']
+    // só os dias: as notas de texto são conferidas logo abaixo
+    const diasDe = (n) => {
+      const { prazos } = ATIVIDADES_VISIVEIS.find((a) => a.nome === n)
+      return { recife: prazos.recife, demais: prazos.demais }
+    }
+    assert.deepEqual(diasDe('Solicitar Monitor'), { recife: 3, demais: 20 })
+    assert.deepEqual(diasDe('Trocar Monitor'), { recife: 2, demais: 10 })
+    assert.deepEqual(diasDe('Devolver Monitor'), { recife: 2, demais: 7 })
+    assert.deepEqual(diasDe('Empréstimo do Monitor'), { recife: 3, demais: 20 })
+    assert.deepEqual(diasDe('Mau Funcionamento do Monitor'), { recife: 2, demais: 10 })
+    assert.deepEqual(diasDe('Solicitar Notebook'), { recife: 3, demais: 20 })
+    assert.deepEqual(diasDe('Trocar Notebook'), { recife: 2, demais: 10 })
+    assert.deepEqual(diasDe('Devolver Notebook'), { recife: 2, demais: 7 })
+
+    for (const a of ATIVIDADES_VISIVEIS) {
+      assert.equal(!!a.prazos, COM_PRAZO.includes(a.servico.nome), a.chave)
+      // as duas notas do modal: sem uma delas ele abriria pela metade
+      if (a.prazos) {
+        assert.ok(a.prazos.porqueRecife?.length > 40, a.nome)
+        assert.ok(a.prazos.porqueDemais?.length > 40, a.nome)
+      }
+    }
   }
   for (const a of acesso.atividades) {
     assert.deepEqual(a.ofertas, [], a.nome)
@@ -538,6 +572,9 @@ assert.deepEqual(contarPorStatus([{ status: 'Aberto' }, { status: 'Fechado' }]),
 // os indicadores do portal são um recorte do STATUS, nunca um status inventado
 assert.ok(STATUS_PAINEL.every((s) => STATUS.includes(s)))
 assert.ok(!STATUS_PAINEL.includes('Aberto'))
+// o painel é 2x2 no celular e 1x4 no desktop: um número ímpar deixaria a última
+// fila com um indicador solto, e a régua de divisórias do App.jsx é por índice
+assert.equal(STATUS_PAINEL.length, 4)
 
 // cada oferta vira um card; atividade sem oferta continua sendo um card só
 {

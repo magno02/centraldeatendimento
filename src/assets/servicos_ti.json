@@ -53,7 +53,13 @@
               "n": "Local de entrega",
               "t": "texto"
             }
-          ]
+          ],
+          "prazos": {
+            "recife": 3,
+            "demais": 20,
+            "porqueRecife": "O prazo é menor porque temos estoque local de notebooks na unidade de Recife. Isso permite que a separação, configuração e entrega sejam feitas de forma mais rápida, reduzindo o tempo total de atendimento.",
+            "porqueDemais": "Nas demais localidades não temos estoque local. Por isso, o equipamento precisa ser enviado do centro de distribuição para sua região, passando pelos processos de logística, transporte e entrega, o que pode levar até 20 dias úteis."
+          }
         },
         {
           "nome": "Trocar Notebook",
@@ -104,7 +110,13 @@
               "n": "Softwares utilizados",
               "t": "texto"
             }
-          ]
+          ],
+          "prazos": {
+            "recife": 2,
+            "demais": 10,
+            "porqueRecife": "Quando há disponibilidade em estoque na unidade de Recife, a substituição do notebook pode ser realizada rapidamente, permitindo a coleta do equipamento atual, a configuração do novo notebook e a entrega ao colaborador em um prazo reduzido.",
+            "porqueDemais": "Nas demais localidades, a substituição depende do envio do novo equipamento, da logística de transporte e, em alguns casos, da devolução do equipamento anterior. Essas etapas aumentam o tempo necessário para conclusão da solicitação, podendo levar até 10 dias úteis."
+          }
         },
         {
           "nome": "Devolver Notebook",
@@ -147,7 +159,13 @@
               "n": "Necessidade de backup",
               "t": "texto"
             }
-          ]
+          ],
+          "prazos": {
+            "recife": 2,
+            "demais": 7,
+            "porqueRecife": "Em Recife, a devolução é realizada diretamente na unidade ou por equipe local, tornando o processo de recolhimento e registro patrimonial mais ágil.",
+            "porqueDemais": "Nas demais localidades, a devolução depende da programação de coleta, transporte até a unidade responsável e atualização do controle patrimonial. Por envolver etapas logísticas adicionais, o processo pode levar até 7 dias úteis."
+          }
         }
       ]
     },
@@ -183,7 +201,13 @@
               "n": "Local de instalação",
               "t": "texto"
             }
-          ]
+          ],
+          "prazos": {
+            "recife": 3,
+            "demais": 20,
+            "porqueRecife": "O prazo é reduzido porque a unidade de Recife mantém estoque local de monitores para atendimento das demandas internas. Isso permite que o equipamento seja separado, conferido e disponibilizado rapidamente ao solicitante, reduzindo significativamente o tempo de entrega.",
+            "porqueDemais": "Nas demais localidades, normalmente não há estoque disponível na unidade. Nesses casos, o monitor é enviado a partir do centro de distribuição ou de outra unidade da empresa. Esse processo envolve separação do equipamento, transporte, logística entre filiais e entrega ao colaborador, o que pode levar até 10 dias úteis."
+          }
         },
         {
           "nome": "Trocar Monitor",
@@ -226,7 +250,13 @@
               "n": "Localidade",
               "t": "texto"
             }
-          ]
+          ],
+          "prazos": {
+            "recife": 2,
+            "demais": 10,
+            "porqueRecife": "Quando há disponibilidade em estoque na unidade de Recife, a substituição do monitor pode ser realizada rapidamente, permitindo a coleta do equipamento atual, preparação do novo monitor e entrega ao colaborador em um prazo reduzido.",
+            "porqueDemais": "Nas demais localidades, a substituição depende do envio do novo equipamento, da logística de transporte e, em alguns casos, da devolução do equipamento anterior. Essas etapas aumentam o tempo necessário para conclusão da solicitação, podendo levar até 7 dias úteis."
+          }
         },
         {
           "nome": "Devolver Monitor",
@@ -269,7 +299,13 @@
               "n": "Cabos e acessórios",
               "t": "texto"
             }
-          ]
+          ],
+          "prazos": {
+            "recife": 2,
+            "demais": 7,
+            "porqueRecife": "Em Recife, a devolução é realizada diretamente na unidade ou por equipe local, tornando o processo de recolhimento e registro patrimonial mais ágil.",
+            "porqueDemais": "Nas demais localidades, a devolução depende da programação de coleta, transporte até a unidade responsável e atualização do controle patrimonial. Por envolver etapas logísticas adicionais, o processo pode levar até 7 dias úteis."
+          }
         },
         {
           "nome": "Empréstimo do Monitor",
@@ -304,7 +340,13 @@
               "n": "Motivo",
               "t": "textarea"
             }
-          ]
+          ],
+          "prazos": {
+            "recife": 3,
+            "demais": 20,
+            "porqueRecife": "Quando há equipamentos disponíveis na unidade de Recife, o empréstimo pode ser realizado rapidamente, após validação da necessidade e disponibilidade do equipamento.",
+            "porqueDemais": "Nas demais localidades, o empréstimo depende da disponibilidade em estoque e do envio do equipamento pela logística corporativa. Esse fluxo pode demandar até 5 dias úteis para ser concluído."
+          }
         },
         {
           "nome": "Mau Funcionamento do Monitor",
@@ -358,7 +400,13 @@
               "n": "Localidade",
               "t": "texto"
             }
-          ]
+          ],
+          "prazos": {
+            "recife": 2,
+            "demais": 10,
+            "porqueRecife": "Quando o problema exige substituição do monitor, a existência de estoque local permite que a troca seja realizada rapidamente após a avaliação técnica.",
+            "porqueDemais": "Nas demais localidades, o atendimento pode depender da análise técnica, disponibilidade de equipamento para substituição e transporte até a unidade do colaborador. Essas etapas podem ampliar o prazo para até 5 dias úteis."
+          }
         }
       ]
     },
@@ -842,7 +890,19 @@
             },
             {
               "n": "Sistema",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Ambiente",
@@ -878,7 +938,19 @@
             },
             {
               "n": "Sistema",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Ambiente",
@@ -930,7 +1002,19 @@
             },
             {
               "n": "Sistema",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Acessos a revogar",
@@ -973,7 +1057,19 @@
             },
             {
               "n": "Sistema",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Ambiente",
@@ -1021,7 +1117,19 @@
             },
             {
               "n": "Sistema",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Telefone corporativo",
@@ -1048,7 +1156,19 @@
           "campos": [
             {
               "n": "Sistema afetado",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Login",
@@ -1108,7 +1228,19 @@
             },
             {
               "n": "Sistema",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Ambiente",
@@ -1148,7 +1280,19 @@
           "campos": [
             {
               "n": "Sistema",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Módulo ou funcionalidade",
@@ -1191,7 +1335,19 @@
           "campos": [
             {
               "n": "Sistema",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Ambiente",
@@ -1239,7 +1395,19 @@
           "campos": [
             {
               "n": "Sistema",
-              "t": "texto"
+              "t": "combo",
+              "opcoes": [
+                "SAP ECC / S/4HANA",
+                "ServiceNow",
+                "Microsoft 365",
+                "Active Directory (AD)",
+                "VPN Corporativa",
+                "Power BI",
+                "Jira",
+                "Confluence",
+                "Salesforce",
+                "Oracle Database"
+              ]
             },
             {
               "n": "Ambiente",

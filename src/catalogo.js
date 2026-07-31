@@ -72,6 +72,7 @@ const servicoDaPlanilha = (s, portfolio) => {
       chave: `${chave}/${a.nome}`,
       descricao: a.descricao,
       sla: a.sla,
+      prazos: a.prazos,
       ofertas: [],
       campos: a.campos,
     })),

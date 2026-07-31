@@ -73,14 +73,33 @@ const CAMPOS_FORA_DO_SERVICO = {
   'gestão de acesso': /^(perfil ou funcionalidade|vig[êe]ncia|centro de custo)$/i,
 }
 
-// Campo que troca de tipo no portal: a planilha traz "Ambiente" como texto livre e
-// o formulário precisa dos três ambientes marcáveis juntos.
+// Campo que troca de tipo no portal: a planilha traz "Ambiente" e "Sistema" como
+// texto livre; o formulário precisa dos três ambientes marcáveis juntos e do
+// sistema escolhido numa lista fechada.
+const SISTEMAS = [
+  'SAP ECC / S/4HANA',
+  'ServiceNow',
+  'Microsoft 365',
+  'Active Directory (AD)',
+  'VPN Corporativa',
+  'Power BI',
+  'Jira',
+  'Confluence',
+  'Salesforce',
+  'Oracle Database',
+]
+
+const comboSistema = { t: 'combo', opcoes: SISTEMAS }
+
 const CAMPOS_TROCADOS = {
   'gestão de acesso': {
     ambiente: {
       t: 'checkbox',
       opcoes: ['Desenvolvimento', 'Homologação', 'Produção'],
     },
+    sistema: comboSistema,
+    // mesmo campo, rótulo diferente na planilha dos incidentes
+    'sistema afetado': comboSistema,
   },
 }
 
@@ -287,9 +306,133 @@ function atividadesExtras(servicos) {
   }
 }
 
+// Prazo de entrega em dias úteis por localidade. A planilha traz um SLA único, que
+// não separa a capital do interior; o card mostra os dois quando existem aqui, e no
+// lugar do SLA. As cinco de Monitor entram para os cards ficarem iguais lado a lado
+// — as duas últimas repetem o prazo de quem elas copiam em ATIVIDADES_EXTRAS.
+// Aplicado depois de atividadesExtras, então cada uma é listada pelo nome, sem
+// herança implícita.
+//
+// `porqueRecife`/`porqueDemais` são o texto do modal "Como os prazos são
+// calculados?". Os de Monitor vieram prontos do negócio e citam prazos próprios,
+// que não batem com os desta tabela em quatro das cinco — está sob confirmação.
+// Em Notebook, só "Solicitar" veio pronto; "Trocar" e "Devolver" foram adaptados
+// do texto de Monitor com os dias daqui, e também aguardam confirmação.
+const PRAZOS_POR_LOCAL = {
+  'Solicitar Monitor': {
+    recife: 3,
+    demais: 20,
+    porqueRecife:
+      'O prazo é reduzido porque a unidade de Recife mantém estoque local de ' +
+      'monitores para atendimento das demandas internas. Isso permite que o ' +
+      'equipamento seja separado, conferido e disponibilizado rapidamente ao ' +
+      'solicitante, reduzindo significativamente o tempo de entrega.',
+    porqueDemais:
+      'Nas demais localidades, normalmente não há estoque disponível na unidade. ' +
+      'Nesses casos, o monitor é enviado a partir do centro de distribuição ou de ' +
+      'outra unidade da empresa. Esse processo envolve separação do equipamento, ' +
+      'transporte, logística entre filiais e entrega ao colaborador, o que pode ' +
+      'levar até 10 dias úteis.',
+  },
+  'Trocar Monitor': {
+    recife: 2,
+    demais: 10,
+    porqueRecife:
+      'Quando há disponibilidade em estoque na unidade de Recife, a substituição ' +
+      'do monitor pode ser realizada rapidamente, permitindo a coleta do ' +
+      'equipamento atual, preparação do novo monitor e entrega ao colaborador em ' +
+      'um prazo reduzido.',
+    porqueDemais:
+      'Nas demais localidades, a substituição depende do envio do novo ' +
+      'equipamento, da logística de transporte e, em alguns casos, da devolução ' +
+      'do equipamento anterior. Essas etapas aumentam o tempo necessário para ' +
+      'conclusão da solicitação, podendo levar até 7 dias úteis.',
+  },
+  'Devolver Monitor': {
+    recife: 2,
+    demais: 7,
+    porqueRecife:
+      'Em Recife, a devolução é realizada diretamente na unidade ou por equipe ' +
+      'local, tornando o processo de recolhimento e registro patrimonial mais ágil.',
+    porqueDemais:
+      'Nas demais localidades, a devolução depende da programação de coleta, ' +
+      'transporte até a unidade responsável e atualização do controle ' +
+      'patrimonial. Por envolver etapas logísticas adicionais, o processo pode ' +
+      'levar até 7 dias úteis.',
+  },
+  'Empréstimo do Monitor': {
+    recife: 3,
+    demais: 20,
+    porqueRecife:
+      'Quando há equipamentos disponíveis na unidade de Recife, o empréstimo pode ' +
+      'ser realizado rapidamente, após validação da necessidade e disponibilidade ' +
+      'do equipamento.',
+    porqueDemais:
+      'Nas demais localidades, o empréstimo depende da disponibilidade em estoque ' +
+      'e do envio do equipamento pela logística corporativa. Esse fluxo pode ' +
+      'demandar até 5 dias úteis para ser concluído.',
+  },
+  'Mau Funcionamento do Monitor': {
+    recife: 2,
+    demais: 10,
+    porqueRecife:
+      'Quando o problema exige substituição do monitor, a existência de estoque ' +
+      'local permite que a troca seja realizada rapidamente após a avaliação ' +
+      'técnica.',
+    porqueDemais:
+      'Nas demais localidades, o atendimento pode depender da análise técnica, ' +
+      'disponibilidade de equipamento para substituição e transporte até a ' +
+      'unidade do colaborador. Essas etapas podem ampliar o prazo para até 5 ' +
+      'dias úteis.',
+  },
+  'Solicitar Notebook': {
+    recife: 3,
+    demais: 20,
+    porqueRecife:
+      'O prazo é menor porque temos estoque local de notebooks na unidade de ' +
+      'Recife. Isso permite que a separação, configuração e entrega sejam feitas ' +
+      'de forma mais rápida, reduzindo o tempo total de atendimento.',
+    porqueDemais:
+      'Nas demais localidades não temos estoque local. Por isso, o equipamento ' +
+      'precisa ser enviado do centro de distribuição para sua região, passando ' +
+      'pelos processos de logística, transporte e entrega, o que pode levar até ' +
+      '20 dias úteis.',
+  },
+  'Trocar Notebook': {
+    recife: 2,
+    demais: 10,
+    porqueRecife:
+      'Quando há disponibilidade em estoque na unidade de Recife, a substituição ' +
+      'do notebook pode ser realizada rapidamente, permitindo a coleta do ' +
+      'equipamento atual, a configuração do novo notebook e a entrega ao ' +
+      'colaborador em um prazo reduzido.',
+    porqueDemais:
+      'Nas demais localidades, a substituição depende do envio do novo ' +
+      'equipamento, da logística de transporte e, em alguns casos, da devolução ' +
+      'do equipamento anterior. Essas etapas aumentam o tempo necessário para ' +
+      'conclusão da solicitação, podendo levar até 10 dias úteis.',
+  },
+  'Devolver Notebook': {
+    recife: 2,
+    demais: 7,
+    porqueRecife:
+      'Em Recife, a devolução é realizada diretamente na unidade ou por equipe ' +
+      'local, tornando o processo de recolhimento e registro patrimonial mais ágil.',
+    porqueDemais:
+      'Nas demais localidades, a devolução depende da programação de coleta, ' +
+      'transporte até a unidade responsável e atualização do controle ' +
+      'patrimonial. Por envolver etapas logísticas adicionais, o processo pode ' +
+      'levar até 7 dias úteis.',
+  },
+}
+
 for (const [destino, servicos] of porDestino) {
   atividadesExtras(servicos)
   for (const s of SERVICOS_EXTRAS[destino] ?? []) servicos.set(s.nome, s)
+
+  for (const s of servicos.values())
+    for (const a of s.atividades)
+      if (PRAZOS_POR_LOCAL[a.nome]) a.prazos = PRAZOS_POR_LOCAL[a.nome]
 
   const saida = { portfolio: PORTFOLIO[destino], servicos: [...servicos.values()] }
   writeFileSync(`src/assets/${destino}`, JSON.stringify(saida, null, 2) + '\n')
