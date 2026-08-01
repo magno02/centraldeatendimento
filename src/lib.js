@@ -598,6 +598,14 @@ export const CONTAS = [
     estado: 'Pernambuco',
     area: 'Tecnologia da Informação',
   },
+  {
+    email: 'acesso@axia.com.br',
+    senha: 'acessoaxia@2026',
+    nome: 'Acesso',
+    empresa: 'AXIA Energia',
+    estado: 'Pernambuco',
+    area: 'Tecnologia da Informação',
+  },
 ]
 
 // Devolve a conta (para virar a sessão) ou null — o e-mail ignora caixa e espaços.
