@@ -108,6 +108,17 @@ const CAMPOS_TROCADOS = {
   },
 }
 
+// Campo que a planilha não traz e o formulário passou a pedir, por atividade.
+// Entra no fim da lista; "Tipo de usuário" é o único do catálogo com t: radio, e o
+// formulário o desloca para o bloco de quem solicita para outra pessoa.
+const CAMPOS_EXTRAS_DE = {
+  'solicitar novo acesso': [
+    { n: 'Tipo de usuário', t: 'radio', opcoes: ['Colaborador Axia', 'Terceirizado/Consultor'] },
+    { n: 'URL do sistema', t: 'texto' },
+    { n: 'E-mail de recuperação de senha', t: 'texto' },
+  ],
+}
+
 const chave = (s) => s.trim().toLowerCase()
 
 // Nome pedido pelo negócio no lugar do que veio da planilha — vale para o card e
@@ -126,8 +137,8 @@ const campoRemovido = (nome, atividade, servico) =>
 // A planilha nova separa por ponto e vírgula; a antiga, por vírgula. Detectar pelo
 // conteúdo evita uma configuração por arquivo — e "print, foto ou vídeo" só sobrevive
 // na nova justamente porque lá a vírgula não é separador.
-const separarCampos = (bruto, atividade, servico) =>
-  (bruto.includes(';') ? bruto.split(';') : bruto.split(','))
+const separarCampos = (bruto, atividade, servico) => [
+  ...(bruto.includes(';') ? bruto.split(';') : bruto.split(','))
     .map(limparCampo)
     .filter((n) => n && !campoRemovido(n, atividade, servico))
     .map(renomear)
@@ -135,7 +146,9 @@ const separarCampos = (bruto, atividade, servico) =>
       n: maiuscula(n),
       t: tipoDoCampo(n),
       ...CAMPOS_TROCADOS[chave(servico)]?.[chave(n)],
-    }))
+    })),
+  ...(CAMPOS_EXTRAS_DE[chave(atividade)] ?? []),
+]
 
 // Aba de dados é a que tem coluna "Atividade": descarta "Resumo" e "Orientações".
 function abasDeCatalogo(caminho) {

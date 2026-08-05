@@ -280,6 +280,16 @@ export function filtrarOfertas(cards, termo) {
 export const emDiasUteis = (dias) =>
   `${dias} ${dias === 1 ? 'dia útil' : 'dias úteis'}`
 
+// Documento de terceiro na tela de quem abre o chamado: mostra as pontas e esconde
+// o miolo. Duas pontas bastam para conferir a pessoa sem entregar o número.
+// Valor curto demais para esconder alguma coisa sai como veio — mascarar tudo não
+// protegeria mais e ainda tiraria a única pista de conferência.
+export function anonimizar(valor, pontas = 2) {
+  const s = String(valor ?? '')
+  if (s.length <= pontas * 2) return s
+  return s.slice(0, pontas) + '*'.repeat(s.length - pontas * 2) + s.slice(-pontas)
+}
+
 export function prazoLegivel(sla) {
   const horas = Number(String(sla ?? '').match(/(\d+)\s*h/i)?.[1])
   if (!horas) return sla

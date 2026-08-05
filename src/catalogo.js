@@ -95,11 +95,8 @@ const AREA_TI = {
 // troque por leitura do JSON e apague esta tabela.
 const GRUPOS_AREAS = [
   { nome: AREA_TI.nome, icone: 'grade', areas: [AREA_TI.nome] },
-  {
-    nome: 'Segurança',
-    icone: 'escudo',
-    areas: ['Cibersegurança de TI', 'Segurança da Informação'],
-  },
+  // sem área: a aba é só o card de "Gestão de Acesso", que vem da planilha de TI
+  { nome: 'Segurança', icone: 'escudo', areas: [] },
   {
     nome: 'Dados e Automação',
     icone: 'backup',
@@ -118,16 +115,29 @@ const grupoDaArea = new Map(
 
 const TODAS_AREAS = [AREA_TI, ...PORTFOLIOS]
 
+// "Gestão de Acesso" abre a aba de Segurança em vez da de TI: conceder e revogar
+// acesso é decisão de segurança. Ele é o único card da aba — os serviços das áreas
+// de Cibersegurança e Segurança da Informação ficam fora do portal por ora, do
+// mesmo jeito que Benner, SIP e V360, e por isso o grupo abaixo não lista área
+// nenhuma. Publicá-los é devolver os nomes das áreas ao `areas` do grupo.
+const GESTAO_DE_ACESSO = 'Gestão de Acesso'
+
 // Cada aba já vem com os serviços das suas áreas achatados e ordenados: o portal
 // mostra serviço, não área, então a origem só sobrevive em `servico.portfolio`.
-export const GRUPOS = GRUPOS_AREAS.map((g) => ({
-  id: g.nome,
-  nome: g.nome,
-  icone: g.icone,
-  servicos: TODAS_AREAS.filter((p) => grupoDaArea.get(p.nome) === g.nome)
-    .flatMap((p) => p.servicos.map((s) => ({ ...s, portfolio: p })))
-    .sort(porNome),
-}))
+export const GRUPOS = GRUPOS_AREAS.map((g) => {
+  const daArea = TODAS_AREAS.filter((p) => grupoDaArea.get(p.nome) === g.nome).flatMap(
+    (p) => p.servicos.map((s) => ({ ...s, portfolio: p }))
+  )
+
+  const servicos =
+    g.nome === 'Segurança'
+      ? AREA_TI.servicos
+          .filter((s) => s.nome === GESTAO_DE_ACESSO)
+          .map((s) => ({ ...s, portfolio: AREA_TI }))
+      : daArea.filter((s) => s.nome !== GESTAO_DE_ACESSO)
+
+  return { id: g.nome, nome: g.nome, icone: g.icone, servicos: servicos.sort(porNome) }
+})
 
 export const grupoDoPortfolio = (nomeArea) => grupoDaArea.get(nomeArea) ?? GRUPOS[0].id
 

@@ -913,6 +913,22 @@
             {
               "n": "Anexo de autorização ou documento de apoio",
               "t": "texto"
+            },
+            {
+              "n": "Tipo de usuário",
+              "t": "radio",
+              "opcoes": [
+                "Colaborador Axia",
+                "Terceirizado/Consultor"
+              ]
+            },
+            {
+              "n": "URL do sistema",
+              "t": "texto"
+            },
+            {
+              "n": "E-mail de recuperação de senha",
+              "t": "texto"
             }
           ]
         },

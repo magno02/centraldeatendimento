@@ -64,6 +64,7 @@ export {
   CheckCircle as IconeCheckCirculo,
   Info as IconeInfoCirculo,
   List as IconeMenu,
+  X as IconeX,
 } from '@phosphor-icons/react'
 
 // Família única: Phosphor. Mudar PESO ('fill' | 'duotone' | 'bold' | 'regular')

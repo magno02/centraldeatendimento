@@ -15,9 +15,18 @@ import {
   IconeCheckCirculo,
   IconeInfoCirculo,
   IconeMenu,
+  IconeX,
 } from './icones'
 import Login from './Login'
-import { ATENDENTES, EMPRESAS, ESTADOS, AREAS, USUARIOS, GESTOR_DE } from './organizacao'
+import {
+  ATENDENTES,
+  EMPRESAS,
+  ESTADOS,
+  AREAS,
+  LOCALIDADES,
+  USUARIOS,
+  CADASTRO,
+} from './organizacao'
 import {
   STATUS,
   STATUS_PAINEL,
@@ -34,6 +43,7 @@ import {
   artigoDe,
   prazoLegivel,
   emDiasUteis,
+  anonimizar,
   doUsuario,
   ofertasDoServico,
   filtrarOfertas,
@@ -206,8 +216,10 @@ export default function App() {
       // mesma sequência em que o formulário perguntou, sem repetir a lista de campos
       // grupo de checkbox manda uma entrada por marcado: junta na mesma linha em
       // vez de repetir o rótulo no detalhe do chamado
+      // campo vazio não vira linha: só os opcionais chegam assim, e um rótulo sem
+      // resposta no detalhe do chamado parece dado perdido
       dados: [...f.entries()]
-        .filter(([k]) => !FORA_DOS_DADOS.has(k))
+        .filter(([k, v]) => !FORA_DOS_DADOS.has(k) && String(v).trim())
         .map(([k, v]) => [ROTULO_DADO[k] ?? k, v])
         .reduce((acc, [k, v]) => {
           const anterior = acc.find(([rotulo]) => rotulo === k)
@@ -1783,7 +1795,14 @@ const PLACEHOLDERS = {
     'Descreva o que precisa, com contexto, sistema envolvido e prazo desejado',
   'Oferta de Serviço': 'Selecione a oferta de serviço',
   Urgência: 'Selecione o nível de urgência',
+  'E-mail de recuperação de senha': 'nome.sobrenome@axia.com.br',
+  'URL do sistema': 'https://sistema.axia.com.br',
 }
+
+// Fica no bloco de quem solicita para outra pessoa, e não na grade dos campos da
+// atividade: descreve o vínculo de quem vai receber o acesso, então some quando o
+// pedido é para si mesmo.
+const CAMPO_DO_TERCEIRO = 'Tipo de usuário'
 
 // Campo de evidência/anexo vira a área de upload, não um input de texto.
 const ehAnexo = (nome) => /anexo|evid[êe]ncia/i.test(nome)
@@ -1799,17 +1818,80 @@ const ROTULO_DADO = {
   [nomeTerceiro('Estado')]: 'Estado do solicitante',
   [nomeTerceiro('Área')]: 'Área do solicitante',
   [nomeTerceiro('Gestor imediato')]: 'Gestor imediato',
+  [nomeTerceiro('Localidade')]: 'Localidade do solicitante',
+  [nomeTerceiro('Detalhes adicionais do local')]: 'Detalhes adicionais do local',
+  [nomeTerceiro('CPF')]: 'CPF do solicitante',
+  [nomeTerceiro('Contato/Ramal')]: 'Contato/Ramal do solicitante',
+  [nomeTerceiro('Cargo/Função')]: 'Cargo/Função do solicitante',
 }
 
 // Fora do detalhe: o radio é controle de tela, o usuário escolhido vira o
 // solicitante do chamado e os arquivos têm bloco próprio.
 const FORA_DOS_DADOS = new Set(['__para', 'anexos', nomeTerceiro('Usuário')])
 
+// Sem pré-preenchimento pela conta logada: quem abre o chamado quase nunca está na
+// mesma empresa, estado e área de quem vai receber o atendimento, e o valor herdado
+// passava despercebido e ia errado para o ticket.
 const CAMPOS_TERCEIRO = [
-  { label: 'Empresa', opcoes: EMPRESAS, sessao: 'empresa' },
-  { label: 'Estado', opcoes: ESTADOS, sessao: 'estado' },
-  { label: 'Área', opcoes: AREAS, sessao: 'area' },
+  { label: 'Empresa', opcoes: EMPRESAS },
+  { label: 'Estado', opcoes: ESTADOS },
+  { label: 'Área', opcoes: AREAS },
 ]
+
+// Vêm prontos do cadastro quando o nome sai da lista, e são digitados quando o nome
+// foi escrito à mão. `chave` aponta para o registro em CADASTRO; `dica` é o texto do
+// campo ainda travado, antes de haver usuário escolhido.
+const CAMPOS_DO_CADASTRO = [
+  {
+    label: 'Gestor imediato',
+    chave: 'gestor',
+    placeholder: 'Informe o nome do gestor imediato',
+    dica: 'Selecione o usuário para carregar o gestor',
+  },
+  {
+    label: 'CPF',
+    chave: 'cpf',
+    mascarar: true,
+    placeholder: '000.000.000-00',
+    dica: 'Selecione o usuário para carregar o CPF',
+  },
+  {
+    label: 'Contato/Ramal',
+    chave: 'contato',
+    placeholder: 'Digite o nº de contato',
+    dica: 'Selecione o usuário para carregar o contato',
+  },
+  {
+    label: 'Cargo/Função',
+    chave: 'cargo',
+    placeholder: 'Ex.: Analista de Suprimentos',
+    dica: 'Selecione o usuário para carregar o cargo',
+  },
+  {
+    label: 'Localidade',
+    chave: 'localidade',
+    opcoes: LOCALIDADES,
+    placeholder: 'Digite para filtrar a localidade',
+    dica: 'Selecione o usuário para carregar a localidade',
+  },
+]
+
+// Campo que o solicitante não preenche: o valor é do RH e a tela só exibe.
+const CampoTravado = ({ label, nome, valor, dica }) => (
+  <div>
+    <span className="mb-1.5 block text-sm font-bold text-axia-purple">
+      {label} <Obrigatorio />
+    </span>
+    <input
+      name={nome}
+      value={valor}
+      readOnly
+      required
+      placeholder={dica}
+      className={inputTravado}
+    />
+  </div>
+)
 
 // Quem recebe o atendimento nunca é pedido em texto livre: em "Eu mesmo(a)" já está
 // logado, em "Outra pessoa" vem do bloco de solicitante acima. Nomes exatos, não
@@ -1833,6 +1915,12 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
   const [prazoAberto, setPrazoAberto] = useState(false)
   const outraPessoa = para === 'Outra pessoa'
 
+  // nome digitado que não está no cadastro: não há registro para carregar e os cinco
+  // campos passam a ser preenchidos à mão. Com o campo de usuário ainda vazio segue
+  // valendo a dica de escolhê-lo primeiro, em vez de já abrir pedindo digitação.
+  const cadastro = CADASTRO[alvo]
+  const semCadastro = Boolean(alvo) && !cadastro
+
   const visiveis = atividade.campos.filter(
     (c) =>
       !(atividade.oferta && campoNome(c) === 'Oferta de Serviço') &&
@@ -1843,11 +1931,13 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
   // lista eles quebram o empacotamento e deixam buracos na grade de 3 colunas.
   // `sort` é estável, então a ordem da planilha se mantém dentro de cada bloco.
   const campos = visiveis
-    .filter((c) => !ehAnexo(campoNome(c)))
+    .filter((c) => !ehAnexo(campoNome(c)) && campoNome(c) !== CAMPO_DO_TERCEIRO)
     .sort(
       (a, b) =>
         (campoTipo(a) === 'textarea' ? 1 : 0) - (campoTipo(b) === 'textarea' ? 1 : 0)
     )
+
+  const tipoDeUsuario = visiveis.find((c) => campoNome(c) === CAMPO_DO_TERCEIRO)
 
   return (
     <>
@@ -1971,13 +2061,29 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
           <input type="hidden" name="Oferta de Serviço" value={atividade.oferta} />
         )}
 
-        {/* três por linha; o textarea ocupa a linha inteira, porque texto longo numa
-            coluna de um terço vira uma caixa estreita e alta */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {/* quem recebe o atendimento entra no mesmo grid, e não numa seção à parte:
-              é a mesma solicitação, só com o solicitante trocado */}
-          {outraPessoa && (
-            <>
+        {/* Pedindo para outra pessoa são duas perguntas diferentes na mesma tela —
+            quem é a pessoa e o que ela precisa —, e sem separação elas viram uma
+            grade só de treze campos. Para si mesmo há uma pergunta só, então o
+            título não aparece: rotular a única seção da tela é ruído. */}
+        {outraPessoa && (
+          <SecaoCampos
+            titulo="Dados do usuário"
+            subtitulo="Informe os dados de quem vai receber o atendimento."
+          >
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {/* abre o bloco: é o vínculo de quem vai receber o atendimento, então
+                  vem antes de onde essa pessoa está. Linha inteira para não deixar
+                  buraco de duas colunas. */}
+              {tipoDeUsuario && (
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <Campo
+                    label={CAMPO_DO_TERCEIRO}
+                    nome={CAMPO_DO_TERCEIRO}
+                    tipo="radio"
+                    opcoes={tipoDeUsuario.opcoes}
+                  />
+                </div>
+              )}
               {CAMPOS_TERCEIRO.map((c) => (
                 <Campo
                   key={c.label}
@@ -1985,7 +2091,6 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
                   nome={nomeTerceiro(c.label)}
                   tipo="combo"
                   opcoes={c.opcoes}
-                  inicial={usuario[c.sessao]}
                   placeholder={`Digite para filtrar ${artigoDe(c.label)} ${c.label.toLowerCase()}`}
                 />
               ))}
@@ -1993,44 +2098,76 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
                 label="Usuário"
                 nome={nomeTerceiro('Usuário')}
                 tipo="combo"
+                livre
                 opcoes={USUARIOS}
-                placeholder="Digite o nome do usuário"
+                placeholder="Selecione da lista ou digite o nome"
                 onChange={setAlvo}
               />
-              {/* gestor não é escolhido: vem do cadastro do usuário selecionado */}
-              <div>
-                <span className="mb-1.5 block text-sm font-bold text-axia-purple">
-                  Gestor imediato <Obrigatorio />
-                </span>
-                <input
-                  name={nomeTerceiro('Gestor imediato')}
-                  value={GESTOR_DE[alvo] || ''}
-                  readOnly
-                  required
-                  placeholder="Selecione o usuário para carregar o gestor"
-                  className={`${inputBase} cursor-not-allowed text-axia-grey/80`}
-                />
-              </div>
-            </>
-          )}
-
-          {campos.map((c) => (
-            <div
-              key={campoNome(c)}
-              className={
-                campoTipo(c) === 'textarea' ? 'sm:col-span-2 lg:col-span-3' : ''
-              }
-            >
+              {/* Nome escolhido da lista traz os cinco prontos do cadastro e travados
+                  — são dados do RH, não do solicitante. Nome digitado à mão não tem
+                  registro para consultar, e aí os cinco abrem para digitação. */}
+              {CAMPOS_DO_CADASTRO.map((c) =>
+                semCadastro ? (
+                  <Campo
+                    key={c.label}
+                    label={c.label}
+                    nome={nomeTerceiro(c.label)}
+                    tipo={c.opcoes ? 'combo' : undefined}
+                    opcoes={c.opcoes}
+                    placeholder={c.placeholder}
+                  />
+                ) : (
+                  <CampoTravado
+                    key={c.label}
+                    label={c.label}
+                    nome={nomeTerceiro(c.label)}
+                    dica={c.dica}
+                    valor={
+                      c.mascarar
+                        ? anonimizar(cadastro?.[c.chave] ?? '')
+                        : (cadastro?.[c.chave] ?? '')
+                    }
+                  />
+                )
+              )}
+              {/* a lista de localidades fecha o que o atendimento consegue
+                  roteirizar; este campo cobre o que ela não prevê, e por isso é
+                  opcional e sempre digitado */}
               <Campo
-                label={campoNome(c)}
-                nome={campoNome(c)}
-                tipo={campoTipo(c)}
-                opcoes={c.opcoes}
-                placeholder={PLACEHOLDERS[campoNome(c)]}
+                label="Detalhes adicionais do local"
+                nome={nomeTerceiro('Detalhes adicionais do local')}
+                opcional
+                placeholder="Ex.: bloco B, 3º andar, ao lado da recepção"
               />
             </div>
-          ))}
-        </div>
+          </SecaoCampos>
+        )}
+
+        <SecaoCampos
+          titulo={outraPessoa ? 'Dados da solicitação' : null}
+          subtitulo="Informe os detalhes do que está sendo solicitado."
+        >
+          {/* três por linha; o textarea ocupa a linha inteira, porque texto longo numa
+              coluna de um terço vira uma caixa estreita e alta */}
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {campos.map((c) => (
+              <div
+                key={campoNome(c)}
+                className={
+                  campoTipo(c) === 'textarea' ? 'sm:col-span-2 lg:col-span-3' : ''
+                }
+              >
+                <Campo
+                  label={campoNome(c)}
+                  nome={campoNome(c)}
+                  tipo={campoTipo(c)}
+                  opcoes={c.opcoes}
+                  placeholder={PLACEHOLDERS[campoNome(c)]}
+                />
+              </div>
+            ))}
+          </div>
+        </SecaoCampos>
 
         {/* uma área de upload em todo formulário: os campos de anexo da planilha
             já foram filtrados acima, então nunca sai em duplicidade */}
@@ -2085,6 +2222,31 @@ function Formulario({ atividade, usuario, onSubmit, trilha, onVoltar }) {
     </>
   )
 }
+
+// Faixa de título do formulário — nada a ver com a `Secao` do portal, que é o
+// cabeçalho grande de uma tela. Sem `titulo` some e só entrega os campos, para o
+// formulário de "Eu mesmo(a)" continuar sendo uma grade única, sem cabeçalho.
+const SecaoCampos = ({ titulo, subtitulo, children }) =>
+  titulo ? (
+    // folga embaixo, e não em cima: assim ela cai entre o último campo de uma seção
+    // e o título da seguinte, sem empurrar o primeiro título para longe do
+    // "Solicitante". Padding e não margem porque o space-y-6 do <form> tem
+    // especificidade maior e um mt- aqui seria ignorado.
+    <fieldset className="pb-4">
+      {/* sem régua atravessando o formulário: a barrinha à esquerda já marca onde a
+          seção começa, e o espaço acima faz o resto da separação */}
+      <legend className="flex items-center gap-2.5 text-sm font-bold uppercase tracking-wide text-axia-blue">
+        <span className="h-4 w-1 rounded-full bg-axia-blue" aria-hidden="true" />
+        {titulo}
+      </legend>
+      {/* alinhado ao texto do título, não à barrinha: o recuo é a largura dela mais
+          o gap */}
+      <p className="mb-4 mt-1.5 pl-[14px] text-sm text-axia-grey">{subtitulo}</p>
+      {children}
+    </fieldset>
+  ) : (
+    children
+  )
 
 const Obrigatorio = () => (
   <span className="font-bold text-axia-error" title="Campo obrigatório">
@@ -2143,8 +2305,18 @@ function Anexos({ arquivos, onChange }) {
   )
 }
 
+// Fundo branco e borda um tom mais escura, como o inputFiltro abaixo: o cinza de
+// preenchimento que estava aqui lia como campo desabilitado, ainda mais ao lado do
+// "Gestor imediato", que é travado de verdade.
 const inputBase =
-  'w-full rounded-chip border border-axia-neutral bg-slate-100/70 px-4 py-2.5 text-sm outline-none focus:border-axia-blue focus:bg-white'
+  'w-full rounded-chip border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-axia-blue'
+
+// Campo preenchido pelo cadastro, não pelo solicitante. Escrito por extenso, e não
+// como `${inputBase} bg-slate-100`: as duas classes de fundo têm a mesma
+// especificidade e quem ganha é a ordem no CSS gerado, não a do atributo — o
+// bg-white do inputBase vencia e o campo saía branco como os demais.
+const inputTravado =
+  'w-full cursor-not-allowed rounded-chip border border-slate-300 bg-slate-100 px-4 py-2.5 text-sm text-axia-grey/80 outline-none'
 
 // mesma base, mas em pílula e com borda um tom mais escura — só na faixa de
 // filtros de "Meus chamados", onde os campos ficam soltos sobre o fundo da página
@@ -2162,6 +2334,9 @@ function Combobox({
   inicial = '',
   onChange,
   obrigatorio = true,
+  // aceita nome fora da lista: quem entra hoje pode não estar no cadastro ainda.
+  // Sem isto o campo recusa o que foi digitado e o formulário não envia.
+  livre = false,
   classeInput = inputBase,
 }) {
   // opção única: já vem escolhida, não há o que decidir
@@ -2173,14 +2348,15 @@ function Combobox({
 
   useEffect(() => {
     inputRef.current?.setCustomValidity(
-      !obrigatorio || opcoes.includes(valor) ? '' : 'Escolha uma opção da lista.'
+      livre || !obrigatorio || opcoes.includes(valor) ? '' : 'Escolha uma opção da lista.'
     )
-  }, [valor, opcoes, obrigatorio])
+  }, [valor, opcoes, obrigatorio, livre])
 
-  // só reporta valor que existe na lista — quem depende disso (gestor) usa o cadastro
+  // no modo livre reporta o que foi digitado; no fechado, só o que existe na lista —
+  // quem depende disso (gestor) precisa saber se o nome veio do cadastro ou não
   const atualizar = (v) => {
     setValor(v)
-    onChange?.(opcoes.includes(v) ? v : '')
+    onChange?.(livre || opcoes.includes(v) ? v : '')
   }
 
   const escolher = (o) => {
@@ -2223,8 +2399,26 @@ function Combobox({
         }}
         onFocus={() => setAberto(true)}
         onKeyDown={aoTeclar}
-        className={`${classeInput} pr-10`}
+        // com o "limpar" à mostra, o texto precisa parar antes de dois ícones
+        className={`${classeInput} ${valor ? 'pr-16' : 'pr-10'}`}
       />
+      {/* só com algo escolhido: um X permanente num campo vazio não limpa nada e
+          ainda rouba espaço do texto. O foco volta ao input, que reabre a lista —
+          quem limpou quase sempre quer escolher outra coisa. */}
+      {valor && (
+        <button
+          type="button"
+          aria-label="Limpar seleção"
+          title="Limpar seleção"
+          onClick={() => {
+            atualizar('')
+            inputRef.current?.focus()
+          }}
+          className="absolute right-9 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-1 text-axia-grey/60 transition hover:bg-axia-neutral hover:text-axia-purple"
+        >
+          <IconeX className="h-4 w-4" />
+        </button>
+      )}
       <SetaCampo />
 
       {aberto && (
@@ -2318,9 +2512,25 @@ function ListaMarcavel({ nome, opcoes, placeholder }) {
   )
 }
 
-function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
+function Campo({
+  label,
+  nome,
+  tipo,
+  opcoes,
+  placeholder,
+  inicial,
+  onChange,
+  opcional,
+  livre,
+}) {
   // "Informe o gestor" / "Informe a matrícula": o artigo vem do gênero do rótulo
   const dica = `Informe ${artigoDe(label)} ${label.toLowerCase()}`
+  // o formulário é obrigatório por padrão; só quem passa `opcional` escapa
+  const marca = opcional ? (
+    <span className="font-normal text-axia-grey/70">(opcional)</span>
+  ) : (
+    <Obrigatorio />
+  )
 
   if (tipo === 'combo') {
     return (
@@ -2339,8 +2549,38 @@ function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
           placeholder={placeholder ?? `Selecione ${artigoDe(label)} ${label.toLowerCase()}`}
           inicial={inicial}
           onChange={onChange}
+          livre={livre}
         />
       </div>
+    )
+  }
+
+  // escolha única entre poucas opções: o radio nu, sem a pílula de "Solicitante" —
+  // ali ela marca a troca de contexto do formulário inteiro, aqui é só mais um campo
+  if (tipo === 'radio') {
+    return (
+      <fieldset>
+        <legend className="mb-1.5 text-sm font-bold text-axia-purple">
+          {label} <Obrigatorio />
+        </legend>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {opcoes.map((o) => (
+            <label
+              key={o}
+              className="flex cursor-pointer items-center gap-2 text-sm text-axia-grey"
+            >
+              <input
+                type="radio"
+                name={nome}
+                value={o}
+                required
+                className="h-4 w-4 accent-axia-blue"
+              />
+              {o}
+            </label>
+          ))}
+        </div>
+      </fieldset>
     )
   }
 
@@ -2363,12 +2603,12 @@ function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm font-bold text-axia-purple">
-        {label} <Obrigatorio />
+        {label} {marca}
       </span>
       {tipo === 'textarea' ? (
         <textarea
           name={nome}
-          required
+          required={!opcional}
           rows={4}
           placeholder={placeholder || dica}
           className={inputBase}
@@ -2396,7 +2636,7 @@ function Campo({ label, nome, tipo, opcoes, placeholder, inicial, onChange }) {
       ) : (
         <input
           name={nome}
-          required
+          required={!opcional}
           type="text"
           placeholder={placeholder || dica}
           className={inputBase}

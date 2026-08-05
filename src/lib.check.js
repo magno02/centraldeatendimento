@@ -9,7 +9,7 @@ import {
   POR_CHAVE,
   GRUPOS,
 } from './catalogo.js'
-import { USUARIOS, GESTOR_DE, ATENDENTES } from './organizacao.js'
+import { USUARIOS, CADASTRO, LOCALIDADES, ATENDENTES } from './organizacao.js'
 import {
   novoProtocolo,
   buscar,
@@ -21,6 +21,7 @@ import {
   CHAVES_ICONE,
   artigoDe,
   prazoLegivel,
+  anonimizar,
   validarLogin,
   CONTAS,
   alternarFavorito,
@@ -76,8 +77,27 @@ assert.deepEqual(buscar(ATIVIDADES, '   '), [])
 const umaOferta = ATIVIDADES.find((a) => a.ofertas.length)
 assert.ok(buscar(ATIVIDADES, umaOferta.ofertas[0]).includes(umaOferta))
 
-// todo usuário selecionável tem gestor cadastrado (o campo é somente leitura)
-for (const u of USUARIOS) assert.ok(GESTOR_DE[u], u)
+// todo usuário selecionável tem o cadastro completo: os cinco campos ficam somente
+// leitura quando o nome vem da lista, então um só que falte sai vazio e trava o
+// envio sem explicar o motivo
+for (const u of USUARIOS) {
+  const c = CADASTRO[u]
+  assert.ok(c, u)
+  for (const k of ['gestor', 'cpf', 'contato', 'cargo', 'localidade'])
+    assert.ok(c[k], `${u}: ${k}`)
+  // o combo recusa valor fora da lista, e o campo já nasceria inválido
+  assert.ok(LOCALIDADES.includes(c.localidade), c.localidade)
+}
+
+// CPF na tela: duas pontas à mostra, miolo escondido, mesmo comprimento
+assert.equal(anonimizar('123.456.789-00'), '12**********00')
+assert.equal(anonimizar(CADASTRO['João da Silva'].cpf).length, 14)
+assert.ok(!anonimizar(CADASTRO['João da Silva'].cpf).includes('456'))
+assert.equal(anonimizar('12345', 1), '1***5')
+// curto demais para esconder: sai como veio, e nunca vira asterisco puro
+assert.equal(anonimizar('1234'), '1234')
+assert.equal(anonimizar(''), '')
+assert.equal(anonimizar(undefined), '')
 
 // combobox: sem termo devolve tudo, com termo filtra ignorando acento e caixa
 assert.deepEqual(filtrarOpcoes(['São Paulo', 'Bahia'], ''), ['São Paulo', 'Bahia'])
@@ -260,14 +280,29 @@ const HARDWARE = ['Notebook', 'Monitor', 'Impressora', 'Celular Corporativo']
 // catálogo de planilha: atividade é o card, com descrição, SLA e campos próprios
 {
   const ti = GRUPOS.find((g) => g.nome === 'Serviços de TI')
+  const seguranca = GRUPOS.find((g) => g.nome === 'Segurança')
+
+  // Gestão de Acesso saiu da aba de TI e passou a abrir a de Segurança
+  assert.ok(!ti.servicos.some((s) => s.nome === 'Gestão de Acesso'))
+  assert.ok(seguranca.servicos.some((s) => s.nome === 'Gestão de Acesso'))
+
+  // a aba Segurança é só Gestão de Acesso: as áreas de Cibersegurança e Segurança
+  // da Informação estão fora do portal, e nenhum serviço delas pode voltar por
+  // aqui sem alguém decidir publicá-las
+  assert.deepEqual(seguranca.servicos.map((s) => s.nome), ['Gestão de Acesso'])
+  {
+    const AREAS = ['Cibersegurança de TI', 'Segurança da Informação']
+    const naAba = new Set(SERVICOS_EM_ABA.map((s) => s.chave))
+    for (const p of PORTFOLIOS.filter((p) => AREAS.includes(p.nome)))
+      for (const s of p.servicos) assert.ok(!naAba.has(s.chave), s.chave)
+  }
+
   const daPlanilha = ti.servicos.filter(
-    (s) =>
-      ['SAP', 'Gestão de Acesso', 'Periféricos'].includes(s.nome) ||
-      HARDWARE.includes(s.nome)
+    (s) => ['SAP', 'Periféricos'].includes(s.nome) || HARDWARE.includes(s.nome)
   )
 
-  // 4 de hardware + Periféricos + Gestão de Acesso + SAP
-  assert.equal(ti.servicos.length, 7)
+  // 4 de hardware + Periféricos + SAP
+  assert.equal(ti.servicos.length, 6)
   assert.equal(ti.servicos.length, daPlanilha.length)
 
   // Periféricos não vem de planilha: é o combo que diz qual equipamento é
@@ -304,8 +339,26 @@ const HARDWARE = ['Notebook', 'Monitor', 'Impressora', 'Celular Corporativo']
   // com a assinatura do estrutura_axia (ofertas + campo "Oferta de Serviço").
   assert.ok(!ti.servicos.some((s) => s.nome === 'Desktop'))
 
-  const acesso = ti.servicos.find((s) => s.nome === 'Gestão de Acesso')
+  const acesso = seguranca.servicos.find((s) => s.nome === 'Gestão de Acesso')
   assert.equal(acesso.atividades.length, 10)
+
+  // os três campos que o formulário passou a pedir e a planilha não traz. O radio
+  // só existe aqui: o App tira ele da grade e põe no bloco de "Outra pessoa".
+  {
+    const novo = acesso.atividades.find((a) => a.nome === 'Solicitar novo acesso')
+    const campo = (n) => novo.campos.find((c) => c.n === n)
+    assert.equal(campo('URL do sistema').t, 'texto')
+    assert.equal(campo('E-mail de recuperação de senha').t, 'texto')
+    assert.deepEqual(campo('Tipo de usuário'), {
+      n: 'Tipo de usuário',
+      t: 'radio',
+      opcoes: ['Colaborador Axia', 'Terceirizado/Consultor'],
+    })
+    // nenhuma outra atividade do portal usa radio, que o App trata como caso único
+    for (const a of ATIVIDADES_VISIVEIS)
+      for (const c of a.campos)
+        if (c.t === 'radio') assert.equal(a.nome, 'Solicitar novo acesso', a.chave)
+  }
 
   // Ambiente é marcação múltipla, e os três campos abaixo saíram do formulário
   for (const a of acesso.atividades) {
@@ -380,7 +433,9 @@ const HARDWARE = ['Notebook', 'Monitor', 'Impressora', 'Celular Corporativo']
 // ampliado — se o gerador voltar a ler a coluna errada, estes valores caem.
 {
   const ti = GRUPOS.find((g) => g.nome === 'Serviços de TI')
-  const acesso = ti.servicos.find((s) => s.nome === 'Gestão de Acesso')
+  const acesso = GRUPOS.find((g) => g.nome === 'Segurança').servicos.find(
+    (s) => s.nome === 'Gestão de Acesso'
+  )
   const sla = (nome) => acesso.atividades.find((a) => a.nome === nome).sla
   assert.equal(sla('Solicitar novo acesso'), '32h úteis') // 1º par: 16h, resposta: 8h
   assert.equal(sla('Redefinir senha'), '4h úteis') // 1º par: 2h, resposta: 2h
@@ -613,7 +668,9 @@ assert.equal(STATUS_PAINEL.length, 4)
   assert.equal(primeira('SAP está lento'), 'Reportar lentidão no SAP')
   assert.equal(primeira('minha conta está bloqueada'), 'Conta bloqueada indevidamente')
   assert.equal(primeira('quero devolver o notebook'), 'Devolver Notebook')
-  assert.match(primeira('solicitar acesso à rede'), /rede/i)
+  // era "solicitar acesso à rede", que casava numa atividade de Cibersegurança —
+  // área que saiu do portal quando a aba Segurança passou a ser só Gestão de Acesso
+  assert.equal(primeira('quero acesso ao sistema'), 'Não consigo acessar o sistema')
   // só palavra vazia ou radical curto: melhor não sugerir do que despejar o catálogo
   assert.deepEqual(buscarConversa(ATIVIDADES_VISIVEIS, 'oi'), [])
   assert.deepEqual(buscarConversa(ATIVIDADES_VISIVEIS, 'por favor'), [])
